@@ -16,7 +16,7 @@ export default function Navbar() {
     { href: '/team', label: '나의 팀 정보' }
   ]
   const adminLinks = [
-    { href: '/admin/dashboard', label: '관리 대시보드' },
+    { href: '/admin/dashboard', label: '대시보드' },
     { href: '/admin/teams', label: '팀 관리' },
     { href: '/admin/users', label: '사용자 관리' },
     { href: '/admin/settings', label: '일정 설정' }

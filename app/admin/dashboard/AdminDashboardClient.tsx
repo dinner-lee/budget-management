@@ -279,7 +279,7 @@ function CalendarView({ allPlans, teams, milestones }: any) {
           </span>
           <span className="flex items-center gap-1.5">
             <span className="inline-block w-3 h-3 rounded bg-indigo-100 border border-indigo-200"></span>
-            마일스톤
+            주요 일정(발표 및 예산 마감일 등)
           </span>
         </div>
       </div>
