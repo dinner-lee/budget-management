@@ -42,7 +42,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="card w-full max-w-md p-8">
+    <div className="flex flex-col items-center w-full max-w-md px-4">
+      <div className="card w-full p-8">
       <div className="mb-8 text-center flex flex-col items-center">
         <Image
           src="/lsri_logo.png"
@@ -56,11 +57,11 @@ export default function LoginPage() {
           학부생·대학원생 학습과학연구지원사업<br />
           <span className="text-blue-700">예산 관리 시스템</span>
         </h1>
-        <div className="mt-6 bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-start gap-3 text-left w-full">
-          <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-start gap-3 text-left w-full">
+          <svg className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-sm text-blue-800 break-keep">
+          <p className="text-sm text-gray-700 break-keep">
             <strong>구글 계정(snu.ac.kr)</strong>으로 로그인하여 계속하세요.
           </p>
         </div>
@@ -133,6 +134,9 @@ export default function LoginPage() {
             </button>
           </form>
         )}
+      </div>
+      <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
+        서울대학교 학습과학연구소 | (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 | 02-880-4498
       </div>
     </div>
   )
