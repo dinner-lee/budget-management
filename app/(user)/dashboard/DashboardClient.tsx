@@ -83,22 +83,22 @@ export default function DashboardClient({
                     formatter={(value: any) => `${Number(value).toLocaleString()}원`}
                     contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
-                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 500, fontSize: '12px' }} />
+                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 800, fontSize: '12px' }} />
                 </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="w-full space-y-2 mt-4 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">총 예산</span>
-              <span className="font-semibold">{totalBudget.toLocaleString()}원</span>
+              <span className="font-semibold text-gray-900">{totalBudget.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between">
               <span className="text-red-500">사용 금액</span>
               <span className="font-semibold text-red-600">{totalUsed.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-100">
-              <span className="text-green-600">잔액</span>
-              <span className="font-bold text-green-600">{totalBalance.toLocaleString()}원</span>
+              <span className="text-green-600 font-bold">잔액</span>
+              <span className="font-bold text-green-700">{totalBalance.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function DashboardClient({
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis 
                     dataKey="name" 
-                    tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 12, fill: '#6b7280' }} 
+                    tick={{ fontFamily: 'Pretendard', fontWeight: 600, fontSize: 12, fill: '#000' }} 
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={false}
                   />
@@ -128,7 +128,7 @@ export default function DashboardClient({
                     cursor={{ fill: '#f3f4f6' }}
                     contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
-                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 800, fontSize: '12px', paddingTop: '10px', color: '#1f2937' }} />
+                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 800, fontSize: '12px', paddingTop: '10px' }} />
                   <Bar dataKey="사용금액" stackId="a" fill="#3b82f6" name="사용 금액">
                     <LabelList 
                       dataKey="사용금액" 
