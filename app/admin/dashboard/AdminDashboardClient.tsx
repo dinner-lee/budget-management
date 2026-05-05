@@ -129,8 +129,8 @@ function TeamView({ teams, allPlans }: any) {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="md:col-span-1 space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <div className="md:col-span-1 md:max-h-[calc(100vh-220px)] md:overflow-y-auto md:sticky md:top-6 space-y-3 pr-2 scrollbar-thin">
         {teams.map((team: any) => {
           const teamPlans = allPlans.filter((p: any) => p.user.teamId === team.id)
           const totalUsed = teamPlans.reduce((acc: number, p: any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
