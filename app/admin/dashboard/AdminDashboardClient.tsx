@@ -204,10 +204,10 @@ function TeamView({ teams, allPlans }: any) {
               {teams.find((t: any) => t.id === selectedTeamId)?.teamNumber} 상세 계획서
             </h2>
             <div className="divide-y divide-gray-100 border-t border-gray-100">
-              {allPlans.filter((p: any) => p.user.teamId === selectedTeamId).map((plan: any) => (
+              {allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === selectedTeamId).map((plan: any) => (
                 <PlanRow key={plan.id} plan={plan} />
               ))}
-              {allPlans.filter((p: any) => p.user.teamId === selectedTeamId).length === 0 && (
+              {allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === selectedTeamId).length === 0 && (
                 <p className="py-8 text-center text-gray-500 text-sm">제출된 계획서가 없습니다.</p>
               )}
             </div>
@@ -228,7 +228,7 @@ function BudgetView({ teams, allPlans }: any) {
 
   // Build per-team data
   const teamData = teams.map((team: any) => {
-    const teamPlans = allPlans.filter((p: any) => p.user.teamId === team.id)
+    const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
 
     const byPurpose: Record<string, { planned: number; actual: number }> = {}
     purposes.forEach(p => { byPurpose[p] = { planned: 0, actual: 0 } })
@@ -488,7 +488,7 @@ function PlanRow({ plan }: { plan: any }) {
         <p className="text-xs text-gray-500">
           {plan.user.name} &middot;{' '}
           {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
-          {plan.amount.toLocaleString()}원 &middot;{' '}
+          {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
           {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
         </p>
         {plan.status !== 'APPROVED' && total > 0 && (

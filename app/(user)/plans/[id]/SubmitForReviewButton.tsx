@@ -133,7 +133,7 @@ export default function SubmitForReviewButton({
           onClick={openNasPopup}
           className="inline-block bg-blue-600 text-white text-xs px-4 py-2 rounded shadow hover:bg-blue-700 transition"
         >
-          NAS에 파일 업로드하기 (로딩에 시간이 소요될 수 있습니다. 대기해 주세요.)
+          NAS에 파일 업로드하기 (로딩에 시간이 다소 소요될 수 있습니다. 대기해 주세요.)
         </button>
       </div>
 
@@ -229,7 +229,7 @@ export default function SubmitForReviewButton({
       </div>
 
       <p className="text-sm text-gray-600 mb-3">
-        모든 필수 파일이 업로드되었나요? 체크리스트를 확인한 후 검토를 요청해주세요.
+        모든 필수 파일이 업로드되었나요? 체크리스트를 확인한 후 검토를 요청해 주세요.
       </p>
       {error && (
         <p className="text-sm text-red-600 bg-red-50 rounded px-3 py-2 mb-3">{error}</p>
