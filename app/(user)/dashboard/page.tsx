@@ -132,7 +132,7 @@ export default async function DashboardPage() {
                     </div>
                     <p className="text-xs text-gray-500">
                       {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
-                      {plan.amount.toLocaleString()}원 &middot;{' '}
+                      {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
                       {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
                     </p>
                     {plan.status !== 'APPROVED' && total > 0 && (
