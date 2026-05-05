@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name          String?
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  role         String       @default("USER") // USER | ADMIN
+  createdAt    DateTime     @default(now())
+  teamId       String?      @unique
+  team         Team?        @relation(fields: [teamId], references: [id])
+  plans        BudgetPlan[]
+  adminReviews AdminReview[]
+  budgetLimits UserBudgetLimit[]
+  budgetModifications BudgetModificationHistory[]
+  teamEditLogs TeamEditLog[]
+  accounts     Account[]
+  sessions     Session[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model BudgetPlan {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  title       String
+  amount      Float
+  actualAmount Float?   // 실제 지출 금액
+  purpose     String    // MEETING_FEE | EXPERT_FEE | PARTICIPANT_FEE | PURCHASE_FEE | SOFTWARE_FEE
+  plannedDate          DateTime
+  plannedTime          String?  // e.g. "14:00" or "14:00-16:00"
+  expenditureOverview  String   // 지출 개요
+  status               String   @default("PENDING_EVIDENCE") // PENDING_EVIDENCE | UNDER_REVIEW | RESUBMIT_REQUIRED | APPROVED
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  evidences   Evidence[]
+  reviews     AdminReview[]
+}
+
+model Evidence {
+  id           String     @id @default(cuid())
+  planId       String
+  plan         BudgetPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  itemKey      String     // e.g. 'meeting_minutes', 'receipt'
+  label        String     // e.g. '회의록', '영수증'
+  hint         String?    // e.g. '강연자료, 면담 자료 등'
+  required     Boolean    @default(true)
+  fileName     String?    // original uploaded file name
+  nasPath      String?    // path on NAS
+  uploadedAt   DateTime?
+  status       String     @default("PENDING") // PENDING | SUBMITTED | RESUBMIT_REQUIRED
+  resubmitNote String?
+  updatedAt    DateTime   @updatedAt
+}
+
+model AdminReview {
+  id        String     @id @default(cuid())
+  planId    String
+  plan      BudgetPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  adminId   String
+  admin     User       @relation(fields: [adminId], references: [id])
+  note      String?
+  createdAt DateTime   @default(now())
+}
+
+model UserBudgetLimit {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, purpose])
+}
+
+model BudgetModificationHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   String
+  oldAmount Float?
+  newAmount Float
+  reason    String
+  createdAt DateTime @default(now())
+}
+
+model Team {
+  id                String   @id @default(cuid())
+  teamNumber        String   @unique
+  leaderName        String
+  leaderAffiliation String
+  members           String   // 참여 학생 이름 및 소속
+  researchTopic     String
+  user              User?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  editLogs          TeamEditLog[]
+}
+
+model TeamEditLog {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  changes   String
+  createdAt DateTime @default(now())
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  name      String
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

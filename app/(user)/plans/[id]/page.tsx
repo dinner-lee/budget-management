@@ -1,0 +1,120 @@
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { PURPOSE_LABELS } from '@/lib/evidence-config'
+import { PlanStatusBadge, EvidenceStatusBadge } from '@/components/StatusBadge'
+import { notFound, redirect } from 'next/navigation'
+import SubmitForReviewButton from './SubmitForReviewButton'
+
+export default async function PlanDetailPage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session) redirect('/login')
+
+  const plan = await prisma.budgetPlan.findFirst({
+    where: { id: params.id, userId: session.user.id },
+    include: { evidences: { orderBy: { updatedAt: 'asc' } } },
+  })
+  if (!plan) notFound()
+
+  const canUpload = plan.status === 'PENDING_EVIDENCE' || plan.status === 'RESUBMIT_REQUIRED'
+  const isOther = plan.purpose === 'OTHER'
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-xl font-bold text-gray-900">{plan.title}</h1>
+            <PlanStatusBadge status={plan.status} />
+          </div>
+          <p className="text-sm text-gray-500">
+            {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
+            {plan.amount.toLocaleString()}원 (계획){' '}
+            {plan.actualAmount !== null && (
+              <span className="font-semibold text-blue-600">
+                &middot; {plan.actualAmount.toLocaleString()}원 (실제 지출)
+              </span>
+            )}{' '}
+            &middot; {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
+            {plan.plannedTime && ` ${plan.plannedTime}`}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">{plan.expenditureOverview}</p>
+        </div>
+      </div>
+
+      {/* Status guide */}
+      {plan.status === 'PENDING_EVIDENCE' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+          증빙 파일을 모두 준비하신 후, 하단의 안내에 따라 NAS에 파일을 업로드하고 <strong>검토 요청하기</strong> 버튼을 눌러주세요.
+        </div>
+      )}
+      {plan.status === 'UNDER_REVIEW' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+          관리자가 제출된 증빙을 검토 중입니다. 결과를 기다려주세요.
+        </div>
+      )}
+      {plan.status === 'RESUBMIT_REQUIRED' && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+          재제출이 필요한 항목이 있습니다. 추가 파일을 업로드한 후 다시 검토를 요청해주세요.
+        </div>
+      )}
+      {plan.status === 'APPROVED' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
+          모든 증빙이 승인 완료되었습니다.
+        </div>
+      )}
+
+      {/* Evidence items */}
+      <div className="card">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-700">증빙 항목</h2>
+          {isOther && (
+            <span className="text-xs text-gray-400">모든 항목 선택사항</span>
+          )}
+        </div>
+        <div className="divide-y divide-gray-100">
+          {plan.evidences.map((evidence) => (
+            <div key={evidence.id} className="px-5 py-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium text-gray-900">{evidence.label}</span>
+                    <EvidenceStatusBadge status={evidence.status} />
+                    {!evidence.required && (
+                      <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                        선택
+                      </span>
+                    )}
+                  </div>
+                  {evidence.hint && (
+                    <p className="text-xs text-gray-400 mb-1">예: {evidence.hint}</p>
+                  )}
+                  {evidence.fileName && (
+                    <p className="text-xs text-gray-500">
+                      업로드된 파일: {evidence.fileName}
+                    </p>
+                  )}
+                  {evidence.status === 'RESUBMIT_REQUIRED' && evidence.resubmitNote && (
+                    <div className="mt-2 text-xs bg-red-50 border border-red-100 rounded p-2 text-red-700">
+                      <span className="font-medium">관리자 메모:</span> {evidence.resubmitNote}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 검토 요청 버튼 */}
+      {canUpload && (
+        <SubmitForReviewButton 
+          planId={plan.id} 
+          plannedAmount={plan.amount}
+          evidences={plan.evidences.map(e => ({ id: e.id, label: e.label, required: e.required }))} 
+        />
+      )}
+    </div>
+  )
+}
