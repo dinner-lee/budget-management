@@ -133,10 +133,10 @@ export default function NewPlanPage() {
               {budgetStatus.categoryLimits?.[form.purpose] !== undefined && (
                 (budgetStatus.categoryUsage?.[form.purpose] || 0) + Number(form.amount) > budgetStatus.categoryLimits[form.purpose]
               ) && (
-                <p className="text-sm text-red-600">
-                  ⚠️ 설정하신 이 항목의 예산 금액({budgetStatus.categoryLimits[form.purpose].toLocaleString()}원)을 초과합니다. 항목별 예산 금액을 조정해 주세요.
-                </p>
-              )}
+                  <p className="text-sm text-red-600">
+                    ⚠️ 설정하신 이 항목의 예산 금액({budgetStatus.categoryLimits[form.purpose].toLocaleString()}원)을 초과합니다. 항목별 예산 금액을 조정해 주세요.
+                  </p>
+                )}
               {budgetStatus.totalUsed + Number(form.amount) > budgetStatus.totalBudget && (
                 <p className="text-sm text-orange-600">
                   ⚠️ 총 예산({budgetStatus.totalBudget.toLocaleString()}원)을 초과하게 됩니다.
@@ -202,7 +202,8 @@ export default function NewPlanPage() {
             id="expenditureOverview"
             className="input"
             rows={4}
-            placeholder="예: ○○ 연구 관련 전문가 자문 회의 참석자 3인, 식사비 포함"
+            placeholder="예: EEG 기반 ERP 연구의 설계 타당성을 제고하기 위해 기존 연구 계획을 수정·보완하
+고, 전문가 강의 및 자문 준비를 위한 사전 점검 및 실무 논의를 목적으로 함."
             value={form.expenditureOverview}
             onChange={(e) => set('expenditureOverview', e.target.value)}
             required
