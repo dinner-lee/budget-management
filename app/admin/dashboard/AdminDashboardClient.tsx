@@ -80,26 +80,42 @@ export default function AdminDashboardClient({
 }
 
 function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved }: any) {
+  const [filter, setFilter] = useState<string | null>(null)
+
   const stats = [
-    { label: '검토 대기', value: pending.length, color: 'text-blue-600' },
-    { label: '재제출 대기', value: resubmit.length, color: 'text-red-600' },
-    { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600' },
-    { label: '승인 완료', value: approved.length, color: 'text-green-600' },
+    { label: '검토 대기', value: pending.length, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', status: 'UNDER_REVIEW' },
+    { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
+    { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', status: 'PENDING_EVIDENCE' },
+    { label: '승인 완료', value: approved.length, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
   ]
+
+  const filteredPlans = filter 
+    ? allPlans.filter((plan: any) => plan.status === filter)
+    : allPlans
+
+  const currentFilterLabel = stats.find(s => s.status === filter)?.label
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="card px-4 py-4 text-center">
+          <div 
+            key={s.label} 
+            onClick={() => setFilter(filter === s.status ? null : s.status)}
+            className={`card px-4 py-4 text-center cursor-pointer transition-all hover:shadow-md ${
+              filter === s.status ? `${s.bg} ${s.border} ring-1 ring-offset-0 ${s.color.replace('text', 'ring')}` : 'hover:border-gray-300'
+            }`}
+          >
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+            <p className="text-xs text-gray-500 mt-0.5 font-medium">{s.label}</p>
           </div>
         ))}
       </div>
-      {(pending.length > 0 || resubmit.length > 0) && (
-        <div className="card">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-700">검토 필요</h2>
+
+      {!filter && (pending.length > 0 || resubmit.length > 0) && (
+        <div className="card border-l-4 border-l-red-400">
+          <div className="px-5 py-4 border-b border-gray-100 bg-red-50/30">
+            <h2 className="text-sm font-bold text-red-800">검토 필요 항목</h2>
           </div>
           <div className="divide-y divide-gray-100">
             {[...pending, ...resubmit].map((plan) => (
@@ -108,16 +124,29 @@ function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved
           </div>
         </div>
       )}
+
       <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">전체 계획서 ({allPlans.length}건)</h2>
-          <span className="text-xs text-gray-400">사용자 {userCount}명</span>
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-gray-700">
+              {filter ? `${currentFilterLabel} 목록` : '전체 계획서'} ({filteredPlans.length}건)
+            </h2>
+            {filter && (
+              <button 
+                onClick={() => setFilter(null)}
+                className="text-[10px] px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 transition-colors"
+              >
+                필터 해제
+              </button>
+            )}
+          </div>
+          {!filter && <span className="text-xs text-gray-400">사용자 {userCount}명</span>}
         </div>
         <div className="divide-y divide-gray-100">
-          {allPlans.length === 0 ? (
-            <p className="px-5 py-12 text-center text-gray-400 text-sm">계획서가 없습니다.</p>
+          {filteredPlans.length === 0 ? (
+            <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
           ) : (
-            allPlans.map((plan: any) => <PlanRow key={plan.id} plan={plan} />)
+            filteredPlans.map((plan: any) => <PlanRow key={plan.id} plan={plan} />)
           )}
         </div>
       </div>
