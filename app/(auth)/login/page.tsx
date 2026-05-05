@@ -56,9 +56,14 @@ export default function LoginPage() {
           학부생·대학원생 학습과학연구지원사업<br />
           <span className="text-blue-700">예산 관리 시스템</span>
         </h1>
-        <p className="mt-4 text-sm text-gray-500 break-keep">
-          구글 계정(snu.ac.kr)으로 로그인하여 계속하세요.
-        </p>
+        <div className="mt-6 bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-start gap-3 text-left w-full">
+          <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-blue-800 break-keep">
+            <strong>구글 계정(snu.ac.kr)</strong>으로 로그인하여 계속하세요.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -81,12 +86,12 @@ export default function LoginPage() {
             <div className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <button 
+            <button
               type="button"
               onClick={() => setShowEmailLogin(!showEmailLogin)}
               className="bg-white px-3 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              {showEmailLogin ? '이메일 로그인 접기' : '기존 관리자이신가요? 이메일로 로그인'}
+              {showEmailLogin ? '이메일 로그인 접기' : '관리자로부터 발급받은 아이디가 있으신가요? 이메일로 로그인'}
             </button>
           </div>
         </div>
