@@ -186,8 +186,8 @@ function CombinedDashboardView({
         {/* Left Column: Team Filter and Metadata */}
         <div className="lg:col-span-1 space-y-4">
           <div className="card">
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">팀 필터</h2>
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h2 className="text-sm font-semibold text-gray-700">팀 필터</h2>
               {selectedTeamId && (
                 <button
                   onClick={() => setSelectedTeamId(null)}
@@ -287,8 +287,8 @@ function CombinedDashboardView({
         <div className="lg:col-span-2 space-y-6">
           {selectedTeam && (
             <div className="card overflow-hidden">
-              <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider">팀 예산 현황 ({selectedTeam.teamNumber})</h3>
+              <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                <h2 className="text-sm font-semibold text-gray-700">팀 예산 현황 ({selectedTeam.teamNumber})</h2>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-primary-500">
                     {teamTotalUsed.toLocaleString()} / 2,000,000원
@@ -369,7 +369,7 @@ function CombinedDashboardView({
   )
 }
 
-function BudgetView({ teams, allPlans }: { teams: Team[]; allPlans: Plan[] }) {
+function BudgetView({ teams, allPlans }: any) {
   const TEAM_BUDGET = 2000000 // 팀당 총 예산 200만 원
   const purposes = Object.keys(PURPOSE_LABELS) as Array<keyof typeof PURPOSE_LABELS>
 
@@ -506,7 +506,7 @@ function BudgetView({ teams, allPlans }: { teams: Team[]; allPlans: Plan[] }) {
   )
 }
 
-function CalendarView({ allPlans, teams, milestones }: { allPlans: Plan[]; teams: Team[]; milestones: Milestone[] }) {
+function CalendarView({ allPlans, teams, milestones }: any) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
@@ -560,11 +560,11 @@ function CalendarView({ allPlans, teams, milestones }: { allPlans: Plan[]; teams
           <div key={`empty-${i}`} className="bg-white min-h-[100px] p-2 opacity-50"></div>
         ))}
         {days.map(day => {
-          const dayPlans = allPlans.filter((p: Plan) => {
+          const dayPlans = allPlans.filter((p: any) => {
             const pd = new Date(p.plannedDate)
             return pd.getFullYear() === day.getFullYear() && pd.getMonth() === day.getMonth() && pd.getDate() === day.getDate()
           })
-          const dayMilestones = milestones.filter((m: Milestone) => {
+          const dayMilestones = milestones.filter((m: any) => {
             const md = new Date(m.date)
             return md.getFullYear() === day.getFullYear() && md.getMonth() === day.getMonth() && md.getDate() === day.getDate()
           })
@@ -580,8 +580,8 @@ function CalendarView({ allPlans, teams, milestones }: { allPlans: Plan[]; teams
                     🚩 {m.name}
                   </div>
                 ))}
-                {dayPlans.map((plan: Plan) => {
-                  const teamNumber = teams.find((t: Team) => t.id === (plan.teamId || plan.user?.teamId))?.teamNumber || plan.user.name
+                {dayPlans.map((plan: any) => {
+                  const teamNumber = teams.find((t: any) => t.id === (plan.teamId || plan.user?.teamId))?.teamNumber || plan.user.name
                   return (
                     <Link key={plan.id} href={`/admin/plans/${plan.id}`} className={`block text-[10px] px-1.5 py-0.5 rounded truncate font-medium ${getStatusStyle(plan.status)}`}>
                       {statusIcon(plan.status)} {teamNumber}: {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}
@@ -624,8 +624,8 @@ function CalendarView({ allPlans, teams, milestones }: { allPlans: Plan[]; teams
   )
 }
 
-function PlanRow({ plan, teams }: { plan: Plan; teams: Team[] }) {
-  const submitted = plan.evidences.filter((e: Evidence) => e.status === 'SUBMITTED').length
+function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
+  const submitted = plan.evidences.filter((e: any) => e.status === 'SUBMITTED').length
   const total = plan.evidences.length
   const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
 
