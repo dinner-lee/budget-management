@@ -69,7 +69,7 @@ export default function TeamPage() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">나의 팀 정보</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          팀 정보를 열람하고 수정할 수 있습니다 (수정 시 관리자에게 알림이 전송됩니다).
+          팀 정보를 열람하고 수정할 수 있습니다(수정 시 관리자에게 알림이 전송됩니다).
         </p>
       </div>
 
