@@ -91,6 +91,23 @@ export default function SubmitForReviewButton({
           2. 자신의 예산 계획에 해당하는 증빙 파일들을 모두 팝업창(NAS)에 업로드합니다.<br />
           3. 업로드한 파일은 아래 체크리스트에 체크하여 모두 올렸는지 확인해주세요.
         </p>
+        <div className="mt-3 mb-4 bg-white/60 rounded p-3 text-sm border border-blue-100">
+          <p className="font-semibold text-blue-900 mb-1 flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+            증빙 양식 다운로드
+          </p>
+          <ul className="list-disc list-inside text-blue-700 space-y-1 ml-1">
+            <li>
+              <a href="https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing" target="_blank" rel="noreferrer" className="hover:underline">회의록 양식</a>
+            </li>
+            <li>
+              <a href="https://drive.google.com/file/d/1S4oui9OxZv0i9vQcZOctzy8mTuzvyrMh/view?usp=sharing" target="_blank" rel="noreferrer" className="hover:underline">지급청구서 양식</a>
+            </li>
+          </ul>
+        </div>
+
         <button
           onClick={openNasPopup}
           className="inline-block bg-blue-600 text-white text-xs px-4 py-2 rounded shadow hover:bg-blue-700 transition"
