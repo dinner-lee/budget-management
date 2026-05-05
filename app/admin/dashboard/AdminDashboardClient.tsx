@@ -26,40 +26,40 @@ export default function AdminDashboardClient({
   return (
     <div className="space-y-6">
       <div className="flex border-b border-gray-200">
-        <button 
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'LIST' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} 
+        <button
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'LIST' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('LIST')}
           title="리스트 View"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          <span className="hidden sm:inline">리스트</span>
+          <span className="hidden sm:inline">목록 보기</span>
         </button>
-        <button 
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'TEAM' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} 
+        <button
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'TEAM' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('TEAM')}
           title="팀별 View"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-          <span className="hidden sm:inline">팀별</span>
+          <span className="hidden sm:inline">팀별 보기</span>
         </button>
-        <button 
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`} 
+        <button
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('CALENDAR')}
           title="캘린더 View"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          <span className="hidden sm:inline">캘린더</span>
+          <span className="hidden sm:inline">캘린더 보기</span>
         </button>
       </div>
 
       {view === 'LIST' && (
         <ListView pending={pending} resubmit={resubmit} allPlans={allPlans} userCount={userCount} inProgress={inProgress} approved={approved} />
       )}
-      
+
       {view === 'TEAM' && (
         <TeamView teams={teams} allPlans={allPlans} />
       )}
-      
+
       {view === 'CALENDAR' && (
         <CalendarView allPlans={allPlans} teams={teams} milestones={milestones} />
       )}
@@ -105,7 +105,7 @@ function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved
           {allPlans.length === 0 ? (
             <p className="px-5 py-12 text-center text-gray-400 text-sm">계획서가 없습니다.</p>
           ) : (
-            allPlans.map((plan:any) => <PlanRow key={plan.id} plan={plan} />)
+            allPlans.map((plan: any) => <PlanRow key={plan.id} plan={plan} />)
           )}
         </div>
       </div>
@@ -115,18 +115,18 @@ function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved
 
 function TeamView({ teams, allPlans }: any) {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="md:col-span-1 space-y-4">
-        {teams.map((team:any) => {
-          const teamPlans = allPlans.filter((p:any) => p.user.teamId === team.id)
-          const totalUsed = teamPlans.reduce((acc:number, p:any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
-          const pendingCount = teamPlans.filter((p:any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED').length
-          
+        {teams.map((team: any) => {
+          const teamPlans = allPlans.filter((p: any) => p.user.teamId === team.id)
+          const totalUsed = teamPlans.reduce((acc: number, p: any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
+          const pendingCount = teamPlans.filter((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED').length
+
           return (
-            <div 
-              key={team.id} 
+            <div
+              key={team.id}
               onClick={() => setSelectedTeamId(team.id)}
               className={`card p-4 cursor-pointer hover:border-blue-300 transition-colors ${selectedTeamId === team.id ? 'border-blue-500 ring-1 ring-blue-500' : ''}`}
             >
@@ -148,13 +148,13 @@ function TeamView({ teams, allPlans }: any) {
         {selectedTeamId ? (
           <div className="card p-5">
             <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {teams.find((t:any) => t.id === selectedTeamId)?.teamNumber} 상세 계획서
+              {teams.find((t: any) => t.id === selectedTeamId)?.teamNumber} 상세 계획서
             </h2>
             <div className="divide-y divide-gray-100 border-t border-gray-100">
-              {allPlans.filter((p:any) => p.user.teamId === selectedTeamId).map((plan:any) => (
+              {allPlans.filter((p: any) => p.user.teamId === selectedTeamId).map((plan: any) => (
                 <PlanRow key={plan.id} plan={plan} />
               ))}
-              {allPlans.filter((p:any) => p.user.teamId === selectedTeamId).length === 0 && (
+              {allPlans.filter((p: any) => p.user.teamId === selectedTeamId).length === 0 && (
                 <p className="py-8 text-center text-gray-500 text-sm">제출된 계획서가 없습니다.</p>
               )}
             </div>
@@ -178,8 +178,29 @@ function CalendarView({ allPlans, teams, milestones }: any) {
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
 
-  const isCardNeeded = (purpose: string) => {
-    return ['MEETING_FEE', 'PURCHASE_FEE', 'SOFTWARE_FEE'].includes(purpose)
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'APPROVED':
+        return 'bg-green-100 text-green-800 border border-green-200'
+      case 'UNDER_REVIEW':
+        return 'bg-blue-100 text-blue-800 border border-blue-200'
+      case 'PENDING_EVIDENCE':
+        return 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+      case 'RESUBMIT_REQUIRED':
+        return 'bg-red-100 text-red-800 border border-red-200'
+      default:
+        return 'bg-gray-100 text-gray-700 border border-gray-200'
+    }
+  }
+
+  const statusIcon = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return '✅'
+      case 'UNDER_REVIEW': return '🔍'
+      case 'PENDING_EVIDENCE': return '📎'
+      case 'RESUBMIT_REQUIRED': return '🔄'
+      default: return ''
+    }
   }
 
   return (
@@ -202,11 +223,11 @@ function CalendarView({ allPlans, teams, milestones }: any) {
           <div key={`empty-${i}`} className="bg-white min-h-[100px] p-2 opacity-50"></div>
         ))}
         {days.map(day => {
-          const dayPlans = allPlans.filter((p:any) => {
+          const dayPlans = allPlans.filter((p: any) => {
             const pd = new Date(p.plannedDate)
             return pd.getFullYear() === day.getFullYear() && pd.getMonth() === day.getMonth() && pd.getDate() === day.getDate()
           })
-          const dayMilestones = milestones.filter((m:any) => {
+          const dayMilestones = milestones.filter((m: any) => {
             const md = new Date(m.date)
             return md.getFullYear() === day.getFullYear() && md.getMonth() === day.getMonth() && md.getDate() === day.getDate()
           })
@@ -217,17 +238,16 @@ function CalendarView({ allPlans, teams, milestones }: any) {
                 {format(day, 'd')}
               </div>
               <div className="space-y-1">
-                {dayMilestones.map((m:any) => (
+                {dayMilestones.map((m: any) => (
                   <div key={m.id} className="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded border border-indigo-200 truncate">
                     🚩 {m.name}
                   </div>
                 ))}
-                {dayPlans.map((plan:any) => {
-                  const teamNumber = teams.find((t:any) => t.id === plan.user.teamId)?.teamNumber || plan.user.name
-                  const cardNeeded = isCardNeeded(plan.purpose)
+                {dayPlans.map((plan: any) => {
+                  const teamNumber = teams.find((t: any) => t.id === plan.user.teamId)?.teamNumber || plan.user.name
                   return (
-                    <Link key={plan.id} href={`/admin/plans/${plan.id}`} className={`block text-[10px] px-1.5 py-0.5 rounded truncate ${cardNeeded ? 'bg-orange-100 text-orange-800 border border-orange-200 font-medium' : 'bg-gray-100 text-gray-700'}`}>
-                      {cardNeeded && '💳'} {teamNumber}: {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}
+                    <Link key={plan.id} href={`/admin/plans/${plan.id}`} className={`block text-[10px] px-1.5 py-0.5 rounded truncate font-medium ${getStatusStyle(plan.status)}`}>
+                      {statusIcon(plan.status)} {teamNumber}: {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}
                     </Link>
                   )
                 })}
@@ -236,12 +256,39 @@ function CalendarView({ allPlans, teams, milestones }: any) {
           )
         })}
       </div>
+
+      {/* 범례 */}
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+          <span className="font-semibold text-gray-700">범례:</span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded bg-yellow-100 border border-yellow-200"></span>
+            증빙 미제출
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-blue-200"></span>
+            검토 대기
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded bg-red-100 border border-red-200"></span>
+            재제출 필요
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded bg-green-100 border border-green-200"></span>
+            승인 완료
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded bg-indigo-100 border border-indigo-200"></span>
+            마일스톤
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
 
 function PlanRow({ plan }: { plan: any }) {
-  const submitted = plan.evidences.filter((e:any) => e.status === 'SUBMITTED').length
+  const submitted = plan.evidences.filter((e: any) => e.status === 'SUBMITTED').length
   const total = plan.evidences.length
 
   return (

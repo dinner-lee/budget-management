@@ -34,7 +34,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">관리 대시보드</h1>
+        <h1 className="text-xl font-bold text-gray-900">대시보드</h1>
         <div className="flex gap-2">
           <Link href="/admin/teams" className="btn-secondary text-sm">
             팀 관리
@@ -44,12 +44,12 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
       </div>
-      
-      <AdminDashboardClient 
-        allPlans={allPlans} 
-        userCount={userCount} 
-        teams={teams} 
-        milestones={milestones} 
+
+      <AdminDashboardClient
+        allPlans={allPlans}
+        userCount={userCount}
+        teams={teams}
+        milestones={milestones}
       />
     </div>
   )

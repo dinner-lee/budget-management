@@ -112,7 +112,7 @@ export default function SubmitForReviewButton({
           onClick={openNasPopup}
           className="inline-block bg-blue-600 text-white text-xs px-4 py-2 rounded shadow hover:bg-blue-700 transition"
         >
-          NAS에 파일 업로드하기 (로딩이 오래 걸릴 수 있습니다)
+          NAS에 파일 업로드하기 (로딩이 오래 걸릴 수 있습니다. 대기하여 주세요.)
         </button>
       </div>
 
@@ -148,7 +148,7 @@ export default function SubmitForReviewButton({
             실제 지출 금액이 계획서의 금액({plannedAmount.toLocaleString()}원)과 다릅니다.
           </span>
         </label>
-        
+
         {isDifferentAmount && (
           <div className="pl-6">
             <label className="block text-xs text-gray-500 mb-1">실제 지출 금액 (원)</label>
