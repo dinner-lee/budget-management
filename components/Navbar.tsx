@@ -19,7 +19,7 @@ export default function Navbar() {
     { href: '/admin/dashboard', label: '대시보드' },
     { href: '/admin/teams', label: '팀 관리' },
     { href: '/admin/users', label: '사용자 관리' },
-    { href: '/admin/settings', label: '일정 설정' }
+    { href: '/admin/settings', label: '일정' }
   ]
   const links = isAdmin ? adminLinks : userLinks
 
@@ -28,11 +28,11 @@ export default function Navbar() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
         <div className="flex items-center gap-6">
           <Link href={links[0].href} className="flex items-center gap-2 mr-4">
-            <Image 
-              src="/lsri_logo.png" 
-              alt="학습과학연구소" 
-              width={160} 
-              height={40} 
+            <Image
+              src="/lsri_logo.png"
+              alt="학습과학연구소"
+              width={160}
+              height={40}
               className="object-contain"
               priority
             />
@@ -43,11 +43,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith(link.href)
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${pathname.startsWith(link.href)
                     ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>

@@ -140,16 +140,28 @@ function TeamView({ teams, allPlans }: any) {
             <div
               key={team.id}
               onClick={() => setSelectedTeamId(team.id)}
-              className={`card p-4 cursor-pointer hover:border-blue-300 transition-colors ${selectedTeamId === team.id ? 'border-blue-500 ring-1 ring-blue-500' : ''}`}
+              className={`flex flex-col p-3 rounded-lg cursor-pointer transition-all border ${
+                selectedTeamId === team.id
+                  ? 'bg-blue-50 border-blue-200 shadow-sm'
+                  : 'bg-white border-gray-100 hover:border-blue-200 hover:bg-gray-50'
+              }`}
             >
-              <div className="flex justify-between items-start">
-                <h3 className="font-bold text-gray-900">{team.teamNumber}</h3>
-                {pendingCount > 0 && <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">{pendingCount}건 검토 필요</span>}
+              <div className="flex justify-between items-start mb-1">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${selectedTeamId === team.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                    {team.teamNumber}
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 truncate">
+                    {team.leaderName} <span className="text-gray-400 font-normal">({team.user?.name || '미배정'})</span>
+                  </span>
+                </div>
+                {pendingCount > 0 && (
+                  <span className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full animate-pulse mt-1" title={`${pendingCount}건 검토 필요`}></span>
+                )}
               </div>
-              <p className="text-sm text-gray-600 mt-1 truncate">{team.researchTopic}</p>
-              <div className="mt-3 text-sm flex justify-between">
-                <span className="text-gray-500">누적 사용액</span>
-                <span className="font-semibold text-gray-900">{totalUsed.toLocaleString()}원</span>
+              <div className="flex justify-between items-end gap-2">
+                <p className="text-[11px] text-gray-500 truncate flex-1">{team.researchTopic}</p>
+                <span className="text-[11px] font-semibold text-blue-600 whitespace-nowrap">{totalUsed.toLocaleString()}원</span>
               </div>
             </div>
           )
