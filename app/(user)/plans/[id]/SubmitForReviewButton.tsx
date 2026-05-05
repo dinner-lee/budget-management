@@ -107,7 +107,7 @@ export default function SubmitForReviewButton({
         <p className="text-sm text-blue-800 mb-3 leading-relaxed">
           1. 아래 버튼을 눌러 NAS 파일 업로드 팝업창을 여세요.<br />
           2. 자신의 예산 계획에 해당하는 증빙 파일들을 모두 팝업창(NAS)에 업로드합니다.<br />
-          3. 업로드한 파일은 아래 체크리스트에 체크하여 모두 올렸는지 확인해주세요.
+          3. 업로드한 파일은 아래 체크리스트에 체크하여 모두 올렸는지 확인해 주세요.
         </p>
 
         <div className="mt-3 mb-4 bg-white/60 rounded p-3 text-sm border border-blue-100">
@@ -150,11 +150,10 @@ export default function SubmitForReviewButton({
                 : null
 
             return (
-              <div key={evidence.id} className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
-                checkedItems.has(evidence.id) ? 'bg-green-50 border-green-200' 
+              <div key={evidence.id} className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${checkedItems.has(evidence.id) ? 'bg-green-50 border-green-200'
                 : evidence.status === 'RESUBMIT_REQUIRED' ? 'bg-red-50 border-red-200'
-                : 'bg-white border-gray-200'
-              }`}>
+                  : 'bg-white border-gray-200'
+                }`}>
                 <input
                   type="checkbox"
                   checked={checkedItems.has(evidence.id)}
@@ -211,11 +210,10 @@ export default function SubmitForReviewButton({
             type="number"
             value={actualAmountRaw}
             onChange={(e) => handleAmountChange(e.target.value)}
-            className={`w-full border rounded-lg shadow-sm px-4 py-3 text-lg focus:border-blue-500 focus:ring-blue-500 transition-colors ${
-              amountTouched && parseInt(actualAmountRaw, 10) !== plannedAmount
-                ? 'border-blue-400 text-gray-900 font-bold bg-white'
-                : 'border-gray-300 text-gray-500 bg-white'
-            }`}
+            className={`w-full border rounded-lg shadow-sm px-4 py-3 text-lg focus:border-blue-500 focus:ring-blue-500 transition-colors ${amountTouched && parseInt(actualAmountRaw, 10) !== plannedAmount
+              ? 'border-blue-400 text-gray-900 font-bold bg-white'
+              : 'border-gray-300 text-gray-500 bg-white'
+              }`}
             min="0"
           />
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">원</span>
@@ -248,9 +246,9 @@ export default function SubmitForReviewButton({
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">실제 지출 금액 확인</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">실제로 지출한 금액을 확인해 주세요.</h3>
             <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-              계획서의 금액 <strong>{plannedAmount.toLocaleString()}원</strong>을 실제로 지출한 것이 맞으신가요?
+              계획서상의 금액 <strong>{plannedAmount.toLocaleString()}원</strong>을 지출하셨습니까?
             </p>
             <div className="flex gap-3">
               <button

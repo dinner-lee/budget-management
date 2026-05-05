@@ -16,7 +16,7 @@ export default function AdminDashboardClient({
   teams: any[]
   milestones: any[]
 }) {
-  const [view, setView] = useState<'TEAM' | 'LIST' | 'CALENDAR'>('LIST')
+  const [view, setView] = useState<'TEAM' | 'LIST' | 'CALENDAR' | 'BUDGET'>('LIST')
 
   const pending = allPlans.filter((p) => p.status === 'UNDER_REVIEW')
   const resubmit = allPlans.filter((p) => p.status === 'RESUBMIT_REQUIRED')
@@ -29,7 +29,7 @@ export default function AdminDashboardClient({
         <button
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'LIST' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('LIST')}
-          title="리스트 View"
+          title="목록 보기"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           <span className="hidden sm:inline">목록 보기</span>
@@ -37,15 +37,23 @@ export default function AdminDashboardClient({
         <button
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'TEAM' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('TEAM')}
-          title="팀별 View"
+          title="팀별 보기"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
           <span className="hidden sm:inline">팀별 보기</span>
         </button>
         <button
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'BUDGET' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          onClick={() => setView('BUDGET')}
+          title="예산 현황"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+          <span className="hidden sm:inline">예산 현황</span>
+        </button>
+        <button
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('CALENDAR')}
-          title="캘린더 View"
+          title="캘린더 보기"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           <span className="hidden sm:inline">캘린더 보기</span>
@@ -58,6 +66,10 @@ export default function AdminDashboardClient({
 
       {view === 'TEAM' && (
         <TeamView teams={teams} allPlans={allPlans} />
+      )}
+
+      {view === 'BUDGET' && (
+        <BudgetView teams={teams} allPlans={allPlans} />
       )}
 
       {view === 'CALENDAR' && (
@@ -164,6 +176,138 @@ function TeamView({ teams, allPlans }: any) {
             왼쪽에서 팀을 선택하면 상세 정보가 표시됩니다.
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function BudgetView({ teams, allPlans }: any) {
+  const purposes = Object.keys(PURPOSE_LABELS) as Array<keyof typeof PURPOSE_LABELS>
+
+  // Build per-team data
+  const teamData = teams.map((team: any) => {
+    const teamPlans = allPlans.filter((p: any) => p.user.teamId === team.id)
+
+    const byPurpose: Record<string, { planned: number; actual: number }> = {}
+    purposes.forEach(p => { byPurpose[p] = { planned: 0, actual: 0 } })
+
+    teamPlans.forEach((plan: any) => {
+      const p = plan.purpose as string
+      if (byPurpose[p]) {
+        byPurpose[p].planned += plan.amount
+        if (plan.status === 'APPROVED') {
+          byPurpose[p].actual += (plan.actualAmount ?? plan.amount)
+        }
+      }
+    })
+
+    const totalPlanned = Object.values(byPurpose).reduce((s: number, v: any) => s + v.planned, 0)
+    const totalActual = Object.values(byPurpose).reduce((s: number, v: any) => s + v.actual, 0)
+
+    return { team, byPurpose, totalPlanned, totalActual }
+  })
+
+  // Grand totals
+  const grandPlanned = teamData.reduce((s: number, t: any) => s + t.totalPlanned, 0)
+  const grandActual = teamData.reduce((s: number, t: any) => s + t.totalActual, 0)
+
+  const pctColor = (rate: number) => {
+    if (rate >= 90) return 'text-green-700 bg-green-50'
+    if (rate >= 50) return 'text-blue-700 bg-blue-50'
+    if (rate > 0) return 'text-yellow-700 bg-yellow-50'
+    return 'text-gray-400'
+  }
+
+  const pct = (actual: number, planned: number) => {
+    if (planned === 0) return '-'
+    return `${Math.round((actual / planned) * 100)}%`
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100">
+        <h2 className="text-sm font-semibold text-gray-900">팀별 예산 현황</h2>
+        <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률</p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200">
+              <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10 min-w-[80px]">팀</th>
+              {purposes.map(p => (
+                <th key={p} className="text-right px-3 py-3 font-semibold text-gray-700 whitespace-nowrap min-w-[100px]">
+                  {PURPOSE_LABELS[p]}
+                </th>
+              ))}
+              <th className="text-right px-4 py-3 font-bold text-gray-900 whitespace-nowrap min-w-[110px] border-l border-gray-200">합계</th>
+              <th className="text-center px-4 py-3 font-bold text-gray-900 whitespace-nowrap min-w-[70px]">집행률</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {teamData.map((td: any) => {
+              const rate = td.totalPlanned > 0 ? Math.round((td.totalActual / td.totalPlanned) * 100) : 0
+              return (
+                <tr key={td.team.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-gray-900 sticky left-0 bg-white z-10">
+                    {td.team.teamNumber}
+                  </td>
+                  {purposes.map(p => (
+                    <td key={p} className="text-right px-3 py-3">
+                      <div className="text-gray-700">{td.byPurpose[p].planned > 0 ? td.byPurpose[p].planned.toLocaleString() : '-'}</div>
+                      {td.byPurpose[p].actual > 0 && (
+                        <div className="text-green-600 font-medium">{td.byPurpose[p].actual.toLocaleString()}</div>
+                      )}
+                    </td>
+                  ))}
+                  <td className="text-right px-4 py-3 border-l border-gray-100">
+                    <div className="font-semibold text-gray-900">{td.totalPlanned.toLocaleString()}</div>
+                    {td.totalActual > 0 && (
+                      <div className="font-semibold text-green-600">{td.totalActual.toLocaleString()}</div>
+                    )}
+                  </td>
+                  <td className="text-center px-4 py-3">
+                    <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(rate)}`}>
+                      {pct(td.totalActual, td.totalPlanned)}
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="bg-gray-50 border-t-2 border-gray-300 font-semibold">
+              <td className="px-4 py-3 text-gray-900 sticky left-0 bg-gray-50 z-10">전체 합계</td>
+              {purposes.map(p => {
+                const pPlanned = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].planned, 0)
+                const pActual = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].actual, 0)
+                return (
+                  <td key={p} className="text-right px-3 py-3">
+                    <div className="text-gray-900">{pPlanned > 0 ? pPlanned.toLocaleString() : '-'}</div>
+                    {pActual > 0 && (
+                      <div className="text-green-600">{pActual.toLocaleString()}</div>
+                    )}
+                  </td>
+                )
+              })}
+              <td className="text-right px-4 py-3 border-l border-gray-200">
+                <div className="text-gray-900">{grandPlanned.toLocaleString()}</div>
+                {grandActual > 0 && (
+                  <div className="text-green-600">{grandActual.toLocaleString()}</div>
+                )}
+              </td>
+              <td className="text-center px-4 py-3">
+                <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(grandPlanned > 0 ? Math.round((grandActual / grandPlanned) * 100) : 0)}`}>
+                  {pct(grandActual, grandPlanned)}
+                </span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-500">
+        <span>상단: 계획 금액</span>
+        <span className="text-green-600 font-medium">하단: 실제 사용 금액</span>
+        <span>단위: 원</span>
       </div>
     </div>
   )
