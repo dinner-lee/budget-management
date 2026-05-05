@@ -24,6 +24,7 @@ export default async function AdminDashboardPage() {
     prisma.team.findMany({
       include: {
         users: { select: { id: true, name: true, email: true } },
+        budgetLimits: true,
       }
     }),
     prisma.milestone.findMany({

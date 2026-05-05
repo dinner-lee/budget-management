@@ -231,12 +231,15 @@ function BudgetView({ teams, allPlans }: any) {
     const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
 
     const byPurpose: Record<string, { planned: number; actual: number }> = {}
-    purposes.forEach(p => { byPurpose[p] = { planned: 0, actual: 0 } })
+    purposes.forEach(p => { 
+      const limit = team.budgetLimits?.find((l: any) => l.purpose === p)
+      byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0 } 
+    })
 
     teamPlans.forEach((plan: any) => {
       const p = plan.purpose as string
       if (byPurpose[p]) {
-        byPurpose[p].planned += plan.amount
+        // 계획 금액(planned)은 이제 팀 설정 한도값을 사용하므로 여기서는 더하지 않음
         if (plan.status === 'APPROVED') {
           byPurpose[p].actual += (plan.actualAmount ?? plan.amount)
         }

@@ -39,7 +39,7 @@ export default function Navbar() {
                 className="object-contain"
                 priority
               />
-              <span className="font-light text-gray-900 text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
+              <span className="font-light text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
             </Link>
             <div className="hidden lg:flex items-center gap-1">
               {links.map((link) => (
