@@ -3,7 +3,7 @@
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell
+  PieChart, Pie, Cell, LabelList
 } from 'recharts'
 import { differenceInDays, isAfter, isToday } from 'date-fns'
 
@@ -128,9 +128,23 @@ export default function DashboardClient({
                     cursor={{ fill: '#f3f4f6' }}
                     contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
-                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 500, fontSize: '12px', paddingTop: '10px' }} />
-                  <Bar dataKey="사용금액" stackId="a" fill="#8884d8" name="사용 금액" />
-                  <Bar dataKey="잔액" stackId="a" fill="#22c55e" name="항목별 한도" />
+                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 800, fontSize: '12px', paddingTop: '10px', color: '#1f2937' }} />
+                  <Bar dataKey="사용금액" stackId="a" fill="#3b82f6" name="사용 금액">
+                    <LabelList 
+                      dataKey="사용금액" 
+                      position="center" 
+                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}` : ''} 
+                      style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }} 
+                    />
+                  </Bar>
+                  <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도">
+                    <LabelList 
+                      dataKey="한도" 
+                      position="top" 
+                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}원` : ''} 
+                      style={{ fill: '#111827', fontSize: 11, fontWeight: 900, pointerEvents: 'none' }} 
+                    />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
