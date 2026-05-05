@@ -73,11 +73,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">대시보드</h1>
-          <p className="text-sm text-gray-500 mt-0.5">안녕하세요, {session.user.name} 선생님.</p>
-        </div>
+      <div className="flex items-center justify-end">
         {activePlanCount >= 3 ? (
           <div className="text-right">
             <p className="text-sm text-orange-600 font-medium">증빙 미완료 건수가 3건입니다.</p>
@@ -92,76 +88,23 @@ export default async function DashboardPage() {
 
       {/* Active plan alert */}
       {resubmitPlans.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-red-800">재제출이 필요한 항목이 {resubmitPlans.length}건 있습니다.</p>
-          <p className="text-sm text-red-600 mt-0.5">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm">
+          <p className="text-sm font-bold text-red-800 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            재제출이 필요한 항목이 {resubmitPlans.length}건 있습니다.
+          </p>
+          <p className="text-sm text-red-600 mt-1 ml-6">
             아래 목록에서 계획서를 확인하고 증빙을 다시 제출해주세요.
           </p>
         </div>
       )}
 
-      {/* Dashboard Client Component (Charts and Milestones) */}
-      <DashboardClient budgetStatus={budgetStatus} milestones={milestones} />
-
-      {/* Plans list */}
-      <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-700">예산 사용 계획서 내역</h2>
-        </div>
-
-        {plans.length === 0 ? (
-          <div className="px-5 py-12 text-center text-gray-400 text-sm">
-            작성한 계획서가 없습니다.
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {plans.map((plan) => {
-              const submitted = plan.evidences.filter((e) => e.status !== 'PENDING').length
-              const total = plan.evidences.length
-              return (
-                <div key={plan.id} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Link
-                        href={`/plans/${plan.id}`}
-                        className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate"
-                      >
-                        {plan.title}
-                      </Link>
-                      <PlanStatusBadge status={plan.status} />
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
-                      {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
-                      {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
-                    </p>
-                    {plan.status !== 'APPROVED' && total > 0 && (
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        증빙 {submitted}/{total}개 제출
-                      </p>
-                    )}
-                  </div>
-                  {['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status) ? (
-                    <Link
-                      href={`/plans/${plan.id}`}
-                      className="ml-4 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md px-3 py-1.5 shrink-0 transition"
-                    >
-                      증빙 서류 제출
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/plans/${plan.id}`}
-                      className="ml-4 text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 rounded-md px-3 py-1.5 shrink-0 transition"
-                    >
-                      상세보기
-                    </Link>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      {/* Dashboard Client Component (Charts, Milestones, and Plans List) */}
+      <DashboardClient 
+        budgetStatus={budgetStatus} 
+        milestones={milestones} 
+        plans={plans} 
+      />
     </div>
   )
 }

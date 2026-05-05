@@ -1,21 +1,33 @@
 'use client'
 
+import { useState } from 'react'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
+import { PlanStatusBadge } from '@/components/StatusBadge'
+import Link from 'next/link'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LabelList
 } from 'recharts'
 import { differenceInDays, isAfter, isToday } from 'date-fns'
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
-
 export default function DashboardClient({
   budgetStatus,
-  milestones
+  milestones,
+  plans
 }: {
   budgetStatus: any
   milestones: any[]
+  plans: any[]
 }) {
+  return (
+    <div className="space-y-6">
+      <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} />
+      <PlanListSection plans={plans} />
+    </div>
+  )
+}
+
+function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any, milestones: any[] }) {
   const { totalBudget, totalUsed, totalBalance, categoryLimits, categoryUsage } = budgetStatus
 
   const categoryData = Object.keys(categoryLimits).map(key => ({
@@ -75,9 +87,10 @@ export default function DashboardClient({
                     outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
+                    isAnimationActive={false}
                   >
-                    <Cell fill="#3b82f6" /> {/* 사용 금액: Blue */}
-                    <Cell fill="#e5e7eb" /> {/* 잔액: Gray */}
+                    <Cell fill="#3b82f6" />
+                    <Cell fill="#e5e7eb" />
                   </Pie>
                   <Tooltip 
                     formatter={(value: any) => `${Number(value).toLocaleString()}원`}
@@ -135,7 +148,7 @@ export default function DashboardClient({
                     formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
                     wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '12px', paddingTop: '10px' }} 
                   />
-                  <Bar dataKey="사용금액" stackId="a" fill="#3b82f6" name="사용 금액">
+                  <Bar dataKey="사용금액" stackId="a" fill="#3b82f6" name="사용 금액" isAnimationActive={false}>
                     <LabelList 
                       dataKey="사용금액" 
                       position="center" 
@@ -143,7 +156,7 @@ export default function DashboardClient({
                       style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }} 
                     />
                   </Bar>
-                  <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도">
+                  <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도" isAnimationActive={false}>
                     <LabelList 
                       dataKey="한도" 
                       position="top" 
@@ -164,3 +177,86 @@ export default function DashboardClient({
     </div>
   )
 }
+
+function PlanListSection({ plans }: { plans: any[] }) {
+  const [purposeFilter, setPurposeFilter] = useState<string>('ALL')
+  
+  const filteredPlans = purposeFilter === 'ALL' 
+    ? plans 
+    : plans.filter(p => p.purpose === purposeFilter)
+
+  return (
+    <div className="card">
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-700">예산 사용 계획서 내역</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400">사용 목적:</span>
+          <select 
+            value={purposeFilter} 
+            onChange={(e) => setPurposeFilter(e.target.value)}
+            className="text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-500 bg-white"
+          >
+            <option value="ALL">전체 보기</option>
+            {Object.entries(PURPOSE_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {filteredPlans.length === 0 ? (
+        <div className="px-5 py-12 text-center text-gray-400 text-sm">
+          {purposeFilter === 'ALL' ? '작성한 계획서가 없습니다.' : '해당 목적의 계획서가 없습니다.'}
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {filteredPlans.map((plan) => {
+            const submitted = plan.evidences.filter((e: any) => e.status !== 'PENDING').length
+            const total = plan.evidences.length
+            return (
+              <div key={plan.id} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Link
+                      href={`/plans/${plan.id}`}
+                      className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate"
+                    >
+                      {plan.title}
+                    </Link>
+                    <PlanStatusBadge status={plan.status} />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
+                    {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
+                    {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
+                  </p>
+                  {plan.status !== 'APPROVED' && total > 0 && (
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      증빙 {submitted}/{total}개 제출
+                    </p>
+                  )}
+                </div>
+                {['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status) ? (
+                  <Link
+                    href={`/plans/${plan.id}`}
+                    className="ml-4 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md px-3 py-1.5 shrink-0 transition"
+                  >
+                    증빙 서류 제출
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/plans/${plan.id}`}
+                    className="ml-4 text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 rounded-md px-3 py-1.5 shrink-0 transition"
+                  >
+                    상세보기
+                  </Link>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
