@@ -15,7 +15,7 @@ export default function Navbar() {
   const userLinks = [
     { href: '/dashboard', label: '대시보드' },
     { href: '/budget-limits', label: '예산 계획 설정' },
-    { href: '/team', label: '나의 팀 정보' }
+    { href: '/team', label: '팀 정보' }
   ]
   const adminLinks = [
     { href: '/admin/dashboard', label: '대시보드' },
@@ -47,8 +47,8 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${pathname.startsWith(link.href)
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                 >
                   {link.label}
@@ -104,8 +104,8 @@ export default function Navbar() {
                 href={link.href}
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2.5 rounded-md text-base font-medium ${pathname.startsWith(link.href)
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
               >
                 {link.label}

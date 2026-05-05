@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">대시보드</h1>
-          <p className="text-sm text-gray-500 mt-0.5">안녕하세요, {session.user.name}님</p>
+          <p className="text-sm text-gray-500 mt-0.5">안녕하세요, {session.user.name} 선생님.</p>
         </div>
         {activePlanCount >= 3 ? (
           <div className="text-right">
