@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   })
   if (activePlanCount >= 3) {
     return NextResponse.json(
-      { error: '미완료된 계획서가 3건 있습니다. 기존 계획서의 증빙을 먼저 완료해주세요.' },
+      { error: '증빙이 완료되지 않은 계획서가 3건 있습니다. 기존 계획서의 증빙을 먼저 완료해주세요.' },
       { status: 400 },
     )
   }

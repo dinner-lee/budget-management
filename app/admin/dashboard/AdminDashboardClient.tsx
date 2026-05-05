@@ -181,7 +181,7 @@ function TeamView({ teams, allPlans }: any) {
                     {team.teamNumber}
                   </span>
                   <span className="text-sm font-bold text-gray-900 truncate">
-                    {team.leaderName} <span className="text-gray-400 font-normal">({team.user?.name || '미배정'})</span>
+                    {team.leaderName} <span className="text-gray-400 font-normal">({team.users?.length > 0 ? team.users.map((u:any) => u.name).join(', ') : '미배정'})</span>
                   </span>
                 </div>
                 {pendingCount > 0 && (

@@ -48,15 +48,16 @@ export default function AdminTeamsPage() {
     fetchTeams()
   }
 
-  const handleAssignUser = async (teamId: string) => {
-    if (!assignUserId) return
+  const handleAssignUser = async (teamId: string, action: 'add' | 'remove', uId?: string) => {
+    const targetUserId = action === 'add' ? assignUserId : uId;
+    if (!targetUserId) return
     setLoading(true)
     await fetch('/api/admin/teams', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ teamId, userId: assignUserId })
+      body: JSON.stringify({ teamId, userId: targetUserId, action })
     })
-    setAssignUserId('')
+    if (action === 'add') setAssignUserId('')
     setLoading(false)
     fetchTeams()
     fetch('/api/admin/users')
@@ -126,22 +127,31 @@ export default function AdminTeamsPage() {
                       </div>
                     </div>
                     {/* 사용자 할당 영역 */}
-                    {!team.user && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2 mb-3">
                         <select className="input py-1 text-xs" value={assignUserId} onChange={e => setAssignUserId(e.target.value)}>
                           <option value="">-- 사용자 할당 --</option>
                           {users.filter(u => !u.teamId).map(u => (
                             <option key={u.id} value={u.id}>{u.name}</option>
                           ))}
                         </select>
-                        <button onClick={() => handleAssignUser(team.id)} disabled={!assignUserId || loading} className="btn-secondary px-2 py-1 text-xs shrink-0">할당</button>
+                        <button onClick={() => handleAssignUser(team.id, 'add')} disabled={!assignUserId || loading} className="btn-secondary px-2 py-1 text-xs shrink-0">할당</button>
                       </div>
-                    )}
-                    {team.user && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
-                        할당된 사용자: <span className="font-medium text-gray-900">{team.user.name} ({team.user.email})</span>
-                      </div>
-                    )}
+                      
+                      {team.users && team.users.length > 0 ? (
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-700">할당된 사용자:</p>
+                          {team.users.map((u: any) => (
+                            <div key={u.id} className="flex justify-between items-center bg-gray-50 px-2 py-1.5 rounded">
+                              <span className="text-xs text-gray-900">{u.name} ({u.email})</span>
+                              <button onClick={() => handleAssignUser(team.id, 'remove', u.id)} disabled={loading} className="text-xs text-red-500 hover:text-red-700">해제</button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">할당된 사용자가 없습니다.</p>
+                      )}
+                    </div>
                   </div>
                 ))
               )}

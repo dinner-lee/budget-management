@@ -17,7 +17,7 @@ model User {
   image         String?
   role         String       @default("USER") // USER | ADMIN
   createdAt    DateTime     @default(now())
-  teamId       String?      @unique
+  teamId       String?
   team         Team?        @relation(fields: [teamId], references: [id])
   plans        BudgetPlan[]
   adminReviews AdminReview[]
@@ -137,7 +137,7 @@ model Team {
   leaderAffiliation String
   members           String   // 참여 학생 이름 및 소속
   researchTopic     String
-  user              User?
+  users             User[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   editLogs          TeamEditLog[]

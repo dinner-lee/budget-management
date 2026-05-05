@@ -23,7 +23,7 @@ export default async function AdminDashboardPage() {
     prisma.user.count({ where: { role: 'USER' } }),
     prisma.team.findMany({
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        users: { select: { id: true, name: true, email: true } },
       }
     }),
     prisma.milestone.findMany({

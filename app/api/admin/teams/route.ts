@@ -11,7 +11,7 @@ export async function GET() {
 
   const teams = await prisma.team.findMany({
     include: {
-      user: { select: { id: true, name: true, email: true } },
+      users: { select: { id: true, name: true, email: true } },
       editLogs: {
         include: { user: { select: { name: true } } },
         orderBy: { createdAt: 'desc' }
@@ -60,16 +60,23 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { teamId, userId } = body
+  const { teamId, userId, action } = body
 
   if (!teamId || !userId) {
     return NextResponse.json({ error: '팀 ID와 사용자 ID가 필요합니다.' }, { status: 400 })
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { teamId }
-  })
+  if (action === 'remove') {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { teamId: null }
+    })
+  } else {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { teamId }
+    })
+  }
 
   return NextResponse.json({ success: true })
 }
