@@ -62,7 +62,7 @@ export default function LoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-gray-700 break-keep">
-              <strong>구글 계정(@snu.ac.kr)</strong>으로 로그인하여 계속하세요.
+              <strong>구글 계정(@snu.ac.kr)</strong>으로 로그인하시기 바랍니다.
             </p>
           </div>
         </div>
