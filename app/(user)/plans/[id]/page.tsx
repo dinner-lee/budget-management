@@ -65,7 +65,8 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
         </div>
       )}
 
-      {/* Evidence items */}
+      {/* Evidence items - only show when not in upload mode */}
+      {!canUpload && (
       <div className="card">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">증빙 항목</h2>
@@ -127,13 +128,14 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
           })}
         </div>
       </div>
+      )}
 
       {/* 검토 요청 버튼 */}
       {canUpload && (
         <SubmitForReviewButton 
           planId={plan.id} 
           plannedAmount={plan.amount}
-          evidences={plan.evidences.map(e => ({ id: e.id, label: e.label, required: e.required }))} 
+          evidences={plan.evidences.map(e => ({ id: e.id, label: e.label, required: e.required, hint: e.hint, status: e.status, resubmitNote: e.resubmitNote }))} 
         />
       )}
     </div>

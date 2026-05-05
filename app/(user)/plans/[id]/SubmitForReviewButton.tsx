@@ -7,6 +7,9 @@ interface EvidenceItem {
   id: string
   label: string
   required: boolean
+  hint?: string | null
+  status?: string
+  resubmitNote?: string | null
 }
 
 export default function SubmitForReviewButton({
@@ -134,43 +137,60 @@ export default function SubmitForReviewButton({
         </button>
       </div>
 
-      <div className="mb-5">
-        <h4 className="text-sm font-semibold text-gray-700 mb-3">업로드 완료 확인 체크리스트</h4>
-        <div className="space-y-2">
+      {/* 증빙 항목 체크리스트 */}
+      <div className="mb-5 bg-gray-50 border border-gray-200 rounded-lg p-5">
+        <h4 className="text-sm font-semibold text-gray-900 mb-1">증빙 항목</h4>
+        <p className="text-xs text-gray-500 mb-4">각 항목의 증빙 파일을 NAS에 업로드한 후 체크해 주세요.</p>
+        <div className="space-y-3">
           {evidences.map(evidence => {
-            const formUrl = evidence.id === 'meeting_minutes'
+            const formUrl = evidence.label === '회의록'
               ? 'https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing'
-              : evidence.id === 'payment_request'
+              : evidence.label === '지급청구서'
                 ? 'https://drive.google.com/file/d/1S4oui9OxZv0i9vQcZOctzy8mTuzvyrMh/view?usp=sharing'
                 : null
 
             return (
-              <div key={evidence.id} className="flex items-center gap-2">
-                <label className="flex items-center gap-2 cursor-pointer group flex-1 min-w-0">
-                  <input
-                    type="checkbox"
-                    checked={checkedItems.has(evidence.id)}
-                    onChange={() => handleToggle(evidence.id)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0"
-                  />
-                  <span className={`text-sm ${checkedItems.has(evidence.id) ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-                    {evidence.label}
-                    {evidence.required && <span className="text-red-500 ml-1 text-xs">*필수</span>}
-                  </span>
-                </label>
-                {formUrl && (
-                  <a
-                    href={formUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                    </svg>
-                    양식 다운로드
-                  </a>
-                )}
+              <div key={evidence.id} className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
+                checkedItems.has(evidence.id) ? 'bg-green-50 border-green-200' 
+                : evidence.status === 'RESUBMIT_REQUIRED' ? 'bg-red-50 border-red-200'
+                : 'bg-white border-gray-200'
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={checkedItems.has(evidence.id)}
+                  onChange={() => handleToggle(evidence.id)}
+                  className="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0 cursor-pointer"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`text-sm font-medium ${checkedItems.has(evidence.id) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                      {evidence.label}
+                    </span>
+                    {evidence.required && <span className="text-red-500 text-xs">필수</span>}
+                    {!evidence.required && <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">선택</span>}
+                    {formUrl && (
+                      <a
+                        href={formUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                        양식 다운로드
+                      </a>
+                    )}
+                  </div>
+                  {evidence.hint && (
+                    <p className="text-xs text-gray-400 mt-0.5">예: {evidence.hint}</p>
+                  )}
+                  {evidence.status === 'RESUBMIT_REQUIRED' && evidence.resubmitNote && (
+                    <div className="mt-1.5 text-xs bg-red-100 border border-red-200 rounded p-2 text-red-700">
+                      <span className="font-medium">관리자 메모:</span> {evidence.resubmitNote}
+                    </div>
+                  )}
+                </div>
               </div>
             )
           })}
