@@ -12,13 +12,56 @@ import {
   startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isToday, parseISO
 } from 'date-fns'
 
+interface Evidence {
+  id: string
+  status: string
+}
+
+interface Plan {
+  id: string
+  title: string
+  amount: number
+  actualAmount: number | null
+  purpose: string
+  status: string
+  plannedDate: string | Date
+  user: {
+    name: string | null
+    email: string
+    teamId: string | null
+  }
+  evidences: Evidence[]
+  teamId?: string | null
+}
+
+interface BudgetLimit {
+  purpose: string
+  amount: number
+}
+
+interface Team {
+  id: string
+  teamNumber: string
+  leaderName: string
+  leaderAffiliation: string
+  researchTopic: string
+  users: { id: string; name: string | null; email: string }[]
+  budgetLimits: BudgetLimit[]
+}
+
+interface Milestone {
+  id: string
+  name: string
+  date: string | Date
+}
+
 export default function AdminDashboardClient({
   allPlans, userCount, teams, milestones
 }: {
-  allPlans: any[]
+  allPlans: Plan[]
   userCount: number
-  teams: any[]
-  milestones: any[]
+  teams: Team[]
+  milestones: Milestone[]
 }) {
   const [view, setView] = useState<'DASHBOARD' | 'CALENDAR' | 'BUDGET'>('DASHBOARD')
   const [filter, setFilter] = useState<string | null>(null)
@@ -88,7 +131,19 @@ export default function AdminDashboardClient({
 function CombinedDashboardView({
   pending, resubmit, allPlans, userCount, inProgress, approved, teams,
   filter, setFilter, selectedTeamId, setSelectedTeamId
-}: any) {
+}: {
+  pending: Plan[]
+  resubmit: Plan[]
+  allPlans: Plan[]
+  userCount: number
+  inProgress: Plan[]
+  approved: Plan[]
+  teams: Team[]
+  filter: string | null
+  setFilter: (f: string | null) => void
+  selectedTeamId: string | null
+  setSelectedTeamId: (id: string | null) => void
+}) {
   const stats = [
     { label: '검토 대기', value: pending.length, color: 'text-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
     { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
@@ -107,8 +162,8 @@ function CombinedDashboardView({
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
 
   // Calculate team summary data if team selected
-  const teamPlans = selectedTeamId ? allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === selectedTeamId) : []
-  const teamTotalUsed = teamPlans.reduce((acc: number, p: any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
+  const teamPlans = selectedTeamId ? allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === selectedTeamId) : []
+  const teamTotalUsed = teamPlans.reduce((acc: number, p: Plan) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
 
   return (
     <div className="space-y-6">
@@ -144,9 +199,9 @@ function CombinedDashboardView({
             </div>
             <div className="p-4">
               <div className="grid grid-cols-2 gap-2 mb-2">
-                {teams.map((team: any) => {
-                  const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
-                  const hasPending = teamPlans.some((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED')
+                {teams.map((team: Team) => {
+                  const teamPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
+                  const hasPending = teamPlans.some((p: Plan) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED')
                   const isSelected = selectedTeamId === team.id
 
                   return (
@@ -246,8 +301,8 @@ function CombinedDashboardView({
               <div className="p-4 pt-2 space-y-1">
                 {Object.keys(PURPOSE_LABELS).map(key => {
                   const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
-                  const used = teamPlans.filter(p => p.purpose === key && p.status === 'APPROVED').reduce((acc, p) => acc + (p.actualAmount ?? p.amount), 0)
-                  const limit = selectedTeam.budgetLimits?.find((l: any) => l.purpose === key)?.amount || 0
+                  const used = teamPlans.filter((p: Plan) => p.purpose === key && p.status === 'APPROVED').reduce((acc: number, p: Plan) => acc + (p.actualAmount ?? p.amount), 0)
+                  const limit = selectedTeam.budgetLimits?.find((l: BudgetLimit) => l.purpose === key)?.amount || 0
                   const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
 
                   if (limit === 0 && used === 0) return null
@@ -269,8 +324,8 @@ function CombinedDashboardView({
                   )
                 })}
                 {Object.keys(PURPOSE_LABELS).every(key => {
-                  const used = teamPlans.filter(p => p.purpose === key && p.status === 'APPROVED').reduce((acc, p) => acc + (p.actualAmount ?? p.amount), 0)
-                  const limit = selectedTeam.budgetLimits?.find((l: any) => l.purpose === key)?.amount || 0
+                  const used = teamPlans.filter((p: Plan) => p.purpose === key && p.status === 'APPROVED').reduce((acc: number, p: Plan) => acc + (p.actualAmount ?? p.amount), 0)
+                  const limit = selectedTeam.budgetLimits?.find((l: BudgetLimit) => l.purpose === key)?.amount || 0
                   return limit === 0 && used === 0
                 }) && (
                     <p className="text-center py-4 text-xs text-gray-400">설정된 예산 한도가 없습니다.</p>
@@ -304,7 +359,7 @@ function CombinedDashboardView({
               {filteredPlans.length === 0 ? (
                 <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
               ) : (
-                filteredPlans.map((plan: any) => <PlanRow key={plan.id} plan={plan} teams={teams} />)
+                filteredPlans.map((plan: Plan) => <PlanRow key={plan.id} plan={plan} teams={teams} />)
               )}
             </div>
           </div>
@@ -314,17 +369,17 @@ function CombinedDashboardView({
   )
 }
 
-function BudgetView({ teams, allPlans }: any) {
+function BudgetView({ teams, allPlans }: { teams: Team[]; allPlans: Plan[] }) {
   const TEAM_BUDGET = 2000000 // 팀당 총 예산 200만 원
   const purposes = Object.keys(PURPOSE_LABELS) as Array<keyof typeof PURPOSE_LABELS>
 
   // Build per-team data
-  const teamData = teams.map((team: any) => {
-    const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
+  const teamData = teams.map((team: Team) => {
+    const teamPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
 
     const byPurpose: Record<string, { planned: number; actual: number }> = {}
     purposes.forEach(p => {
-      const limit = team.budgetLimits?.find((l: any) => l.purpose === p)
+      const limit = team.budgetLimits?.find((l: BudgetLimit) => l.purpose === p)
       byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0 }
     })
 
@@ -338,8 +393,8 @@ function BudgetView({ teams, allPlans }: any) {
       }
     })
 
-    const totalPlanned = Object.values(byPurpose).reduce((s: number, v: any) => s + v.planned, 0)
-    const totalActual = Object.values(byPurpose).reduce((s: number, v: any) => s + v.actual, 0)
+    const totalPlanned = Object.values(byPurpose).reduce((s: number, v: { planned: number; actual: number }) => s + v.planned, 0)
+    const totalActual = Object.values(byPurpose).reduce((s: number, v: { planned: number; actual: number }) => s + v.actual, 0)
 
     return { team, byPurpose, totalPlanned, totalActual }
   })
@@ -451,7 +506,7 @@ function BudgetView({ teams, allPlans }: any) {
   )
 }
 
-function CalendarView({ allPlans, teams, milestones }: any) {
+function CalendarView({ allPlans, teams, milestones }: { allPlans: Plan[]; teams: Team[]; milestones: Milestone[] }) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
@@ -505,11 +560,11 @@ function CalendarView({ allPlans, teams, milestones }: any) {
           <div key={`empty-${i}`} className="bg-white min-h-[100px] p-2 opacity-50"></div>
         ))}
         {days.map(day => {
-          const dayPlans = allPlans.filter((p: any) => {
+          const dayPlans = allPlans.filter((p: Plan) => {
             const pd = new Date(p.plannedDate)
             return pd.getFullYear() === day.getFullYear() && pd.getMonth() === day.getMonth() && pd.getDate() === day.getDate()
           })
-          const dayMilestones = milestones.filter((m: any) => {
+          const dayMilestones = milestones.filter((m: Milestone) => {
             const md = new Date(m.date)
             return md.getFullYear() === day.getFullYear() && md.getMonth() === day.getMonth() && md.getDate() === day.getDate()
           })
@@ -525,8 +580,8 @@ function CalendarView({ allPlans, teams, milestones }: any) {
                     🚩 {m.name}
                   </div>
                 ))}
-                {dayPlans.map((plan: any) => {
-                  const teamNumber = teams.find((t: any) => t.id === (plan.teamId || plan.user?.teamId))?.teamNumber || plan.user.name
+                {dayPlans.map((plan: Plan) => {
+                  const teamNumber = teams.find((t: Team) => t.id === (plan.teamId || plan.user?.teamId))?.teamNumber || plan.user.name
                   return (
                     <Link key={plan.id} href={`/admin/plans/${plan.id}`} className={`block text-[10px] px-1.5 py-0.5 rounded truncate font-medium ${getStatusStyle(plan.status)}`}>
                       {statusIcon(plan.status)} {teamNumber}: {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}
@@ -569,8 +624,8 @@ function CalendarView({ allPlans, teams, milestones }: any) {
   )
 }
 
-function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
-  const submitted = plan.evidences.filter((e: any) => e.status === 'SUBMITTED').length
+function PlanRow({ plan, teams }: { plan: Plan; teams: Team[] }) {
+  const submitted = plan.evidences.filter((e: Evidence) => e.status === 'SUBMITTED').length
   const total = plan.evidences.length
   const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
 
