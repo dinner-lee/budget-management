@@ -141,7 +141,7 @@ export default function TeamPage() {
 
       {team.users && team.users.length > 0 && (
         <div className="card p-6 mt-6">
-          <h2 className="text-sm font-bold text-gray-800 mb-4">함께 할당된 팀원 (시스템 계정)</h2>
+          <h2 className="text-sm font-bold text-gray-800 mb-4">함께 할당된 팀원</h2>
           <div className="space-y-2">
             {team.users.map((u: any) => (
               <div key={u.id} className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded border border-gray-100">

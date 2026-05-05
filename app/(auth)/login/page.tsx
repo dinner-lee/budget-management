@@ -55,7 +55,7 @@ export default function LoginPage() {
           />
           <h1 className="text-xl sm:text-2xl font-light text-gray-900 break-keep leading-tight tracking-tight">
             학부생·대학원생 학습과학연구지원사업<br />
-            <span className="text-blue-700 font-medium">예산 관리 시스템</span>
+            <span className="text-[#15378F] font-bold">예산 관리 시스템</span>
           </h1>
           <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-start gap-3 text-left w-full">
             <svg className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -137,7 +137,7 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
-        서울대학교 학습과학연구소 | (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 | 02-880-4498
+        서울대학교 학습과학연구소 | (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 | 02-880-4498 | jjl0909@snu.ac.kr
       </div>
     </div>
   )
