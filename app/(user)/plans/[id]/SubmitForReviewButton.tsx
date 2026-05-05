@@ -91,22 +91,6 @@ export default function SubmitForReviewButton({
           2. 자신의 예산 계획에 해당하는 증빙 파일들을 모두 팝업창(NAS)에 업로드합니다.<br />
           3. 업로드한 파일은 아래 체크리스트에 체크하여 모두 올렸는지 확인해주세요.
         </p>
-        <div className="mt-3 mb-4 bg-white/60 rounded p-3 text-sm border border-blue-100">
-          <p className="font-semibold text-blue-900 mb-1 flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            </svg>
-            증빙 양식 다운로드
-          </p>
-          <ul className="list-disc list-inside text-blue-700 space-y-1 ml-1">
-            <li>
-              <a href="https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing" target="_blank" rel="noreferrer" className="hover:underline">회의록 양식</a>
-            </li>
-            <li>
-              <a href="https://drive.google.com/file/d/1S4oui9OxZv0i9vQcZOctzy8mTuzvyrMh/view?usp=sharing" target="_blank" rel="noreferrer" className="hover:underline">지급청구서 양식</a>
-            </li>
-          </ul>
-        </div>
 
         <div className="mt-3 mb-4 bg-white/60 rounded p-3 text-sm border border-blue-100">
           <p className="font-semibold text-blue-900 mb-1 flex items-center gap-1">
@@ -119,13 +103,11 @@ export default function SubmitForReviewButton({
             NAS에 업로드하는 파일명은 다음과 같은 형식으로 정리해 주세요.
           </p>
           <div className="bg-blue-50 rounded px-2.5 py-1.5 text-xs text-blue-900 font-mono mb-1.5 border border-blue-200">
-            팀번호_사용 목적_날짜(MMDD)
+            팀번호_날짜(MMDD)_사용 목적_증빙 항목
           </div>
-          <p className="text-xs text-blue-700">
-            사용 목적: 회의비, 전문가활용비, 연구참여자사례비, 구매지출비, 소프트웨어구독료, 기타
-          </p>
+
           <p className="text-xs text-blue-600 mt-1">
-            (예) <span className="font-mono font-semibold">1_회의비_0630</span>
+            (예) <span className="font-mono font-semibold">1_0630_회의비_영수증</span>
           </p>
         </div>
 
@@ -140,20 +122,43 @@ export default function SubmitForReviewButton({
       <div className="mb-5">
         <h4 className="text-sm font-semibold text-gray-700 mb-3">업로드 완료 확인 체크리스트</h4>
         <div className="space-y-2">
-          {evidences.map(evidence => (
-            <label key={evidence.id} className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={checkedItems.has(evidence.id)}
-                onChange={() => handleToggle(evidence.id)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className={`text-sm ${checkedItems.has(evidence.id) ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-                {evidence.label}
-                {evidence.required && <span className="text-red-500 ml-1 text-xs">*필수</span>}
-              </span>
-            </label>
-          ))}
+          {evidences.map(evidence => {
+            const formUrl = evidence.id === 'meeting_minutes'
+              ? 'https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing'
+              : evidence.id === 'payment_request'
+                ? 'https://drive.google.com/file/d/1S4oui9OxZv0i9vQcZOctzy8mTuzvyrMh/view?usp=sharing'
+                : null
+
+            return (
+              <div key={evidence.id} className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer group flex-1 min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={checkedItems.has(evidence.id)}
+                    onChange={() => handleToggle(evidence.id)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0"
+                  />
+                  <span className={`text-sm ${checkedItems.has(evidence.id) ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                    {evidence.label}
+                    {evidence.required && <span className="text-red-500 ml-1 text-xs">*필수</span>}
+                  </span>
+                </label>
+                {formUrl && (
+                  <a
+                    href={formUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg>
+                    양식 다운로드
+                  </a>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -185,7 +190,7 @@ export default function SubmitForReviewButton({
       </div>
 
       <p className="text-sm text-gray-600 mb-3">
-        모든 필수 파일이 업로드 되었나요? 체크리스트를 확인한 후 검토를 요청해주세요.
+        모든 필수 파일이 업로드되었나요? 체크리스트를 확인한 후 검토를 요청해주세요.
       </p>
       {error && (
         <p className="text-sm text-red-600 bg-red-50 rounded px-3 py-2 mb-3">{error}</p>

@@ -74,13 +74,33 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
           )}
         </div>
         <div className="divide-y divide-gray-100">
-          {plan.evidences.map((evidence) => (
+          {plan.evidences.map((evidence) => {
+            const formUrl = 
+              evidence.label === '회의록' ? 'https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing'
+              : evidence.label === '지급청구서' ? 'https://drive.google.com/file/d/1S4oui9OxZv0i9vQcZOctzy8mTuzvyrMh/view?usp=sharing'
+              : null
+
+            return (
             <div key={evidence.id} className="px-5 py-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-gray-900">{evidence.label}</span>
-                    <EvidenceStatusBadge status={evidence.status} />
+                    {evidence.status === 'PENDING' && formUrl ? (
+                      <a
+                        href={formUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition-colors"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                        양식 다운로드
+                      </a>
+                    ) : (
+                      <EvidenceStatusBadge status={evidence.status} />
+                    )}
                     {!evidence.required && (
                       <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
                         선택
@@ -103,7 +123,8 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
                 </div>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
