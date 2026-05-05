@@ -41,7 +41,7 @@ export default function Navbar() {
               />
               <span className="font-semibold text-gray-900 text-sm border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
             </Link>
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-1">
               {links.map((link) => (
                 <Link
                   key={link.href}
@@ -57,7 +57,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">
                 {session?.user.name}
@@ -77,7 +77,7 @@ export default function Navbar() {
           </div>
 
           {/* Hamburger button */}
-          <div className="md:hidden flex items-center">
+          <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-500 hover:text-gray-700 p-2"
@@ -96,7 +96,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 animate-in slide-in-from-top-2 duration-200">
+        <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 animate-in slide-in-from-top-2 duration-200">
           <div className="px-4 py-3 space-y-1">
             {links.map((link) => (
               <Link
