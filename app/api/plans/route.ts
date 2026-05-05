@@ -8,8 +8,17 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
+  if (!user?.teamId) {
+    return NextResponse.json([])
+  }
+
   const plans = await prisma.budgetPlan.findMany({
-    where: { userId: session.user.id },
+    where: { teamId: user.teamId },
     include: { evidences: true },
     orderBy: { createdAt: 'desc' },
   })
@@ -21,16 +30,25 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
-  // 미완료 계획서 수 확인
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
+  if (!user?.teamId) {
+    return NextResponse.json({ error: '소속된 팀이 없습니다.' }, { status: 400 })
+  }
+
+  // 미완료 계획서 수 확인 (팀 전체 기준)
   const activePlanCount = await prisma.budgetPlan.count({
     where: {
-      userId: session.user.id,
+      teamId: user.teamId,
       status: { in: ['PENDING_EVIDENCE', 'UNDER_REVIEW', 'RESUBMIT_REQUIRED'] },
     },
   })
   if (activePlanCount >= 3) {
     return NextResponse.json(
-      { error: '증빙이 완료되지 않은 계획서가 3건 있습니다. 기존 계획서의 증빙을 먼저 완료해주세요.' },
+      { error: '팀의 증빙이 완료되지 않은 계획서가 3건 있습니다. 기존 계획서의 증빙을 먼저 완료해주세요.' },
       { status: 400 },
     )
   }
@@ -53,6 +71,7 @@ export async function POST(req: NextRequest) {
   const plan = await prisma.budgetPlan.create({
     data: {
       userId: session.user.id,
+      teamId: user.teamId,
       title: autoTitle,
       purpose: purposeKey,
       amount: Number(amount),

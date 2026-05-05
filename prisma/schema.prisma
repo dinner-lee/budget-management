@@ -21,7 +21,6 @@ model User {
   team         Team?        @relation(fields: [teamId], references: [id])
   plans        BudgetPlan[]
   adminReviews AdminReview[]
-  budgetLimits UserBudgetLimit[]
   budgetModifications BudgetModificationHistory[]
   teamEditLogs TeamEditLog[]
   accounts     Account[]
@@ -67,6 +66,8 @@ model BudgetPlan {
   id          String       @id @default(cuid())
   userId      String
   user        User         @relation(fields: [userId], references: [id])
+  teamId      String?
+  team        Team?        @relation(fields: [teamId], references: [id])
   title       String
   amount      Float
   actualAmount Float?   // 실제 지출 금액
@@ -107,22 +108,24 @@ model AdminReview {
   createdAt DateTime   @default(now())
 }
 
-model UserBudgetLimit {
+model TeamBudgetLimit {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   purpose   String
   amount    Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, purpose])
+  @@unique([teamId, purpose])
 }
 
 model BudgetModificationHistory {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId    String?
+  team      Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   purpose   String
   oldAmount Float?
   newAmount Float
@@ -138,6 +141,9 @@ model Team {
   members           String   // 참여 학생 이름 및 소속
   researchTopic     String
   users             User[]
+  plans             BudgetPlan[]
+  budgetLimits      TeamBudgetLimit[]
+  budgetModifications BudgetModificationHistory[]
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   editLogs          TeamEditLog[]

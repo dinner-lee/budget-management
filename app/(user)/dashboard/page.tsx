@@ -12,17 +12,26 @@ export default async function DashboardPage() {
   if (!session) redirect('/login')
   if (session.user.role === 'ADMIN') redirect('/admin/dashboard')
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
   const [plans, budgetLimits, milestones] = await Promise.all([
-    prisma.budgetPlan.findMany({
-      where: { userId: session.user.id },
-      include: {
-        evidences: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
-    prisma.userBudgetLimit.findMany({
-      where: { userId: session.user.id },
-    }),
+    user?.teamId 
+      ? prisma.budgetPlan.findMany({
+          where: { teamId: user.teamId },
+          include: {
+            evidences: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+      : Promise.resolve([]),
+    user?.teamId
+      ? prisma.teamBudgetLimit.findMany({
+          where: { teamId: user.teamId },
+        })
+      : Promise.resolve([]),
     prisma.milestone.findMany({
       orderBy: { date: 'asc' }
     })

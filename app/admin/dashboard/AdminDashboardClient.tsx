@@ -161,7 +161,7 @@ function TeamView({ teams, allPlans }: any) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
       <div className="md:col-span-1 md:max-h-[calc(100vh-220px)] md:overflow-y-auto md:sticky md:top-6 space-y-3 pr-2 scrollbar-thin">
         {teams.map((team: any) => {
-          const teamPlans = allPlans.filter((p: any) => p.user.teamId === team.id)
+          const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
           const totalUsed = teamPlans.reduce((acc: number, p: any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
           const pendingCount = teamPlans.filter((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED').length
 
@@ -431,7 +431,7 @@ function CalendarView({ allPlans, teams, milestones }: any) {
                   </div>
                 ))}
                 {dayPlans.map((plan: any) => {
-                  const teamNumber = teams.find((t: any) => t.id === plan.user.teamId)?.teamNumber || plan.user.name
+                  const teamNumber = teams.find((t: any) => t.id === (plan.teamId || plan.user?.teamId))?.teamNumber || plan.user.name
                   return (
                     <Link key={plan.id} href={`/admin/plans/${plan.id}`} className={`block text-[10px] px-1.5 py-0.5 rounded truncate font-medium ${getStatusStyle(plan.status)}`}>
                       {statusIcon(plan.status)} {teamNumber}: {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}

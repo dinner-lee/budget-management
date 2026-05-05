@@ -7,8 +7,17 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
-  const limits = await prisma.userBudgetLimit.findMany({
-    where: { userId: session.user.id }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
+  if (!user?.teamId) {
+    return NextResponse.json({ limits: [] })
+  }
+
+  const limits = await prisma.teamBudgetLimit.findMany({
+    where: { teamId: user.teamId }
   })
 
   return NextResponse.json({ limits })
@@ -17,6 +26,15 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
+  if (!user?.teamId) {
+    return NextResponse.json({ error: '소속된 팀이 없습니다.' }, { status: 400 })
+  }
 
   const body = await req.json()
   const { limits } = body // { [purpose]: amount }
@@ -30,12 +48,12 @@ export async function POST(req: NextRequest) {
 
   // Update or Create each limit
   const promises = Object.keys(limits).map(purpose => 
-    prisma.userBudgetLimit.upsert({
+    prisma.teamBudgetLimit.upsert({
       where: {
-        userId_purpose: { userId: session.user.id, purpose }
+        teamId_purpose: { teamId: user.teamId!, purpose }
       },
       update: { amount: Number(limits[purpose]) },
-      create: { userId: session.user.id, purpose, amount: Number(limits[purpose]) }
+      create: { teamId: user.teamId!, purpose, amount: Number(limits[purpose]) }
     })
   )
 

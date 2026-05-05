@@ -7,14 +7,27 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
-  const userId = session.user.id
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
+  if (!user?.teamId) {
+    return NextResponse.json({
+      totalBudget: 2000000,
+      totalUsed: 0,
+      totalBalance: 2000000,
+      categoryLimits: {},
+      categoryUsage: {},
+    })
+  }
 
   const [plans, budgetLimits] = await Promise.all([
     prisma.budgetPlan.findMany({
-      where: { userId },
+      where: { teamId: user.teamId },
     }),
-    prisma.userBudgetLimit.findMany({
-      where: { userId },
+    prisma.teamBudgetLimit.findMany({
+      where: { teamId: user.teamId },
     }),
   ])
 

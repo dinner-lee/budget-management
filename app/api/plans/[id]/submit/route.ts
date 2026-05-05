@@ -12,8 +12,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const body = await req.json().catch(() => ({}))
   const { actualAmount } = body
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { teamId: true }
+  })
+
   const plan = await prisma.budgetPlan.findFirst({
-    where: { id: params.id, userId: session.user.id },
+    where: { 
+      id: params.id, 
+      OR: [
+        { userId: session.user.id },
+        { teamId: user?.teamId || 'NONE' }
+      ]
+    },
     include: { evidences: true },
   })
 
