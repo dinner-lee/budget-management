@@ -16,7 +16,9 @@ export default function AdminDashboardClient({
   teams: any[]
   milestones: any[]
 }) {
-  const [view, setView] = useState<'TEAM' | 'LIST' | 'CALENDAR' | 'BUDGET'>('LIST')
+  const [view, setView] = useState<'DASHBOARD' | 'CALENDAR' | 'BUDGET'>('DASHBOARD')
+  const [filter, setFilter] = useState<string | null>(null)
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
 
   const pending = allPlans.filter((p) => p.status === 'UNDER_REVIEW')
   const resubmit = allPlans.filter((p) => p.status === 'RESUBMIT_REQUIRED')
@@ -27,20 +29,12 @@ export default function AdminDashboardClient({
     <div className="space-y-6">
       <div className="flex border-b border-gray-200">
         <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'LIST' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-          onClick={() => setView('LIST')}
-          title="목록 보기"
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'DASHBOARD' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          onClick={() => setView('DASHBOARD')}
+          title="대시보드"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          <span className="hidden sm:inline">목록 보기</span>
-        </button>
-        <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'TEAM' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-          onClick={() => setView('TEAM')}
-          title="팀별 보기"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-          <span className="hidden sm:inline">팀별 보기</span>
+          <span className="hidden sm:inline">대시보드</span>
         </button>
         <button
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'BUDGET' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -60,12 +54,20 @@ export default function AdminDashboardClient({
         </button>
       </div>
 
-      {view === 'LIST' && (
-        <ListView pending={pending} resubmit={resubmit} allPlans={allPlans} userCount={userCount} inProgress={inProgress} approved={approved} />
-      )}
-
-      {view === 'TEAM' && (
-        <TeamView teams={teams} allPlans={allPlans} />
+      {view === 'DASHBOARD' && (
+        <CombinedDashboardView 
+          pending={pending} 
+          resubmit={resubmit} 
+          allPlans={allPlans} 
+          userCount={userCount} 
+          inProgress={inProgress} 
+          approved={approved}
+          teams={teams}
+          filter={filter}
+          setFilter={setFilter}
+          selectedTeamId={selectedTeamId}
+          setSelectedTeamId={setSelectedTeamId}
+        />
       )}
 
       {view === 'BUDGET' && (
@@ -79,9 +81,10 @@ export default function AdminDashboardClient({
   )
 }
 
-function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved }: any) {
-  const [filter, setFilter] = useState<string | null>(null)
-
+function CombinedDashboardView({ 
+  pending, resubmit, allPlans, userCount, inProgress, approved, teams,
+  filter, setFilter, selectedTeamId, setSelectedTeamId
+}: any) {
   const stats = [
     { label: '검토 대기', value: pending.length, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', status: 'UNDER_REVIEW' },
     { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
@@ -89,22 +92,30 @@ function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved
     { label: '승인 완료', value: approved.length, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
   ]
 
-  const filteredPlans = filter 
-    ? allPlans.filter((plan: any) => plan.status === filter)
-    : allPlans
+  const selectedTeam = teams.find((t: any) => t.id === selectedTeamId)
+  
+  const filteredPlans = allPlans.filter((plan: any) => {
+    const matchesStatus = !filter || plan.status === filter
+    const matchesTeam = !selectedTeamId || (plan.teamId || plan.user?.teamId) === selectedTeamId
+    return matchesStatus && matchesTeam
+  })
 
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
 
+  // Calculate team summary data if team selected
+  const teamPlans = selectedTeamId ? allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === selectedTeamId) : []
+  const teamTotalUsed = teamPlans.reduce((acc: number, p: any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
+
   return (
     <div className="space-y-6">
+      {/* Status Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div 
-            key={s.label} 
+          <div
+            key={s.label}
             onClick={() => setFilter(filter === s.status ? null : s.status)}
-            className={`card px-4 py-4 text-center cursor-pointer transition-all hover:shadow-md ${
-              filter === s.status ? `${s.bg} ${s.border} ring-1 ring-offset-0 ${s.color.replace('text', 'ring')}` : 'hover:border-gray-300'
-            }`}
+            className={`card px-4 py-4 text-center cursor-pointer transition-all hover:shadow-md ${filter === s.status ? `${s.bg} ${s.border} ring-1 ring-offset-0 ${s.color.replace('text', 'ring')}` : 'hover:border-gray-300'
+              }`}
           >
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-xs text-gray-500 mt-0.5 font-medium">{s.label}</p>
@@ -112,111 +123,111 @@ function ListView({ pending, resubmit, allPlans, userCount, inProgress, approved
         ))}
       </div>
 
-      {!filter && (pending.length > 0 || resubmit.length > 0) && (
-        <div className="card border-l-4 border-l-red-400">
-          <div className="px-5 py-4 border-b border-gray-100 bg-red-50/30">
-            <h2 className="text-sm font-bold text-red-800">검토 필요 항목</h2>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {[...pending, ...resubmit].map((plan) => (
-              <PlanRow key={plan.id} plan={plan} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-gray-700">
-              {filter ? `${currentFilterLabel} 목록` : '전체 계획서'} ({filteredPlans.length}건)
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column: Team Filter and Metadata */}
+        <div className="lg:col-span-1 space-y-4">
+          <div className="card p-5">
+            <h2 className="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
+              팀 필터
+              {selectedTeamId && (
+                <button 
+                  onClick={() => setSelectedTeamId(null)}
+                  className="text-[10px] text-blue-600 hover:underline"
+                >
+                  필터 해제
+                </button>
+              )}
             </h2>
-            {filter && (
-              <button 
-                onClick={() => setFilter(null)}
-                className="text-[10px] px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 transition-colors"
-              >
-                필터 해제
-              </button>
-            )}
+            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
+              {teams.map((team: any) => {
+                const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
+                const pendingCount = teamPlans.filter((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED').length
+                
+                return (
+                  <div
+                    key={team.id}
+                    onClick={() => setSelectedTeamId(selectedTeamId === team.id ? null : team.id)}
+                    className={`p-2 rounded border cursor-pointer transition-all ${
+                      selectedTeamId === team.id 
+                        ? 'bg-blue-50 border-blue-200' 
+                        : 'bg-white border-gray-100 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${selectedTeamId === team.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                          {team.teamNumber}
+                        </span>
+                        <span className="text-xs font-medium text-gray-900">{team.leaderName}</span>
+                      </div>
+                      {pendingCount > 0 && (
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-          {!filter && <span className="text-xs text-gray-400">사용자 {userCount}명</span>}
-        </div>
-        <div className="divide-y divide-gray-100">
-          {filteredPlans.length === 0 ? (
-            <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
-          ) : (
-            filteredPlans.map((plan: any) => <PlanRow key={plan.id} plan={plan} />)
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
-function TeamView({ teams, allPlans }: any) {
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-      <div className="md:col-span-1 md:max-h-[calc(100vh-220px)] md:overflow-y-auto md:sticky md:top-6 space-y-3 pr-2 scrollbar-thin">
-        {teams.map((team: any) => {
-          const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
-          const totalUsed = teamPlans.reduce((acc: number, p: any) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
-          const pendingCount = teamPlans.filter((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED').length
-
-          return (
-            <div
-              key={team.id}
-              onClick={() => setSelectedTeamId(team.id)}
-              className={`flex flex-col p-3 rounded-lg cursor-pointer transition-all border ${
-                selectedTeamId === team.id
-                  ? 'bg-blue-50 border-blue-200 shadow-sm'
-                  : 'bg-white border-gray-100 hover:border-blue-200 hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${selectedTeamId === team.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                    {team.teamNumber}
-                  </span>
-                  <span className="text-sm font-bold text-gray-900 truncate">
-                    {team.leaderName} <span className="text-gray-400 font-normal">({team.users?.length > 0 ? team.users.map((u:any) => u.name).join(', ') : '미배정'})</span>
-                  </span>
+          {selectedTeam && (
+            <div className="card p-5 bg-blue-50/30 border-blue-100">
+              <h3 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-4 pb-2 border-b border-blue-100">팀 상세 정보</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold mb-1">연구 주제</p>
+                  <p className="text-xs text-gray-800 font-medium leading-relaxed">{selectedTeam.researchTopic}</p>
                 </div>
-                {pendingCount > 0 && (
-                  <span className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full animate-pulse mt-1" title={`${pendingCount}건 검토 필요`}></span>
-                )}
-              </div>
-              <div className="flex justify-between items-end gap-2">
-                <p className="text-[11px] text-gray-500 truncate flex-1">{team.researchTopic}</p>
-                <span className="text-[11px] font-semibold text-blue-600 whitespace-nowrap">{totalUsed.toLocaleString()}원</span>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold mb-1">팀원 정보</p>
+                  <p className="text-xs text-gray-800 font-medium">
+                    <span className="text-blue-600">대표:</span> {selectedTeam.leaderName}<br/>
+                    <span className="text-gray-500">실무자:</span> {selectedTeam.users?.filter((u:any) => u.name !== selectedTeam.leaderName).map((u:any) => u.name).join(', ') || '없음'}
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-blue-100 flex justify-between items-end">
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-bold mb-1">현재 사용 금액</p>
+                    <p className="text-lg font-bold text-blue-700">{teamTotalUsed.toLocaleString()}원</p>
+                  </div>
+                </div>
               </div>
             </div>
-          )
-        })}
-        {teams.length === 0 && <p className="text-sm text-gray-500 p-4">등록된 팀이 없습니다.</p>}
-      </div>
-      <div className="md:col-span-2">
-        {selectedTeamId ? (
-          <div className="card p-5">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {teams.find((t: any) => t.id === selectedTeamId)?.teamNumber} 상세 계획서
-            </h2>
-            <div className="divide-y divide-gray-100 border-t border-gray-100">
-              {allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === selectedTeamId).map((plan: any) => (
-                <PlanRow key={plan.id} plan={plan} />
-              ))}
-              {allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === selectedTeamId).length === 0 && (
-                <p className="py-8 text-center text-gray-500 text-sm">제출된 계획서가 없습니다.</p>
+          )}
+        </div>
+
+        {/* Right Column: Plans List */}
+        <div className="lg:col-span-2">
+          {!filter && (pending.length > 0 || resubmit.length > 0) && !selectedTeamId && (
+            <div className="card border-l-4 border-l-red-400 mb-6">
+              <div className="px-5 py-3 border-b border-gray-100 bg-red-50/30">
+                <h2 className="text-sm font-bold text-red-800">검토 필요 항목 ({pending.length + resubmit.length}건)</h2>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {[...pending, ...resubmit].map((plan) => (
+                  <PlanRow key={plan.id} plan={plan} teams={teams} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="card">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h2 className="text-sm font-semibold text-gray-700">
+                {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'} 
+                {filter ? ` (${currentFilterLabel})` : ''}
+                <span className="ml-2 text-xs text-gray-400 font-normal">({filteredPlans.length}건)</span>
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {filteredPlans.length === 0 ? (
+                <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
+              ) : (
+                filteredPlans.map((plan: any) => <PlanRow key={plan.id} plan={plan} teams={teams} />)
               )}
             </div>
           </div>
-        ) : (
-          <div className="card p-8 flex items-center justify-center text-gray-400 text-sm h-full">
-            왼쪽에서 팀을 선택하면 상세 정보가 표시됩니다.
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )
@@ -231,9 +242,9 @@ function BudgetView({ teams, allPlans }: any) {
     const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
 
     const byPurpose: Record<string, { planned: number; actual: number }> = {}
-    purposes.forEach(p => { 
+    purposes.forEach(p => {
       const limit = team.budgetLimits?.find((l: any) => l.purpose === p)
-      byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0 } 
+      byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0 }
     })
 
     teamPlans.forEach((plan: any) => {
@@ -477,14 +488,18 @@ function CalendarView({ allPlans, teams, milestones }: any) {
   )
 }
 
-function PlanRow({ plan }: { plan: any }) {
+function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
   const submitted = plan.evidences.filter((e: any) => e.status === 'SUBMITTED').length
   const total = plan.evidences.length
+  const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
 
   return (
     <div className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+            {team?.teamNumber || '알 수 없음'}
+          </span>
           <span className="text-sm font-medium text-gray-900 truncate">{plan.title}</span>
           <PlanStatusBadge status={plan.status} />
         </div>
