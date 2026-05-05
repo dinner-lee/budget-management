@@ -108,11 +108,32 @@ export default function SubmitForReviewButton({
           </ul>
         </div>
 
+        <div className="mt-3 mb-4 bg-white/60 rounded p-3 text-sm border border-blue-100">
+          <p className="font-semibold text-blue-900 mb-1 flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            파일명 작성 규칙
+          </p>
+          <p className="text-blue-800 mb-1.5">
+            NAS에 업로드하는 파일명은 다음과 같은 형식으로 정리해 주세요.
+          </p>
+          <div className="bg-blue-50 rounded px-2.5 py-1.5 text-xs text-blue-900 font-mono mb-1.5 border border-blue-200">
+            팀번호_사용 목적_날짜(MMDD)
+          </div>
+          <p className="text-xs text-blue-700">
+            사용 목적: 회의비, 전문가활용비, 연구참여자사례비, 구매지출비, 소프트웨어구독료, 기타
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            (예) <span className="font-mono font-semibold">1_회의비_0630</span>
+          </p>
+        </div>
+
         <button
           onClick={openNasPopup}
           className="inline-block bg-blue-600 text-white text-xs px-4 py-2 rounded shadow hover:bg-blue-700 transition"
         >
-          NAS에 파일 업로드하기 (로딩이 오래 걸릴 수 있습니다. 대기하여 주세요.)
+          NAS에 파일 업로드하기 (로딩에 시간이 소요될 수 있습니다. 대기해 주세요.)
         </button>
       </div>
 
