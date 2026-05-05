@@ -34,18 +34,6 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">대시보드</h1>
-        <div className="flex gap-2">
-          <Link href="/admin/teams" className="btn-secondary text-sm">
-            팀 관리
-          </Link>
-          <Link href="/admin/users" className="btn-secondary text-sm">
-            사용자 관리
-          </Link>
-        </div>
-      </div>
-
       <AdminDashboardClient
         allPlans={allPlans}
         userCount={userCount}

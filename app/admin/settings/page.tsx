@@ -40,7 +40,6 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">주요 일정 설정</h1>
       <p className="text-sm text-gray-500">대시보드에 표시될 예산 사용 관련 주요 일정(중간발표, 마감일 등)을 관리합니다.</p>
 
       <form onSubmit={handleAdd} className="card p-5 flex gap-3 items-end">

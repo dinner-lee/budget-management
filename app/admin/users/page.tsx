@@ -17,7 +17,6 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">사용자 관리</h1>
 
       {/* Create user form */}
       <div className="card p-5">
