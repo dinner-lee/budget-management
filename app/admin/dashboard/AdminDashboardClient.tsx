@@ -5,6 +5,10 @@ import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge } from '@/components/StatusBadge'
 import Link from 'next/link'
 import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell
+} from 'recharts'
+import {
   startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isToday, parseISO
 } from 'date-fns'
 
@@ -34,7 +38,7 @@ export default function AdminDashboardClient({
           title="대시보드"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          <span className="hidden sm:inline">대시보드</span>
+          <span className="hidden sm:inline">팀별</span>
         </button>
         <button
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'BUDGET' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -42,7 +46,7 @@ export default function AdminDashboardClient({
           title="예산 현황"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-          <span className="hidden sm:inline">예산 현황</span>
+          <span className="hidden sm:inline">전체</span>
         </button>
         <button
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -50,17 +54,17 @@ export default function AdminDashboardClient({
           title="캘린더 보기"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          <span className="hidden sm:inline">캘린더 보기</span>
+          <span className="hidden sm:inline">캘린더</span>
         </button>
       </div>
 
       {view === 'DASHBOARD' && (
-        <CombinedDashboardView 
-          pending={pending} 
-          resubmit={resubmit} 
-          allPlans={allPlans} 
-          userCount={userCount} 
-          inProgress={inProgress} 
+        <CombinedDashboardView
+          pending={pending}
+          resubmit={resubmit}
+          allPlans={allPlans}
+          userCount={userCount}
+          inProgress={inProgress}
           approved={approved}
           teams={teams}
           filter={filter}
@@ -81,7 +85,7 @@ export default function AdminDashboardClient({
   )
 }
 
-function CombinedDashboardView({ 
+function CombinedDashboardView({
   pending, resubmit, allPlans, userCount, inProgress, approved, teams,
   filter, setFilter, selectedTeamId, setSelectedTeamId
 }: any) {
@@ -93,7 +97,7 @@ function CombinedDashboardView({
   ]
 
   const selectedTeam = teams.find((t: any) => t.id === selectedTeamId)
-  
+
   const filteredPlans = allPlans.filter((plan: any) => {
     const matchesStatus = !filter || plan.status === filter
     const matchesTeam = !selectedTeamId || (plan.teamId || plan.user?.teamId) === selectedTeamId
@@ -130,7 +134,7 @@ function CombinedDashboardView({
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
               <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">팀 필터</h2>
               {selectedTeamId && (
-                <button 
+                <button
                   onClick={() => setSelectedTeamId(null)}
                   className="text-[10px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-100 transition-colors shadow-sm"
                 >
@@ -139,7 +143,7 @@ function CombinedDashboardView({
               )}
             </div>
             <div className="p-4">
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="grid grid-cols-2 gap-2 mb-2">
                 {teams.map((team: any) => {
                   const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
                   const hasPending = teamPlans.some((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED')
@@ -149,22 +153,30 @@ function CombinedDashboardView({
                     <button
                       key={team.id}
                       onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
-                      className={`relative px-2 py-1.5 rounded text-xs font-bold transition-all border ${
-                        isSelected 
-                          ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105 z-10' 
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50'
-                      }`}
-                      title={`${team.leaderName} - ${team.researchTopic}`}
+                      className={`relative p-3 rounded-lg transition-all border text-left min-h-[52px] flex items-center ${isSelected
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-md z-10'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                        }`}
+                      title={`${team.leaderName} (${team.leaderAffiliation}) - ${team.researchTopic}`}
                     >
-                      {team.teamNumber}
+                      <div className="flex items-baseline flex-wrap gap-x-1.5 w-full pr-4">
+                        <span className={`text-sm font-black shrink-0 ${isSelected ? 'text-blue-100' : 'text-blue-600'}`}>
+                          {team.teamNumber}
+                        </span>
+                        <span className="text-sm font-bold truncate max-w-[80px]">
+                          {team.leaderName}
+                        </span>
+                        <span className={`text-[11px] font-normal truncate max-w-[120px] ${isSelected ? 'text-blue-100/80' : 'text-gray-400'}`}>
+                          {team.leaderAffiliation.split(' ').pop()}
+                        </span>
+                      </div>
                       {hasPending && !isSelected && (
-                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white shadow-sm"></span>
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white shadow-sm animate-pulse"></span>
                       )}
                     </button>
                   )
                 })}
               </div>
-              <p className="text-[10px] text-gray-400 mt-2 italic">팀 번호를 클릭하여 상세 정보를 확인하고 필터링하세요.</p>
             </div>
 
             {selectedTeam && (
@@ -187,7 +199,7 @@ function CombinedDashboardView({
                         )}
                       </p>
                       <p className="text-[10px] text-gray-500 mt-0.5">
-                        {selectedTeam.users?.filter((u:any) => u.name !== selectedTeam.leaderName).map((u:any) => u.name).join(', ')}
+                        {selectedTeam.users?.filter((u: any) => u.name !== selectedTeam.leaderName).map((u: any) => u.name).join(', ')}
                       </p>
                     </div>
                   </div>
@@ -216,8 +228,57 @@ function CombinedDashboardView({
           </div>
         </div>
 
-        {/* Right Column: Plans List */}
-        <div className="lg:col-span-2">
+        {/* Right Column: Charts and Plans List */}
+        <div className="lg:col-span-2 space-y-6">
+          {selectedTeam && (
+            <div className="card overflow-hidden">
+              <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider">팀 예산 현황 ({selectedTeam.teamNumber})</h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-blue-700">
+                    {teamTotalUsed.toLocaleString()} / 2,000,000원
+                  </span>
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black">
+                    {Math.round((teamTotalUsed / 2000000) * 100)}%
+                  </span>
+                </div>
+              </div>
+              <div className="p-4 pt-2 space-y-1">
+                {Object.keys(PURPOSE_LABELS).map(key => {
+                  const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
+                  const used = teamPlans.filter(p => p.purpose === key && p.status === 'APPROVED').reduce((acc, p) => acc + (p.actualAmount ?? p.amount), 0)
+                  const limit = selectedTeam.budgetLimits?.find((l: any) => l.purpose === key)?.amount || 0
+                  const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+
+                  if (limit === 0 && used === 0) return null
+
+                  return (
+                    <div key={key} className="flex items-center gap-4 py-0.5 border-b border-gray-50/50 last:border-0">
+                      <span className="text-[11px] font-bold text-gray-700 w-24 shrink-0 truncate" title={label}>{label}</span>
+                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden relative shadow-inner">
+                        <div
+                          className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out rounded-full ${percent >= 100 ? 'bg-red-500' : percent >= 80 ? 'bg-yellow-500' : 'bg-blue-500'
+                            }`}
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-medium text-gray-500 w-32 text-right shrink-0">
+                        <span className="text-blue-600 font-bold">{used.toLocaleString()}</span> / {limit.toLocaleString()} <span className="text-[9px] text-gray-400">({percent}%)</span>
+                      </span>
+                    </div>
+                  )
+                })}
+                {Object.keys(PURPOSE_LABELS).every(key => {
+                  const used = teamPlans.filter(p => p.purpose === key && p.status === 'APPROVED').reduce((acc, p) => acc + (p.actualAmount ?? p.amount), 0)
+                  const limit = selectedTeam.budgetLimits?.find((l: any) => l.purpose === key)?.amount || 0
+                  return limit === 0 && used === 0
+                }) && (
+                    <p className="text-center py-4 text-xs text-gray-400">설정된 예산 한도가 없습니다.</p>
+                  )}
+              </div>
+            </div>
+          )}
+
           {!filter && (pending.length > 0 || resubmit.length > 0) && !selectedTeamId && (
             <div className="card border-l-4 border-l-red-400 mb-6">
               <div className="px-5 py-3 border-b border-gray-100 bg-red-50/30">
@@ -234,7 +295,7 @@ function CombinedDashboardView({
           <div className="card">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
               <h2 className="text-sm font-semibold text-gray-700">
-                {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'} 
+                {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'}
                 {filter ? ` (${currentFilterLabel})` : ''}
                 <span className="ml-2 text-xs text-gray-400 font-normal">({filteredPlans.length}건)</span>
               </h2>
