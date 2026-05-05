@@ -182,6 +182,7 @@ function TeamView({ teams, allPlans }: any) {
 }
 
 function BudgetView({ teams, allPlans }: any) {
+  const TEAM_BUDGET = 2000000 // 팀당 총 예산 200만 원
   const purposes = Object.keys(PURPOSE_LABELS) as Array<keyof typeof PURPOSE_LABELS>
 
   // Build per-team data
@@ -210,6 +211,7 @@ function BudgetView({ teams, allPlans }: any) {
   // Grand totals
   const grandPlanned = teamData.reduce((s: number, t: any) => s + t.totalPlanned, 0)
   const grandActual = teamData.reduce((s: number, t: any) => s + t.totalActual, 0)
+  const grandTotalBudget = teams.length * TEAM_BUDGET
 
   const pctColor = (rate: number) => {
     if (rate >= 90) return 'text-green-700 bg-green-50'
@@ -227,7 +229,7 @@ function BudgetView({ teams, allPlans }: any) {
     <div className="card overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100">
         <h2 className="text-sm font-semibold text-gray-900">팀별 예산 현황</h2>
-        <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률</p>
+        <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률 (팀당 예산 {TEAM_BUDGET.toLocaleString()}원 기준)</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
@@ -245,7 +247,7 @@ function BudgetView({ teams, allPlans }: any) {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {teamData.map((td: any) => {
-              const rate = td.totalPlanned > 0 ? Math.round((td.totalActual / td.totalPlanned) * 100) : 0
+              const rate = Math.round((td.totalActual / TEAM_BUDGET) * 100)
               return (
                 <tr key={td.team.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-4 py-3 font-medium text-gray-900 sticky left-0 bg-white z-10">
@@ -267,7 +269,7 @@ function BudgetView({ teams, allPlans }: any) {
                   </td>
                   <td className="text-center px-4 py-3">
                     <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(rate)}`}>
-                      {pct(td.totalActual, td.totalPlanned)}
+                      {pct(td.totalActual, TEAM_BUDGET)}
                     </span>
                   </td>
                 </tr>
@@ -296,8 +298,8 @@ function BudgetView({ teams, allPlans }: any) {
                 )}
               </td>
               <td className="text-center px-4 py-3">
-                <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(grandPlanned > 0 ? Math.round((grandActual / grandPlanned) * 100) : 0)}`}>
-                  {pct(grandActual, grandPlanned)}
+                <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(grandTotalBudget > 0 ? Math.round((grandActual / grandTotalBudget) * 100) : 0)}`}>
+                  {pct(grandActual, grandTotalBudget)}
                 </span>
               </td>
             </tr>
