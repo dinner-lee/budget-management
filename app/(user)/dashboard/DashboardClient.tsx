@@ -27,7 +27,7 @@ export default function DashboardClient({
 
   const pieData = [
     { name: '사용 금액', value: totalUsed },
-    { name: '남은 잔액', value: totalBalance > 0 ? totalBalance : 0 }
+    { name: '잔액', value: totalBalance > 0 ? totalBalance : 0 }
   ]
 
   const upcomingMilestones = milestones
@@ -66,22 +66,25 @@ export default function DashboardClient({
           <h2 className="text-sm font-bold text-gray-800 mb-2 self-start">전체 예산 사용 현황</h2>
           <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  <Cell fill="#ef4444" /> {/* 사용 금액: Red */}
-                  <Cell fill="#22c55e" /> {/* 잔액: Green */}
-                </Pie>
-                <Tooltip formatter={(value: any) => `${Number(value).toLocaleString()}원`} />
-                <Legend />
-              </PieChart>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    <Cell fill="#ef4444" /> {/* 사용 금액: Red */}
+                    <Cell fill="#22c55e" /> {/* 잔액: Green */}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any) => `${Number(value).toLocaleString()}원`}
+                    contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 500, fontSize: '12px' }} />
+                </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="w-full space-y-2 mt-4 text-sm">
@@ -108,12 +111,26 @@ export default function DashboardClient({
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `${value / 10000}만`} />
-                  <Tooltip formatter={(value: any) => `${Number(value).toLocaleString()}원`} cursor={{ fill: '#f3f4f6' }} />
-                  <Legend />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 12, fill: '#6b7280' }} 
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 12, fill: '#6b7280' }} 
+                    tickFormatter={(value) => `${value / 10000}만`}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip 
+                    formatter={(value: any) => `${Number(value).toLocaleString()}원`} 
+                    cursor={{ fill: '#f3f4f6' }}
+                    contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 500, fontSize: '12px', paddingTop: '10px' }} />
                   <Bar dataKey="사용금액" stackId="a" fill="#8884d8" name="사용 금액" />
-                  <Bar dataKey="잔액" stackId="a" fill="#82ca9d" name="남은 한도" />
+                  <Bar dataKey="잔액" stackId="a" fill="#22c55e" name="항목별 한도" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
