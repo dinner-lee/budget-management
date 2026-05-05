@@ -40,18 +40,22 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <p className="text-sm text-gray-500">대시보드에 표시될 예산 사용 관련 주요 일정(중간발표, 마감일 등)을 관리합니다.</p>
-
-      <form onSubmit={handleAdd} className="card p-5 flex gap-3 items-end">
-        <div className="flex-1">
-          <label className="label">일정 이름</label>
-          <input type="text" className="input" value={name} onChange={e => setName(e.target.value)} required placeholder="예: 예산사용 마감일" />
+      <form onSubmit={handleAdd} className="card p-5 space-y-4">
+        <div className="flex gap-3 items-end">
+          <div className="flex-1">
+            <label className="label">일정 이름</label>
+            <input type="text" className="input" value={name} onChange={e => setName(e.target.value)} required placeholder="예: 예산사용 마감일" />
+          </div>
+          <div className="flex-1">
+            <label className="label">날짜</label>
+            <input type="date" className="input" value={date} onChange={e => setDate(e.target.value)} required />
+          </div>
+          <button type="submit" className="btn-primary" disabled={loading}>추가</button>
         </div>
-        <div className="flex-1">
-          <label className="label">날짜</label>
-          <input type="date" className="input" value={date} onChange={e => setDate(e.target.value)} required />
-        </div>
-        <button type="submit" className="btn-primary" disabled={loading}>추가</button>
+        <p className="text-[11px] text-gray-400 flex items-center gap-1">
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          대시보드에 표시될 예산 사용 관련 주요 일정(중간발표, 마감일 등)을 관리합니다.
+        </p>
       </form>
 
       <div className="card">
