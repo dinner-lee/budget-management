@@ -73,19 +73,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        {activePlanCount >= 3 ? (
-          <div className="text-right">
-            <p className="text-sm text-orange-600 font-medium">증빙 미완료 건수가 3건입니다.</p>
-            <p className="text-xs text-gray-500">기존 계획서 증빙을 완료해 주세요.</p>
-          </div>
-        ) : (
-          <Link href="/plans/new" className="btn-primary">
-            새 예산 사용 계획서 작성
-          </Link>
-        )}
-      </div>
-
       {/* Active plan alert */}
       {resubmitPlans.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm">
@@ -104,6 +91,7 @@ export default async function DashboardPage() {
         budgetStatus={budgetStatus} 
         milestones={milestones} 
         plans={plans} 
+        activePlanCount={activePlanCount}
       />
     </div>
   )
