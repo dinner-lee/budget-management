@@ -22,11 +22,17 @@ export default function SubmitForReviewButton({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
-  const [isDifferentAmount, setIsDifferentAmount] = useState(false)
   const [actualAmountRaw, setActualAmountRaw] = useState(plannedAmount.toString())
+  const [amountTouched, setAmountTouched] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const requiredEvidences = evidences.filter(e => e.required)
   const allRequiredChecked = requiredEvidences.every(e => checkedItems.has(e.id))
+
+  const handleAmountChange = (value: string) => {
+    setActualAmountRaw(value)
+    setAmountTouched(true)
+  }
 
   const handleToggle = (id: string) => {
     const newChecked = new Set(checkedItems)
@@ -46,28 +52,17 @@ export default function SubmitForReviewButton({
     )
   }
 
-  async function handleSubmit() {
-    if (!allRequiredChecked) {
-      setError('모든 필수 증빙 파일에 대해 업로드 확인을 체크해주세요.')
-      return
-    }
-
-    let actualAmount: number | null = null
-    if (isDifferentAmount) {
-      actualAmount = parseInt(actualAmountRaw, 10)
-      if (isNaN(actualAmount) || actualAmount < 0) {
-        setError('유효한 실제 지출 금액을 입력해주세요.')
-        return
-      }
-    }
-
+  async function doSubmit() {
+    setShowConfirm(false)
     setError('')
     setLoading(true)
+
+    const actualAmount = parseInt(actualAmountRaw, 10)
 
     const res = await fetch(`/api/plans/${planId}/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ actualAmount })
+      body: JSON.stringify({ actualAmount: isNaN(actualAmount) ? null : actualAmount })
     })
     const data = await res.json()
     setLoading(false)
@@ -77,9 +72,29 @@ export default function SubmitForReviewButton({
       return
     }
 
-    // 완전히 성공했을 시, 대시보드로 이동
     router.push('/dashboard')
     router.refresh()
+  }
+
+  async function handleSubmit() {
+    if (!allRequiredChecked) {
+      setError('모든 필수 증빙 파일에 대해 업로드 확인을 체크해주세요.')
+      return
+    }
+
+    const actualAmount = parseInt(actualAmountRaw, 10)
+    if (isNaN(actualAmount) || actualAmount < 0) {
+      setError('유효한 실제 지출 금액을 입력해주세요.')
+      return
+    }
+
+    // 금액을 수정하지 않았다면 확인 팝업 표시
+    if (!amountTouched || actualAmount === plannedAmount) {
+      setShowConfirm(true)
+      return
+    }
+
+    await doSubmit()
   }
 
   return (
@@ -162,30 +177,36 @@ export default function SubmitForReviewButton({
         </div>
       </div>
 
-      <div className="mb-5 bg-gray-50 p-4 rounded-md border border-gray-200">
-        <label className="flex items-center gap-2 cursor-pointer mb-3">
-          <input
-            type="checkbox"
-            checked={isDifferentAmount}
-            onChange={(e) => setIsDifferentAmount(e.target.checked)}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="text-sm font-medium text-gray-700">
-            실제 지출 금액이 계획서의 금액({plannedAmount.toLocaleString()}원)과 다릅니다.
-          </span>
+      {/* 실제 지출 금액 입력 */}
+      <div className="mb-5 bg-gray-50 p-5 rounded-lg border border-gray-200">
+        <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="actualAmount">
+          실제 지출 금액
         </label>
-
-        {isDifferentAmount && (
-          <div className="pl-6">
-            <label className="block text-xs text-gray-500 mb-1">실제 지출 금액 (원)</label>
-            <input
-              type="number"
-              value={actualAmountRaw}
-              onChange={(e) => setActualAmountRaw(e.target.value)}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-1.5"
-              min="0"
-            />
-          </div>
+        <p className="text-xs text-gray-500 mb-3">
+          계획서 금액: {plannedAmount.toLocaleString()}원 · 실제 지출한 금액이 다르다면 수정해 주세요.
+        </p>
+        <div className="relative">
+          <input
+            id="actualAmount"
+            type="number"
+            value={actualAmountRaw}
+            onChange={(e) => handleAmountChange(e.target.value)}
+            className={`w-full border rounded-lg shadow-sm px-4 py-3 text-lg focus:border-blue-500 focus:ring-blue-500 transition-colors ${
+              amountTouched && parseInt(actualAmountRaw, 10) !== plannedAmount
+                ? 'border-blue-400 text-gray-900 font-bold bg-white'
+                : 'border-gray-300 text-gray-500 bg-white'
+            }`}
+            min="0"
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">원</span>
+        </div>
+        {amountTouched && parseInt(actualAmountRaw, 10) !== plannedAmount && (
+          <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            계획서 금액과 {Math.abs(parseInt(actualAmountRaw, 10) - plannedAmount).toLocaleString()}원 차이가 있습니다.
+          </p>
         )}
       </div>
 
@@ -202,6 +223,32 @@ export default function SubmitForReviewButton({
       >
         {loading ? '요청 중...' : '검토 요청하기'}
       </button>
+
+      {/* 금액 확인 팝업 */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">실제 지출 금액 확인</h3>
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+              계획서의 금액 <strong>{plannedAmount.toLocaleString()}원</strong>을 실제로 지출한 것이 맞으신가요?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={doSubmit}
+                className="btn-primary flex-1"
+              >
+                네, 맞습니다
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="btn-secondary flex-1"
+              >
+                금액 수정하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
