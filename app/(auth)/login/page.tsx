@@ -135,6 +135,7 @@ export default function LoginPage() {
           </form>
         )}
       </div>
+      </div>
       <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
         서울대학교 학습과학연구소 | (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 | 02-880-4498
       </div>
