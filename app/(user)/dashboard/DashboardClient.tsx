@@ -76,14 +76,17 @@ export default function DashboardClient({
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    <Cell fill="#ef4444" /> {/* 사용 금액: Red */}
-                    <Cell fill="#22c55e" /> {/* 잔액: Green */}
+                    <Cell fill="#3b82f6" /> {/* 사용 금액: Blue */}
+                    <Cell fill="#e5e7eb" /> {/* 잔액: Gray */}
                   </Pie>
                   <Tooltip 
                     formatter={(value: any) => `${Number(value).toLocaleString()}원`}
                     contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
-                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 800, fontSize: '12px' }} />
+                  <Legend 
+                    formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
+                    wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '12px' }} 
+                  />
                 </PieChart>
             </ResponsiveContainer>
           </div>
@@ -128,7 +131,10 @@ export default function DashboardClient({
                     cursor={{ fill: '#f3f4f6' }}
                     contentStyle={{ fontFamily: 'Pretendard', fontWeight: 400, borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
-                  <Legend wrapperStyle={{ fontFamily: 'Pretendard', fontWeight: 800, fontSize: '12px', paddingTop: '10px' }} />
+                  <Legend 
+                    formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
+                    wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '12px', paddingTop: '10px' }} 
+                  />
                   <Bar dataKey="사용금액" stackId="a" fill="#3b82f6" name="사용 금액">
                     <LabelList 
                       dataKey="사용금액" 
