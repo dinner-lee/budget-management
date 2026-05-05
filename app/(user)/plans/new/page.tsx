@@ -77,9 +77,7 @@ export default function NewPlanPage() {
     <div className="max-w-2xl">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">새 예산 사용 계획서 작성</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          계획서를 제출하면 해당 목적에 맞는 증빙 항목이 생성됩니다.
-        </p>
+
       </div>
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">

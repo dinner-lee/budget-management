@@ -26,31 +26,32 @@ export default function DashboardClient({
       <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} />
       <PlanListSection plans={plans} activePlanCount={activePlanCount} />
 
-      {/* Floating Action Button (FAB) for New Plan */}
+      {/* Floating Action Button (FAB) for New Plan - Permanently Expanded */}
       <div className="fixed bottom-8 right-8 z-40">
         {activePlanCount < 3 ? (
           <Link
             href="/plans/new"
-            className="group flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl transition-all duration-300 ease-in-out h-14 w-14 hover:w-64 overflow-hidden"
+            className="flex items-center text-white rounded-full shadow-2xl transition-all duration-300 ease-in-out h-14 px-6 overflow-hidden border border-white/10"
+            style={{ backgroundColor: '#15378F' }}
           >
-            <div className="flex items-center justify-center min-w-[3.5rem]">
-              {/* Document with Plus Icon */}
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <span className="whitespace-nowrap pr-6 font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <svg className="w-6 h-6 shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="whitespace-nowrap ml-3 font-bold text-sm">
               새로운 예산 사용 계획서 작성
             </span>
           </Link>
         ) : (
           <div 
-            className="flex items-center justify-center bg-gray-400 text-white rounded-full shadow-xl h-14 w-14 cursor-not-allowed"
+            className="flex items-center bg-gray-400 text-white rounded-full shadow-xl h-14 px-6 cursor-not-allowed opacity-80"
             title="증빙 미완료 3건 초과로 작성이 제한됩니다"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m11 3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11 3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
+            <span className="whitespace-nowrap ml-3 font-bold text-sm">
+              예산 사용 계획서 작성 제한
+            </span>
           </div>
         )}
       </div>
@@ -107,30 +108,30 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
         {/* 전체 요약 (Pie Chart) */}
         <div className="card p-5 flex flex-col justify-center items-center">
           <h2 className="text-sm font-bold text-gray-800 mb-2 self-start">전체 예산 사용 현황</h2>
-          <div className="w-full h-52">
+          <div className="w-full h-44">
             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={75}
-                    paddingAngle={5}
-                    dataKey="value"
-                    isAnimationActive={false}
-                  >
-                    <Cell fill="#3b82f6" />
-                    <Cell fill="#e5e7eb" />
-                  </Pie>
-                  <Legend 
-                    formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
-                    wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px' }} 
-                  />
-                </PieChart>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={60}
+                  paddingAngle={5}
+                  dataKey="value"
+                  isAnimationActive={false}
+                >
+                  <Cell fill="#15378F" />
+                  <Cell fill="#e5e7eb" />
+                </Pie>
+                <Legend
+                  formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
+                  wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px' }}
+                />
+              </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="w-full space-y-1.5 mt-2 text-sm">
+          <div className="w-full space-y-1 mt-1 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">총 예산</span>
               <span className="font-semibold text-gray-900">{totalBudget.toLocaleString()}원</span>
@@ -139,7 +140,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
               <span className="text-red-500">사용 금액</span>
               <span className="font-semibold text-red-600">{totalUsed.toLocaleString()}원</span>
             </div>
-            <div className="flex justify-between pt-1.5 border-t border-gray-100">
+            <div className="flex justify-between pt-1 border-t border-gray-100">
               <span className="text-green-600 font-bold">잔액</span>
               <span className="font-bold text-green-700">{totalBalance.toLocaleString()}원</span>
             </div>
@@ -154,36 +155,36 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fontFamily: 'Pretendard', fontWeight: 600, fontSize: 12, fill: '#000' }} 
-                    axisLine={{ stroke: '#e5e7eb' }}
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 11, fill: '#6b7280' }} 
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 12, fill: '#000' }}
+                  axisLine={{ stroke: '#e5e7eb' }}
+                  tickLine={false}
+                />
+                  <YAxis
+                    tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 11, fill: '#6b7280' }}
                     tickFormatter={(value) => `${value / 10000}만`}
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Legend 
+                  <Legend
                     formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
-                    wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px', paddingTop: '5px' }} 
+                    wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px', paddingTop: '5px' }}
                   />
-                  <Bar dataKey="사용금액" stackId="a" fill="#3b82f6" name="사용 금액" isAnimationActive={false}>
-                    <LabelList 
-                      dataKey="사용금액" 
-                      position="center" 
-                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}` : ''} 
-                      style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }} 
+                  <Bar dataKey="사용금액" stackId="a" fill="#15378F" name="사용 금액" isAnimationActive={false}>
+                    <LabelList
+                      dataKey="사용금액"
+                      position="center"
+                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}` : ''}
+                      style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }}
                     />
                   </Bar>
                   <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도" isAnimationActive={false}>
-                    <LabelList 
-                      dataKey="한도" 
-                      position="top" 
-                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}원` : ''} 
-                      style={{ fill: '#111827', fontSize: 10, fontWeight: 900, pointerEvents: 'none' }} 
+                    <LabelList
+                      dataKey="한도"
+                      position="top"
+                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}원` : ''}
+                      style={{ fill: '#111827', fontSize: 10, fontWeight: 900, pointerEvents: 'none' }}
                     />
                   </Bar>
                 </BarChart>
@@ -202,9 +203,9 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 
 function PlanListSection({ plans, activePlanCount }: { plans: any[], activePlanCount: number }) {
   const [purposeFilter, setPurposeFilter] = useState<string>('ALL')
-  
-  const filteredPlans = purposeFilter === 'ALL' 
-    ? plans 
+
+  const filteredPlans = purposeFilter === 'ALL'
+    ? plans
     : plans.filter(p => p.purpose === purposeFilter)
 
   return (
@@ -223,10 +224,10 @@ function PlanListSection({ plans, activePlanCount }: { plans: any[], activePlanC
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">사용 목적:</span>
-          <select 
-            value={purposeFilter} 
+          <select
+            value={purposeFilter}
             onChange={(e) => setPurposeFilter(e.target.value)}
-            className="text-xs border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-500 bg-white"
+            className="text-xs border border-gray-200 rounded px-2 py-1.5 outline-none focus:ring-1 focus:ring-[#15378F] focus:border-[#15378F] bg-white transition-all"
           >
             <option value="ALL">전체 보기</option>
             {Object.entries(PURPOSE_LABELS).map(([value, label]) => (
@@ -251,7 +252,7 @@ function PlanListSection({ plans, activePlanCount }: { plans: any[], activePlanC
                   <div className="flex items-center gap-2 mb-1">
                     <Link
                       href={`/plans/${plan.id}`}
-                      className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate"
+                      className="text-sm font-medium text-gray-900 hover:text-primary-500 truncate"
                     >
                       {plan.title}
                     </Link>
@@ -271,7 +272,8 @@ function PlanListSection({ plans, activePlanCount }: { plans: any[], activePlanC
                 {['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status) ? (
                   <Link
                     href={`/plans/${plan.id}`}
-                    className="ml-4 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md px-3 py-1.5 shrink-0 transition"
+                    className="ml-4 text-xs font-medium text-white rounded-md px-3 py-1.5 shrink-0 transition-all shadow-sm"
+                    style={{ backgroundColor: '#15378F' }}
                   >
                     증빙 서류 제출
                   </Link>

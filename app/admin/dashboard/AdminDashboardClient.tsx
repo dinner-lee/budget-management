@@ -33,7 +33,7 @@ export default function AdminDashboardClient({
     <div className="space-y-6">
       <div className="flex border-b border-gray-200">
         <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'DASHBOARD' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'DASHBOARD' ? 'border-primary-500 text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('DASHBOARD')}
           title="대시보드"
         >
@@ -41,7 +41,7 @@ export default function AdminDashboardClient({
           <span className="hidden sm:inline">팀별</span>
         </button>
         <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'BUDGET' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'BUDGET' ? 'border-primary-500 text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('BUDGET')}
           title="예산 현황"
         >
@@ -49,7 +49,7 @@ export default function AdminDashboardClient({
           <span className="hidden sm:inline">전체</span>
         </button>
         <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-primary-500 text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
           onClick={() => setView('CALENDAR')}
           title="캘린더 보기"
         >
@@ -90,7 +90,7 @@ function CombinedDashboardView({
   filter, setFilter, selectedTeamId, setSelectedTeamId
 }: any) {
   const stats = [
-    { label: '검토 대기', value: pending.length, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', status: 'UNDER_REVIEW' },
+    { label: '검토 대기', value: pending.length, color: 'text-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
     { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
     { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', status: 'PENDING_EVIDENCE' },
     { label: '승인 완료', value: approved.length, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
@@ -154,13 +154,13 @@ function CombinedDashboardView({
                       key={team.id}
                       onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
                       className={`relative p-3 rounded-lg transition-all border text-left min-h-[52px] flex items-center ${isSelected
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-md z-10'
-                        : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                        ? 'bg-primary-500 border-primary-500 text-white shadow-md z-10'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-primary-200 hover:bg-primary-50'
                         }`}
                       title={`${team.leaderName} (${team.leaderAffiliation}) - ${team.researchTopic}`}
                     >
                       <div className="flex items-baseline flex-wrap gap-x-1.5 w-full pr-4">
-                        <span className={`text-sm font-black shrink-0 ${isSelected ? 'text-blue-100' : 'text-blue-600'}`}>
+                        <span className={`text-sm font-black shrink-0 ${isSelected ? 'text-white/80' : 'text-primary-500'}`}>
                           {team.teamNumber}
                         </span>
                         <span className="text-sm font-bold truncate max-w-[80px]">
@@ -218,9 +218,9 @@ function CombinedDashboardView({
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-blue-100/50 flex justify-between items-center">
+                  <div className="pt-2 border-t border-primary-100/50 flex justify-between items-center">
                     <p className="text-[10px] text-gray-400 font-bold uppercase">지출액</p>
-                    <p className="text-base font-black text-blue-700">{teamTotalUsed.toLocaleString()}원</p>
+                    <p className="text-base font-black text-primary-500">{teamTotalUsed.toLocaleString()}원</p>
                   </div>
                 </div>
               </div>
@@ -235,10 +235,10 @@ function CombinedDashboardView({
               <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                 <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider">팀 예산 현황 ({selectedTeam.teamNumber})</h3>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-blue-700">
+                  <span className="text-xs font-bold text-primary-500">
                     {teamTotalUsed.toLocaleString()} / 2,000,000원
                   </span>
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black">
+                  <span className="px-2 py-0.5 bg-primary-100 text-primary-500 rounded-full text-[10px] font-black">
                     {Math.round((teamTotalUsed / 2000000) * 100)}%
                   </span>
                 </div>
@@ -263,7 +263,7 @@ function CombinedDashboardView({
                         />
                       </div>
                       <span className="text-[10px] font-medium text-gray-500 w-32 text-right shrink-0">
-                        <span className="text-blue-600 font-bold">{used.toLocaleString()}</span> / {limit.toLocaleString()} <span className="text-[9px] text-gray-400">({percent}%)</span>
+                        <span className="text-primary-500 font-bold">{used.toLocaleString()}</span> / {limit.toLocaleString()} <span className="text-[9px] text-gray-400">({percent}%)</span>
                       </span>
                     </div>
                   )
@@ -596,7 +596,7 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
           </p>
         )}
       </div>
-      <Link href={`/admin/plans/${plan.id}`} className="ml-4 text-xs text-blue-600 hover:underline shrink-0">
+      <Link href={`/admin/plans/${plan.id}`} className="ml-4 text-xs text-primary-500 hover:underline shrink-0">
         검토하기
       </Link>
     </div>

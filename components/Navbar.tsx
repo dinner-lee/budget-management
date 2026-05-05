@@ -47,7 +47,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${pathname.startsWith(link.href)
-                    ? 'bg-blue-50 text-blue-700'
+                    ? 'bg-primary-50 text-primary-500'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                 >
@@ -63,7 +63,7 @@ export default function Navbar() {
                 {session?.user.name}
               </span>
               {isAdmin && (
-                <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">
+                <span className="text-[10px] bg-primary-100 text-primary-500 px-1.5 py-0.5 rounded font-bold">
                   관리자
                 </span>
               )}
@@ -104,7 +104,7 @@ export default function Navbar() {
                 href={link.href}
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2.5 rounded-md text-base font-medium ${pathname.startsWith(link.href)
-                  ? 'bg-blue-50 text-blue-700'
+                  ? 'bg-primary-50 text-primary-500'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
               >

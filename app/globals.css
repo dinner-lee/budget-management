@@ -16,16 +16,33 @@
     @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+    @apply btn text-white shadow-sm;
+    background-color: #15378F;
+    &:hover {
+      background-color: #112d75;
+    }
+    &:focus {
+      --tw-ring-color: #15378F;
+    }
   }
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500;
+    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50;
+    &:focus {
+      --tw-ring-color: #15378F;
+    }
   }
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    @apply btn bg-red-600 text-white hover:bg-red-700;
+    &:focus {
+      --tw-ring-color: #ef4444;
+    }
   }
   .input {
-    @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
+    @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1;
+    &:focus {
+      border-color: #15378F;
+      --tw-ring-color: #15378F;
+    }
   }
   .label {
     @apply block text-sm font-medium text-gray-700 mb-1;
