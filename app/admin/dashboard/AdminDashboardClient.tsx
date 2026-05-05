@@ -126,74 +126,94 @@ function CombinedDashboardView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column: Team Filter and Metadata */}
         <div className="lg:col-span-1 space-y-4">
-          <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4 flex justify-between items-center">
-              팀 필터
+          <div className="card">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">팀 필터</h2>
               {selectedTeamId && (
                 <button 
                   onClick={() => setSelectedTeamId(null)}
-                  className="text-[10px] text-blue-600 hover:underline"
+                  className="text-[10px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-100 transition-colors shadow-sm"
                 >
-                  필터 해제
+                  초기화
                 </button>
               )}
-            </h2>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-              {teams.map((team: any) => {
-                const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
-                const pendingCount = teamPlans.filter((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED').length
-                
-                return (
-                  <div
-                    key={team.id}
-                    onClick={() => setSelectedTeamId(selectedTeamId === team.id ? null : team.id)}
-                    className={`p-2 rounded border cursor-pointer transition-all ${
-                      selectedTeamId === team.id 
-                        ? 'bg-blue-50 border-blue-200' 
-                        : 'bg-white border-gray-100 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${selectedTeamId === team.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                          {team.teamNumber}
-                        </span>
-                        <span className="text-xs font-medium text-gray-900">{team.leaderName}</span>
-                      </div>
-                      {pendingCount > 0 && (
-                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            </div>
+            <div className="p-4">
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {teams.map((team: any) => {
+                  const teamPlans = allPlans.filter((p: any) => (p.teamId || p.user?.teamId) === team.id)
+                  const hasPending = teamPlans.some((p: any) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED')
+                  const isSelected = selectedTeamId === team.id
+
+                  return (
+                    <button
+                      key={team.id}
+                      onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
+                      className={`relative px-2 py-1.5 rounded text-xs font-bold transition-all border ${
+                        isSelected 
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-105 z-10' 
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                      title={`${team.leaderName} - ${team.researchTopic}`}
+                    >
+                      {team.teamNumber}
+                      {hasPending && !isSelected && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white shadow-sm"></span>
                       )}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="text-[10px] text-gray-400 mt-2 italic">팀 번호를 클릭하여 상세 정보를 확인하고 필터링하세요.</p>
+            </div>
+
+            {selectedTeam && (
+              <div className="p-4 border-t border-gray-100 bg-blue-50/20">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg shrink-0">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase">구성원</p>
+                      <p className="text-xs text-gray-900 font-bold">
+                        {selectedTeam.leaderName} (대표)
+                        {selectedTeam.users?.length > 1 && (
+                          <span className="text-gray-500 font-normal ml-1">
+                            외 {selectedTeam.users.length - 1}명
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">
+                        {selectedTeam.users?.filter((u:any) => u.name !== selectedTeam.leaderName).map((u:any) => u.name).join(', ')}
+                      </p>
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
 
-          {selectedTeam && (
-            <div className="card p-5 bg-blue-50/30 border-blue-100">
-              <h3 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-4 pb-2 border-b border-blue-100">팀 상세 정보</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold mb-1">연구 주제</p>
-                  <p className="text-xs text-gray-800 font-medium leading-relaxed">{selectedTeam.researchTopic}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold mb-1">팀원 정보</p>
-                  <p className="text-xs text-gray-800 font-medium">
-                    <span className="text-blue-600">대표:</span> {selectedTeam.leaderName}<br/>
-                    <span className="text-gray-500">실무자:</span> {selectedTeam.users?.filter((u:any) => u.name !== selectedTeam.leaderName).map((u:any) => u.name).join(', ') || '없음'}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-blue-100 flex justify-between items-end">
-                  <div>
-                    <p className="text-[10px] text-gray-400 font-bold mb-1">현재 사용 금액</p>
-                    <p className="text-lg font-bold text-blue-700">{teamTotalUsed.toLocaleString()}원</p>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg shrink-0">
+                      <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase">연구 주제</p>
+                      <p className="text-xs text-gray-800 font-medium leading-snug line-clamp-2" title={selectedTeam.researchTopic}>
+                        {selectedTeam.researchTopic}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-blue-100/50 flex justify-between items-center">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase">지출액</p>
+                    <p className="text-base font-black text-blue-700">{teamTotalUsed.toLocaleString()}원</p>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Right Column: Plans List */}
