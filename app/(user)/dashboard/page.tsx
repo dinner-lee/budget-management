@@ -18,19 +18,19 @@ export default async function DashboardPage() {
   })
 
   const [plans, budgetLimits, milestones] = await Promise.all([
-    user?.teamId 
+    user?.teamId
       ? prisma.budgetPlan.findMany({
-          where: { teamId: user.teamId },
-          include: {
-            evidences: true,
-          },
-          orderBy: { createdAt: 'desc' },
-        })
+        where: { teamId: user.teamId },
+        include: {
+          evidences: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      })
       : Promise.resolve([]),
     user?.teamId
       ? prisma.teamBudgetLimit.findMany({
-          where: { teamId: user.teamId },
-        })
+        where: { teamId: user.teamId },
+      })
       : Promise.resolve([]),
     prisma.milestone.findMany({
       orderBy: { date: 'asc' }
@@ -87,10 +87,10 @@ export default async function DashboardPage() {
       )}
 
       {/* Dashboard Client Component (Charts, Milestones, and Plans List) */}
-      <DashboardClient 
-        budgetStatus={budgetStatus} 
-        milestones={milestones} 
-        plans={plans} 
+      <DashboardClient
+        budgetStatus={budgetStatus}
+        milestones={milestones}
+        plans={plans}
         activePlanCount={activePlanCount}
       />
     </div>

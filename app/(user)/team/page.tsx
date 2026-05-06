@@ -16,13 +16,13 @@ export default async function TeamPage() {
 
   const team = user?.teamId
     ? await prisma.team.findUnique({
-        where: { id: user.teamId },
-        include: {
-          users: {
-            select: { id: true, name: true, email: true }
-          }
+      where: { id: user.teamId },
+      include: {
+        users: {
+          select: { id: true, name: true, email: true }
         }
-      })
+      }
+    })
     : null
 
   return <TeamClient initialTeam={team} />

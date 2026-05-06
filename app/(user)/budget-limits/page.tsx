@@ -16,8 +16,8 @@ export default async function BudgetLimitsPage() {
 
   const limits = user?.teamId
     ? await prisma.teamBudgetLimit.findMany({
-        where: { teamId: user.teamId }
-      })
+      where: { teamId: user.teamId }
+    })
     : []
 
   return <BudgetLimitsClient initialLimits={limits} />
