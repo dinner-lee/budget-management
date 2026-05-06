@@ -62,13 +62,14 @@ export default function NewPlanPage() {
     })
 
     const data = await res.json()
-    setLoading(false)
 
     if (!res.ok) {
+      setLoading(false)
       setError(data.error ?? '오류가 발생했습니다.')
       return
     }
 
+    // 성공 시에는 loading을 false로 돌리지 않고 바로 이동하여 버튼이 다시 활성화되는 것을 방지
     router.push('/dashboard')
     router.refresh()
   }
@@ -77,7 +78,6 @@ export default function NewPlanPage() {
     <div className="max-w-2xl">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">새 예산 사용 계획서 작성</h1>
-
       </div>
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
@@ -90,6 +90,7 @@ export default function NewPlanPage() {
             value={form.purpose}
             onChange={(e) => set('purpose', e.target.value)}
             required
+            disabled={loading}
           >
             <option value="">-- 목적 선택 --</option>
             {PURPOSES.map(([key, label]) => (
@@ -125,6 +126,7 @@ export default function NewPlanPage() {
             value={form.amount}
             onChange={(e) => set('amount', e.target.value)}
             required
+            disabled={loading}
           />
           {budgetStatus && form.purpose && form.amount && (
             <div className="mt-2 space-y-1">
@@ -154,6 +156,7 @@ export default function NewPlanPage() {
             value={form.plannedDate}
             onChange={(e) => set('plannedDate', e.target.value)}
             required
+            disabled={loading}
           />
         </div>
 
@@ -166,9 +169,9 @@ export default function NewPlanPage() {
               value={form.timeStart}
               onChange={(e) => {
                 set('timeStart', e.target.value)
-                // 종료 시간이 시작보다 이르면 초기화
                 if (form.timeEnd && form.timeEnd <= e.target.value) set('timeEnd', '')
               }}
+              disabled={loading}
             >
               <option value="">시작 시간</option>
               {TIME_OPTIONS.map((t) => (
@@ -180,7 +183,7 @@ export default function NewPlanPage() {
               className="input"
               value={form.timeEnd}
               onChange={(e) => set('timeEnd', e.target.value)}
-              disabled={!form.timeStart}
+              disabled={!form.timeStart || loading}
             >
               <option value="">종료 시간 (선택)</option>
               {TIME_OPTIONS.filter((t) => t > form.timeStart).map((t) => (
@@ -200,11 +203,11 @@ export default function NewPlanPage() {
             id="expenditureOverview"
             className="input"
             rows={4}
-            placeholder="예: EEG 기반 ERP 연구의 설계 타당성을 제고하기 위해 기존 연구 계획을 수정·보완하
-고, 전문가 강의 및 자문 준비를 위한 사전 점검 및 실무 논의를 목적으로 함."
+            placeholder="예: EEG 기반 ERP 연구의 설계 타당성을 제고하기 위해 기존 연구 계획을 수정·보완하고..."
             value={form.expenditureOverview}
             onChange={(e) => set('expenditureOverview', e.target.value)}
             required
+            disabled={loading}
           />
         </div>
 
@@ -213,10 +216,16 @@ export default function NewPlanPage() {
         )}
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="btn-primary flex items-center gap-2" disabled={loading}>
+            {loading && (
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
             {loading ? '제출 중...' : '계획서 제출'}
           </button>
-          <button type="button" className="btn-secondary" onClick={() => router.back()}>
+          <button type="button" className="btn-secondary" onClick={() => router.back()} disabled={loading}>
             취소
           </button>
         </div>
@@ -224,3 +233,4 @@ export default function NewPlanPage() {
     </div>
   )
 }
+
