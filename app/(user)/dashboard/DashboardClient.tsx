@@ -289,13 +289,33 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
                   )}
                 </div>
                 {['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status) ? (
-                  <button
-                    onClick={() => onOpenSubmission(plan.id)}
-                    className="ml-4 text-xs font-medium text-white rounded-md px-3 py-1.5 shrink-0 transition-all shadow-sm active:scale-95"
-                    style={{ backgroundColor: '#15378F' }}
-                  >
-                    증빙 서류 제출
-                  </button>
+                  (() => {
+                    const isWaitingForDate = plan.isRecurring && plan.nextRepeatDate && new Date() < new Date(plan.nextRepeatDate)
+                    if (isWaitingForDate) {
+                      return (
+                        <div className="flex flex-col items-end gap-1">
+                          <button
+                            disabled
+                            className="ml-4 text-[11px] font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-md px-3 py-1.5 shrink-0 cursor-not-allowed"
+                          >
+                            결제 예정일 대기
+                          </button>
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(plan.nextRepeatDate).toLocaleDateString('ko-KR')} 활성화
+                          </span>
+                        </div>
+                      )
+                    }
+                    return (
+                      <button
+                        onClick={() => onOpenSubmission(plan.id)}
+                        className="ml-4 text-xs font-medium text-white rounded-md px-3 py-1.5 shrink-0 transition-all shadow-sm active:scale-95 hover:brightness-110"
+                        style={{ backgroundColor: '#15378F' }}
+                      >
+                        증빙 서류 제출
+                      </button>
+                    )
+                  })()
                 ) : (
                   <Link
                     href={`/plans/${plan.id}`}

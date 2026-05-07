@@ -380,13 +380,13 @@ function BudgetView({ teams, allPlans }: any) {
     const byPurpose: Record<string, { planned: number; actual: number }> = {}
     purposes.forEach(p => {
       const limit = team.budgetLimits?.find((l: BudgetLimit) => l.purpose === p)
-      byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0 }
+      byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0, hasPlan: false }
     })
 
     teamPlans.forEach((plan: any) => {
       const p = plan.purpose as string
       if (byPurpose[p]) {
-        // 계획 금액(planned)은 이제 팀 설정 한도값을 사용하므로 여기서는 더하지 않음
+        byPurpose[p].hasPlan = true
         if (plan.status === 'APPROVED') {
           byPurpose[p].actual += (plan.actualAmount ?? plan.amount)
         }
@@ -447,7 +447,7 @@ function BudgetView({ teams, allPlans }: any) {
                   {purposes.map(p => (
                     <td key={p} className="text-right px-3 py-3">
                       <div className="text-gray-700">{td.byPurpose[p].planned > 0 ? td.byPurpose[p].planned.toLocaleString() : '-'}</div>
-                      {(td.byPurpose[p].actual > 0 || td.byPurpose[p].planned > 0) && (
+                      {(td.byPurpose[p].actual > 0 || td.byPurpose[p].planned > 0 || td.byPurpose[p].hasPlan) && (
                         <div className="text-green-600 font-medium">{td.byPurpose[p].actual.toLocaleString()}</div>
                       )}
                     </td>
@@ -473,10 +473,11 @@ function BudgetView({ teams, allPlans }: any) {
               {purposes.map(p => {
                 const pPlanned = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].planned, 0)
                 const pActual = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].actual, 0)
+                const pHasPlan = teamData.some((t: any) => t.byPurpose[p].hasPlan)
                 return (
                   <td key={p} className="text-right px-3 py-3">
                     <div className="text-gray-900">{pPlanned > 0 ? pPlanned.toLocaleString() : '-'}</div>
-                    {(pActual > 0 || pPlanned > 0) && (
+                    {(pActual > 0 || pPlanned > 0 || pHasPlan) && (
                       <div className="text-green-600">{pActual.toLocaleString()}</div>
                     )}
                   </td>

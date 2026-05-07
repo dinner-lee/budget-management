@@ -5,6 +5,7 @@ import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge, EvidenceStatusBadge } from '@/components/StatusBadge'
 import { notFound, redirect } from 'next/navigation'
 import SubmitForReviewButton from './SubmitForReviewButton'
+import DeletePlanButton from './DeletePlanButton'
 
 export default async function PlanDetailPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -27,7 +28,8 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
   })
   if (!plan) notFound()
 
-  const canUpload = plan.status === 'PENDING_EVIDENCE' || plan.status === 'RESUBMIT_REQUIRED'
+  const isWaitingForDate = plan.isRecurring && plan.nextRepeatDate && new Date() < new Date(plan.nextRepeatDate)
+  const canUpload = (plan.status === 'PENDING_EVIDENCE' || plan.status === 'RESUBMIT_REQUIRED') && !isWaitingForDate
   const isOther = plan.purpose === 'OTHER'
 
   return (
@@ -39,23 +41,34 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
             <h1 className="text-xl font-bold text-gray-900">{plan.title}</h1>
             <PlanStatusBadge status={plan.status} />
           </div>
+          <DeletePlanButton planId={plan.id} />
           <p className="text-sm text-gray-500">
             {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
             {plan.amount.toLocaleString()}원 (계획){' '}
             {plan.actualAmount !== null && (
               <span className="font-semibold text-blue-600">
-                &middot; {plan.actualAmount.toLocaleString()}원 (실제 지출)
+                &middot; {plan.actualAmount.toLocaleString()}원 (누적 지출)
               </span>
             )}{' '}
             &middot; {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
             {plan.plannedTime && ` ${plan.plannedTime}`}
           </p>
           <p className="text-sm text-gray-600 mt-1">{plan.expenditureOverview}</p>
+          {plan.isRecurring && (
+            <p className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block mt-2 border border-indigo-100">
+              반복 결제 건 ({plan.completedRepeats}/{plan.totalRepeats}회 완료)
+            </p>
+          )}
         </div>
       </div>
 
       {/* Status guide */}
-      {plan.status === 'PENDING_EVIDENCE' && (
+      {isWaitingForDate && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-sm text-indigo-800">
+          다음 결제 예정일(<strong>{new Date(plan.nextRepeatDate!).toLocaleDateString('ko-KR')}</strong>)이 되면 증빙 서류 제출이 다시 활성화됩니다.
+        </div>
+      )}
+      {plan.status === 'PENDING_EVIDENCE' && !isWaitingForDate && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
           증빙 파일을 모두 준비하신 후, 하단의 안내에 따라 NAS에 파일을 업로드하고 <strong>검토 요청하기</strong> 버튼을 눌러주세요.
         </div>
@@ -146,6 +159,8 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
         <SubmitForReviewButton 
           planId={plan.id} 
           plannedAmount={plan.amount}
+          isRecurring={plan.isRecurring}
+          completedRepeats={plan.completedRepeats}
           evidences={plan.evidences.map(e => ({ id: e.id, label: e.label, required: e.required, hint: e.hint, status: e.status, resubmitNote: e.resubmitNote }))} 
         />
       )}

@@ -33,18 +33,21 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: '검토 요청할 수 없는 상태입니다.' }, { status: 400 })
   }
 
-  // 상태 업데이트 트랜잭션: 계획서를 검토 중으로 변경하고, 모든 대기/재제출 필요 상태의 증빙을 제출됨으로 변경
+  // 상태 업데이트 트랜잭션
   await prisma.$transaction([
     prisma.budgetPlan.update({
       where: { id: params.id },
       data: { 
         status: 'UNDER_REVIEW',
-        actualAmount: actualAmount !== undefined && actualAmount !== null ? actualAmount : plan.amount
+        lastSubmittedAmount: actualAmount !== undefined && actualAmount !== null ? Number(actualAmount) : plan.amount
       },
     }),
     prisma.evidence.updateMany({
       where: { 
         planId: params.id,
+        // 현재 제출 가능한 항목들만 'SUBMITTED'로 변경
+        // 반복 건의 경우 프론트에서 필터링해서 보여준 항목(영수증)만 업데이트되어야 함?
+        // 아니면 그냥 전부 업데이트해도 상관없음 (어차피 다른건 이미 승인상태거나 그대로일테니)
         status: { in: ['PENDING', 'RESUBMIT_REQUIRED'] }
       },
       data: { status: 'SUBMITTED', fileName: 'NAS 직접 업로드' },

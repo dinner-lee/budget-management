@@ -26,11 +26,36 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { action, note, resubmitItems } = await req.json()
 
   if (action === 'approve') {
+    const isLastRepeat = !plan.isRecurring || (plan.completedRepeats + 1 >= plan.totalRepeats)
+    const nextStatus = isLastRepeat ? 'APPROVED' : 'PENDING_EVIDENCE'
+    
+    // Calculate new cumulative actual amount
+    const currentActual = plan.actualAmount || 0
+    const submittedAmount = plan.lastSubmittedAmount || 0
+    const newActualTotal = currentActual + submittedAmount
+
     await prisma.$transaction([
       prisma.budgetPlan.update({
         where: { id: params.id },
-        data: { status: 'APPROVED' },
+        data: { 
+          status: nextStatus,
+          actualAmount: newActualTotal,
+          completedRepeats: plan.isRecurring ? plan.completedRepeats + 1 : plan.completedRepeats,
+          // 다음 결제 예정일 계산 (간단히 1개월 뒤)
+          nextRepeatDate: !isLastRepeat 
+            ? new Date(new Date(plan.plannedDate).setMonth(new Date(plan.plannedDate).getMonth() + plan.completedRepeats + 1))
+            : null,
+          lastSubmittedAmount: null // 처리 완료 후 초기화
+        },
       }),
+      // 반복 건의 경우 '영수증' 항목을 다시 PENDING으로 초기화
+      ...(plan.isRecurring && !isLastRepeat 
+        ? [prisma.evidence.updateMany({
+            where: { planId: params.id, label: '영수증' },
+            data: { status: 'PENDING', fileName: null, nasPath: null }
+          })]
+        : []
+      ),
       prisma.adminReview.create({
         data: {
           planId: params.id,

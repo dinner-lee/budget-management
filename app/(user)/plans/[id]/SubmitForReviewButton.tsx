@@ -15,11 +15,15 @@ interface EvidenceItem {
 export default function SubmitForReviewButton({
   planId,
   plannedAmount,
-  evidences
+  evidences,
+  isRecurring,
+  completedRepeats
 }: {
   planId: string
   plannedAmount: number
   evidences: EvidenceItem[]
+  isRecurring?: boolean
+  completedRepeats?: number
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -29,7 +33,12 @@ export default function SubmitForReviewButton({
   const [amountTouched, setAmountTouched] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
-  const requiredEvidences = evidences.filter(e => e.required)
+  // 반복 결제 건의 경우, 2회차(completedRepeats > 0)부터는 '영수증'만 증빙하도록 필터링
+  const displayEvidences = (isRecurring && (completedRepeats || 0) > 0)
+    ? evidences.filter(e => e.label === '영수증')
+    : evidences
+
+  const requiredEvidences = displayEvidences.filter(e => e.required)
   const allRequiredChecked = requiredEvidences.every(e => checkedItems.has(e.id))
 
   const handleAmountChange = (value: string) => {
@@ -103,7 +112,11 @@ export default function SubmitForReviewButton({
   return (
     <div className="card p-5 mt-6 border-t border-gray-100">
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5">
-        <h3 className="text-sm font-bold text-blue-900 mb-2">증빙 파일 제출 시작하기</h3>
+        <h3 className="text-sm font-bold text-blue-900 mb-2">
+          {isRecurring && (completedRepeats || 0) > 0 
+            ? `${(completedRepeats || 0) + 1}회차 증빙 파일 제출 시작하기` 
+            : '증빙 파일 제출 시작하기'}
+        </h3>
         <p className="text-sm text-blue-800 mb-3 leading-relaxed">
           1. 아래 버튼을 눌러 NAS 파일 업로드 팝업창을 여세요.<br />
           2. 자신의 예산 계획에 해당하는 증빙 파일들을 모두 팝업창(NAS)에 업로드합니다.<br />
@@ -140,9 +153,13 @@ export default function SubmitForReviewButton({
       {/* 증빙 항목 체크리스트 */}
       <div className="mb-5 bg-gray-50 border border-gray-200 rounded-lg p-5">
         <h4 className="text-sm font-semibold text-gray-900 mb-1">증빙 항목</h4>
-        <p className="text-xs text-gray-500 mb-4">각 항목의 증빙 파일을 NAS에 업로드한 후 체크해 주세요.</p>
+        <p className="text-xs text-gray-500 mb-4">
+          {isRecurring && (completedRepeats || 0) > 0 
+            ? '이번 달 결제 영수증을 업로드한 후 체크해 주세요.' 
+            : '각 항목의 증빙 파일을 NAS에 업로드한 후 체크해 주세요.'}
+        </p>
         <div className="space-y-3">
-          {evidences.map(evidence => {
+          {displayEvidences.map(evidence => {
             const formUrl = evidence.label === '회의록'
               ? 'https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing'
               : evidence.label === '지급청구서'
@@ -199,10 +216,12 @@ export default function SubmitForReviewButton({
       {/* 실제 지출 금액 입력 */}
       <div className="mb-5 bg-gray-50 p-5 rounded-lg border border-gray-200">
         <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="actualAmount">
-          실제 지출 금액
+          {isRecurring && (completedRepeats || 0) > 0 ? '이번 회차 실제 지출 금액' : '실제 지출 금액'}
         </label>
         <p className="text-xs text-gray-500 mb-3">
-          계획서 금액: {plannedAmount.toLocaleString()}원 · 실제 지출한 금액이 다르다면 수정해 주세요.
+          {isRecurring && (completedRepeats || 0) > 0 
+            ? `매달 결제 예정 금액: ${plannedAmount.toLocaleString()}원` 
+            : `계획서 금액: ${plannedAmount.toLocaleString()}원 · 실제 지출한 금액이 다르다면 수정해 주세요.`}
         </p>
         <div className="relative">
           <input
@@ -223,7 +242,7 @@ export default function SubmitForReviewButton({
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            계획서 금액과 {Math.abs(parseInt(actualAmountRaw, 10) - plannedAmount).toLocaleString()}원 차이가 있습니다.
+            계획 금액과 {Math.abs(parseInt(actualAmountRaw, 10) - plannedAmount).toLocaleString()}원 차이가 있습니다.
           </p>
         )}
       </div>

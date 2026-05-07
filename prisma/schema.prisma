@@ -76,6 +76,11 @@ model BudgetPlan {
   plannedTime          String?  // e.g. "14:00" or "14:00-16:00"
   expenditureOverview  String   // 지출 개요
   status               String   @default("PENDING_EVIDENCE") // PENDING_EVIDENCE | UNDER_REVIEW | RESUBMIT_REQUIRED | APPROVED
+  isRecurring          Boolean  @default(false)
+  totalRepeats         Int      @default(1)
+  completedRepeats     Int      @default(0)
+  nextRepeatDate       DateTime?
+  lastSubmittedAmount  Float?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   evidences   Evidence[]
