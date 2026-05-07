@@ -377,7 +377,7 @@ function BudgetView({ teams, allPlans }: any) {
   const teamData = teams.map((team: Team) => {
     const teamPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
 
-    const byPurpose: Record<string, { planned: number; actual: number }> = {}
+    const byPurpose: Record<string, { planned: number; actual: number; hasPlan: boolean }> = {}
     purposes.forEach(p => {
       const limit = team.budgetLimits?.find((l: BudgetLimit) => l.purpose === p)
       byPurpose[p] = { planned: limit ? limit.amount : 0, actual: 0, hasPlan: false }
@@ -393,8 +393,8 @@ function BudgetView({ teams, allPlans }: any) {
       }
     })
 
-    const totalPlanned = Object.values(byPurpose).reduce((s: number, v: { planned: number; actual: number }) => s + v.planned, 0)
-    const totalActual = Object.values(byPurpose).reduce((s: number, v: { planned: number; actual: number }) => s + v.actual, 0)
+    const totalPlanned = Object.values(byPurpose).reduce((s: number, v) => s + v.planned, 0)
+    const totalActual = Object.values(byPurpose).reduce((s: number, v) => s + v.actual, 0)
 
     return { team, byPurpose, totalPlanned, totalActual }
   })

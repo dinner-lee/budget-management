@@ -278,6 +278,30 @@ export default function EvidenceSubmissionModal({
                             {evidence.label}
                           </span>
                           {evidence.required && <span className="text-red-500 text-[10px] font-bold border border-red-200 bg-red-50 px-1 rounded">필수</span>}
+                          
+                          {(() => {
+                            const formUrl = 
+                              evidence.label === '회의록' ? 'https://drive.google.com/file/d/1FaQspUSRiPOmX9aIxVlKLbNbFl01DpjO/view?usp=sharing'
+                              : evidence.label === '지급청구서' ? 'https://drive.google.com/file/d/1S4oui9OxZv0i9vQcZOctzy8mTuzvyrMh/view?usp=sharing'
+                              : null
+                            
+                            if (!formUrl || checkedItems.has(evidence.id)) return null
+
+                            return (
+                              <a
+                                href={formUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition-colors"
+                              >
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                </svg>
+                                양식 다운로드
+                              </a>
+                            )
+                          })()}
                         </div>
                         {evidence.hint && !checkedItems.has(evidence.id) && (
                           <p className="text-xs text-gray-500 mt-0.5">{evidence.hint}</p>
