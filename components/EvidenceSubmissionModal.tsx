@@ -40,7 +40,7 @@ export default function EvidenceSubmissionModal({
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  
+
   // Form states
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
   const [actualAmountRaw, setActualAmountRaw] = useState('')
@@ -115,7 +115,7 @@ export default function EvidenceSubmissionModal({
         body: JSON.stringify({ actualAmount: isNaN(actualAmount) ? null : actualAmount })
       })
       const data = await res.json()
-      
+
       if (!res.ok) {
         setError(data.error ?? '오류가 발생했습니다.')
         return
@@ -161,11 +161,11 @@ export default function EvidenceSubmissionModal({
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" 
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      
+
       {/* Modal Content */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
@@ -178,7 +178,7 @@ export default function EvidenceSubmissionModal({
               </p>
             )}
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
@@ -235,7 +235,7 @@ export default function EvidenceSubmissionModal({
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                    파일명 규칙: <span className="font-mono text-blue-700 ml-1">팀번호_날짜_사용목적_증빙항목</span>
+                    파일명 규칙: <span className="font-mono text-blue-700 ml-1">팀번호_날짜_사용목적_증빙항목 (예) 1_0630_회의비_영수증</span>
                   </p>
                 </div>
 
@@ -243,7 +243,7 @@ export default function EvidenceSubmissionModal({
                   onClick={openNasPopup}
                   className="w-full bg-blue-600 text-white text-sm font-bold py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition active:scale-[0.98]"
                 >
-                  NAS 파일 업로드하기
+                  NAS에 파일 업로드하기(시간이 다소 소요될 수 있습니다)
                 </button>
               </div>
 
@@ -252,15 +252,14 @@ export default function EvidenceSubmissionModal({
                 <h4 className="text-sm font-bold text-gray-900 mb-3">증빙 항목 체크리스트</h4>
                 <div className="space-y-2.5">
                   {plan.evidences.map(evidence => (
-                    <div 
-                      key={evidence.id} 
-                      className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                        checkedItems.has(evidence.id) 
-                          ? 'bg-green-50 border-green-200 shadow-sm' 
-                          : evidence.status === 'RESUBMIT_REQUIRED' 
-                            ? 'bg-red-50 border-red-200' 
+                    <div
+                      key={evidence.id}
+                      className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${checkedItems.has(evidence.id)
+                          ? 'bg-green-50 border-green-200 shadow-sm'
+                          : evidence.status === 'RESUBMIT_REQUIRED'
+                            ? 'bg-red-50 border-red-200'
                             : 'bg-white border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                       onClick={() => handleToggle(evidence.id)}
                     >
                       <input
@@ -304,11 +303,10 @@ export default function EvidenceSubmissionModal({
                     type="number"
                     value={actualAmountRaw}
                     onChange={(e) => handleAmountChange(e.target.value)}
-                    className={`w-full border rounded-xl shadow-sm px-4 py-3 text-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none ${
-                      amountTouched && parseInt(actualAmountRaw, 10) !== plan.amount
+                    className={`w-full border rounded-xl shadow-sm px-4 py-3 text-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none ${amountTouched && parseInt(actualAmountRaw, 10) !== plan.amount
                         ? 'border-blue-400 text-blue-700 font-bold bg-blue-50/30'
                         : 'border-gray-300 text-gray-900'
-                    }`}
+                      }`}
                     placeholder="0"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">원</span>
@@ -390,10 +388,10 @@ function SubmissionSkeleton() {
     <div className="space-y-6 animate-pulse">
       {/* Plan Summary Skeleton */}
       <div className="h-14 bg-gray-100 rounded-xl" />
-      
+
       {/* NAS Box Skeleton */}
       <div className="h-40 bg-gray-100 rounded-xl" />
-      
+
       {/* Checklist Skeleton */}
       <div className="space-y-3">
         <div className="h-4 w-32 bg-gray-100 rounded mb-4" />
@@ -401,7 +399,7 @@ function SubmissionSkeleton() {
         <div className="h-12 bg-gray-100 rounded-xl" />
         <div className="h-12 bg-gray-100 rounded-xl" />
       </div>
-      
+
       {/* Amount Skeleton */}
       <div className="h-28 bg-gray-100 rounded-xl" />
     </div>

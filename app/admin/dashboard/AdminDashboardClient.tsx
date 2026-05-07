@@ -447,14 +447,14 @@ function BudgetView({ teams, allPlans }: any) {
                   {purposes.map(p => (
                     <td key={p} className="text-right px-3 py-3">
                       <div className="text-gray-700">{td.byPurpose[p].planned > 0 ? td.byPurpose[p].planned.toLocaleString() : '-'}</div>
-                      {td.byPurpose[p].actual > 0 && (
+                      {(td.byPurpose[p].actual > 0 || td.byPurpose[p].planned > 0) && (
                         <div className="text-green-600 font-medium">{td.byPurpose[p].actual.toLocaleString()}</div>
                       )}
                     </td>
                   ))}
                   <td className="text-right px-4 py-3 border-l border-gray-100">
                     <div className="font-semibold text-gray-900">{td.totalPlanned.toLocaleString()}</div>
-                    {td.totalActual > 0 && (
+                    {(td.totalActual > 0 || td.totalPlanned > 0) && (
                       <div className="font-semibold text-green-600">{td.totalActual.toLocaleString()}</div>
                     )}
                   </td>
@@ -476,7 +476,7 @@ function BudgetView({ teams, allPlans }: any) {
                 return (
                   <td key={p} className="text-right px-3 py-3">
                     <div className="text-gray-900">{pPlanned > 0 ? pPlanned.toLocaleString() : '-'}</div>
-                    {pActual > 0 && (
+                    {(pActual > 0 || pPlanned > 0) && (
                       <div className="text-green-600">{pActual.toLocaleString()}</div>
                     )}
                   </td>
@@ -484,7 +484,7 @@ function BudgetView({ teams, allPlans }: any) {
               })}
               <td className="text-right px-4 py-3 border-l border-gray-200">
                 <div className="text-gray-900">{grandPlanned.toLocaleString()}</div>
-                {grandActual > 0 && (
+                {(grandActual > 0 || grandPlanned > 0) && (
                   <div className="text-green-600">{grandActual.toLocaleString()}</div>
                 )}
               </td>
