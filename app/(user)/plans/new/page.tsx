@@ -80,6 +80,45 @@ export default function NewPlanPage() {
         <h1 className="text-xl font-bold text-gray-900">새 예산 사용 계획서 작성</h1>
       </div>
 
+      {/* 지출 가이드라인 */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 shadow-sm">
+        <h2 className="text-sm font-bold text-amber-900 mb-3 flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          지출 항목별 가이드라인
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-amber-700 flex items-center gap-1">
+              <span className="w-1 h-1 bg-amber-400 rounded-full"></span> 회의비
+            </p>
+            <p className="text-sm text-amber-800 ml-2">1인당 30,000원</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-amber-700 flex items-center gap-1">
+              <span className="w-1 h-1 bg-amber-400 rounded-full"></span> 전문가활용비
+            </p>
+            <p className="text-sm text-amber-800 ml-2 leading-tight">
+              최초 1시간 15만 원<br />
+              이후 시간당 10만 원 추가<br />
+              <span className="text-[11px] text-amber-600">(1일 최대 30만 원 상한)</span>
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-amber-700 flex items-center gap-1">
+              <span className="w-1 h-1 bg-amber-400 rounded-full"></span> 구매지출비
+            </p>
+            <p className="text-sm text-amber-800 ml-2 leading-tight">
+              사무용품 등 소모품 가능<br />
+              <span className="text-[11px] text-amber-600 leading-tight">
+                * 비소모품(1년 이상 사용, 10만 원 이상) 불가
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
         {/* 사용 목적 */}
         <div>

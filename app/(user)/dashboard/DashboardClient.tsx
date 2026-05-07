@@ -9,6 +9,7 @@ import {
   PieChart, Pie, Cell, LabelList
 } from 'recharts'
 import { differenceInDays, isAfter, isToday } from 'date-fns'
+import EvidenceSubmissionModal from '@/components/EvidenceSubmissionModal'
 
 export default function DashboardClient({
   budgetStatus,
@@ -21,10 +22,24 @@ export default function DashboardClient({
   plans: any[]
   activePlanCount: number
 }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+
+  const openSubmissionModal = (planId: string) => {
+    setSelectedPlanId(planId)
+    setIsModalOpen(true)
+  }
+
   return (
     <div className="space-y-6">
       <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} />
-      <PlanListSection plans={plans} activePlanCount={activePlanCount} />
+      <PlanListSection plans={plans} activePlanCount={activePlanCount} onOpenSubmission={openSubmissionModal} />
+
+      <EvidenceSubmissionModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        planId={selectedPlanId}
+      />
 
       {/* Floating Action Button (FAB) for New Plan - Permanently Expanded */}
       <div className="fixed bottom-8 right-8 z-40">
@@ -201,7 +216,11 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
   )
 }
 
-function PlanListSection({ plans, activePlanCount }: { plans: any[], activePlanCount: number }) {
+function PlanListSection({ plans, activePlanCount, onOpenSubmission }: { 
+  plans: any[], 
+  activePlanCount: number,
+  onOpenSubmission: (id: string) => void
+}) {
   const [purposeFilter, setPurposeFilter] = useState<string>('ALL')
 
   const filteredPlans = purposeFilter === 'ALL'
@@ -270,13 +289,13 @@ function PlanListSection({ plans, activePlanCount }: { plans: any[], activePlanC
                   )}
                 </div>
                 {['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status) ? (
-                  <Link
-                    href={`/plans/${plan.id}`}
-                    className="ml-4 text-xs font-medium text-white rounded-md px-3 py-1.5 shrink-0 transition-all shadow-sm"
+                  <button
+                    onClick={() => onOpenSubmission(plan.id)}
+                    className="ml-4 text-xs font-medium text-white rounded-md px-3 py-1.5 shrink-0 transition-all shadow-sm active:scale-95"
                     style={{ backgroundColor: '#15378F' }}
                   >
                     증빙 서류 제출
-                  </Link>
+                  </button>
                 ) : (
                   <Link
                     href={`/plans/${plan.id}`}
