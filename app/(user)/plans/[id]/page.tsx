@@ -35,31 +35,38 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
   return (
     <div className="max-w-2xl space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl font-bold text-gray-900">{plan.title}</h1>
-            <PlanStatusBadge status={plan.status} />
-          </div>
-          <DeletePlanButton planId={plan.id} />
-          <p className="text-sm text-gray-500">
-            {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
-            {plan.amount.toLocaleString()}원 (계획){' '}
-            {plan.actualAmount !== null && (
-              <span className="font-semibold text-blue-600">
-                &middot; {plan.actualAmount.toLocaleString()}원 (누적 지출)
-              </span>
-            )}{' '}
-            &middot; {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
-            {plan.plannedTime && ` ${plan.plannedTime}`}
-          </p>
-          <p className="text-sm text-gray-600 mt-1">{plan.expenditureOverview}</p>
-          {plan.isRecurring && (
-            <p className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block mt-2 border border-indigo-100">
-              반복 결제 건 ({plan.completedRepeats}/{plan.totalRepeats}회 완료)
-            </p>
-          )}
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-xl font-bold text-gray-900 truncate">{plan.title}</h1>
+          <PlanStatusBadge status={plan.status} />
         </div>
+        <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-primary-600">{PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}</span>
+          <span className="text-gray-300">|</span>
+          <span>{plan.amount.toLocaleString()}원 (계획)</span>
+          {plan.actualAmount !== null && (
+            <>
+              <span className="text-gray-300">|</span>
+              <span className="font-bold text-blue-600">
+                {plan.actualAmount.toLocaleString()}원 (누적 지출)
+              </span>
+            </>
+          )}{' '}
+          <span className="text-gray-300">|</span>
+          <span>{new Date(plan.plannedDate).toLocaleDateString('ko-KR')}</span>
+          {plan.plannedTime && (
+            <>
+              <span className="text-gray-300">|</span>
+              <span>{plan.plannedTime}</span>
+            </>
+          )}
+        </p>
+        <p className="text-sm text-gray-600 mt-2 leading-relaxed">{plan.expenditureOverview}</p>
+        {plan.isRecurring && (
+          <p className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded inline-block mt-3 border border-indigo-100">
+            반복 결제 건 ({plan.completedRepeats}/{plan.totalRepeats}회 완료)
+          </p>
+        )}
       </div>
 
       {/* Status guide */}
@@ -161,6 +168,8 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
           plannedAmount={plan.amount}
           isRecurring={plan.isRecurring}
           completedRepeats={plan.completedRepeats}
+          status={plan.status}
+          plannedDate={plan.plannedDate}
           evidences={plan.evidences.map(e => ({ id: e.id, label: e.label, required: e.required, hint: e.hint, status: e.status, resubmitNote: e.resubmitNote }))} 
         />
       )}

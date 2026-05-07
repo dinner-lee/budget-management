@@ -3,7 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function DeletePlanButton({ planId }: { planId: string }) {
+export default function DeletePlanButton({ 
+  planId, 
+  onDeleted 
+}: { 
+  planId: string, 
+  onDeleted?: () => void 
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -19,8 +25,12 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
         alert(data.error || '삭제 중 오류가 발생했습니다.')
         return
       }
-      router.push('/dashboard')
-      router.refresh()
+      if (onDeleted) {
+        onDeleted()
+      } else {
+        router.push('/dashboard')
+        router.refresh()
+      }
     } catch (err) {
       alert('오류가 발생했습니다.')
     } finally {
@@ -33,9 +43,12 @@ export default function DeletePlanButton({ planId }: { planId: string }) {
       <button
         onClick={() => setShowConfirm(true)}
         disabled={loading}
-        className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+        className="inline-flex items-center gap-1.5 px-6 py-2.5 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all shadow-sm active:scale-95"
       >
-        삭제하기
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        계획서 삭제
       </button>
 
       {showConfirm && (

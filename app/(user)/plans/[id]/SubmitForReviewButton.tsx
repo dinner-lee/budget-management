@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import DeletePlanButton from './DeletePlanButton'
 
 interface EvidenceItem {
   id: string
@@ -17,13 +18,17 @@ export default function SubmitForReviewButton({
   plannedAmount,
   evidences,
   isRecurring,
-  completedRepeats
+  completedRepeats,
+  status,
+  plannedDate
 }: {
   planId: string
   plannedAmount: number
   evidences: EvidenceItem[]
   isRecurring?: boolean
   completedRepeats?: number
+  status?: string
+  plannedDate?: string | Date
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -32,6 +37,8 @@ export default function SubmitForReviewButton({
   const [actualAmountRaw, setActualAmountRaw] = useState(plannedAmount.toString())
   const [amountTouched, setAmountTouched] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+
+  const isDeletable = status === 'PENDING_EVIDENCE' && plannedDate && new Date() < new Date(plannedDate)
 
   // 반복 결제 건의 경우, 2회차(completedRepeats > 0)부터는 '영수증'만 증빙하도록 필터링
   const displayEvidences = (isRecurring && (completedRepeats || 0) > 0)
@@ -253,19 +260,27 @@ export default function SubmitForReviewButton({
       {error && (
         <p className="text-sm text-red-600 bg-red-50 rounded px-3 py-2 mb-3">{error}</p>
       )}
-      <button
-        className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
-        onClick={handleSubmit}
-        disabled={loading}
-      >
-        {loading && (
-          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
+      <div className="flex items-center gap-4">
+        <button
+          className="btn-primary flex-1 sm:flex-none flex items-center justify-center gap-2 px-10 py-3"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading && (
+            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          )}
+          {loading ? '요청 중...' : '검토 요청하기'}
+        </button>
+
+        {isDeletable && (
+          <div className="flex items-center gap-4 border-l border-gray-200 pl-4 h-10">
+            <DeletePlanButton planId={planId} />
+          </div>
         )}
-        {loading ? '요청 중...' : '검토 요청하기'}
-      </button>
+      </div>
 
       {/* 금액 확인 팝업 */}
       {showConfirm && (

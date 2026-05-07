@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
+import DeletePlanButton from '@/app/(user)/plans/[id]/DeletePlanButton'
 
 interface EvidenceItem {
   id: string
@@ -328,28 +329,43 @@ export default function EvidenceSubmissionModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row gap-3">
+        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-wrap items-center gap-3">
           {error && <p className="text-xs text-red-600 mb-2 sm:mb-0 sm:mr-auto self-center">{error}</p>}
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition active:scale-[0.98]"
-            disabled={submitting}
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex-1 sm:flex-none px-10 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg hover:bg-blue-700 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            disabled={submitting || loading || !plan}
-          >
-            {submitting && (
-              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            )}
-            {submitting ? '제출 중...' : '검토 요청하기'}
-          </button>
+          
+          <div className="flex-1 flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition active:scale-[0.98]"
+              disabled={submitting}
+            >
+              취소
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="flex-1 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg hover:bg-blue-700 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={submitting || loading || !plan}
+            >
+              {submitting && (
+                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {submitting ? '제출 중...' : '검토 요청하기'}
+            </button>
+          </div>
+
+          {plan && plan.status === 'PENDING_EVIDENCE' && new Date() < new Date(plan.plannedDate) && (
+            <div className="w-full sm:w-auto pt-3 sm:pt-0 sm:border-l sm:pl-3 border-gray-200">
+              <DeletePlanButton 
+                planId={plan.id} 
+                onDeleted={() => {
+                  onClose()
+                  router.refresh()
+                }} 
+              />
+            </div>
+          )}
         </div>
 
         {/* Confirm Modal (Nested) */}
@@ -385,23 +401,44 @@ export default function EvidenceSubmissionModal({
 
 function SubmissionSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
-      {/* Plan Summary Skeleton */}
-      <div className="h-14 bg-gray-100 rounded-xl" />
+    <div className="space-y-6 animate-pulse p-1">
+      {/* Plan Summary Card Skeleton */}
+      <div className="h-16 bg-gray-50 rounded-2xl border border-gray-100 flex items-center px-4 gap-4">
+        <div className="h-4 w-20 bg-gray-200 rounded" />
+        <div className="h-4 w-24 bg-gray-200 rounded" />
+        <div className="h-4 w-28 bg-gray-200 rounded" />
+      </div>
 
-      {/* NAS Box Skeleton */}
-      <div className="h-40 bg-gray-100 rounded-xl" />
+      {/* NAS Instruction Box Skeleton */}
+      <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 space-y-3">
+        <div className="h-5 w-32 bg-blue-100 rounded" />
+        <div className="space-y-2">
+          <div className="h-3 w-full bg-blue-100/50 rounded" />
+          <div className="h-3 w-4/5 bg-blue-100/50 rounded" />
+        </div>
+        <div className="h-14 w-full bg-blue-200 rounded-xl mt-4" />
+      </div>
 
       {/* Checklist Skeleton */}
       <div className="space-y-3">
-        <div className="h-4 w-32 bg-gray-100 rounded mb-4" />
-        <div className="h-12 bg-gray-100 rounded-xl" />
-        <div className="h-12 bg-gray-100 rounded-xl" />
-        <div className="h-12 bg-gray-100 rounded-xl" />
+        <div className="h-4 w-32 bg-gray-200 rounded mb-4" />
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-16 bg-white border border-gray-100 rounded-2xl flex items-center px-4 gap-3">
+            <div className="w-5 h-5 bg-gray-100 rounded-md shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-24 bg-gray-100 rounded" />
+              <div className="h-3 w-40 bg-gray-50 rounded" />
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Amount Skeleton */}
-      <div className="h-28 bg-gray-100 rounded-xl" />
+      {/* Amount Box Skeleton */}
+      <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 space-y-4">
+        <div className="h-4 w-32 bg-gray-200 rounded" />
+        <div className="h-14 w-full bg-white border border-gray-200 rounded-xl" />
+        <div className="h-3 w-24 bg-gray-200 rounded" />
+      </div>
     </div>
   )
 }

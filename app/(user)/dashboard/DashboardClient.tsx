@@ -233,11 +233,13 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
         <div className="flex items-center gap-4">
           <h2 className="text-sm font-semibold text-gray-700">예산 사용 계획서 내역</h2>
           {activePlanCount >= 3 && (
-            <div className="flex flex-col items-start leading-tight">
-              <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800">
                 작성 제한
               </span>
-              <span className="text-[9px] text-gray-400 mt-0.5">증빙 미완료 3건</span>
+              <span className="text-[10px] font-bold text-gray-400">
+                증빙 미완료 3건
+              </span>
             </div>
           )}
         </div>
@@ -269,12 +271,30 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
               <div key={plan.id} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Link
-                      href={`/plans/${plan.id}`}
-                      className="text-sm font-medium text-gray-900 hover:text-primary-500 truncate"
-                    >
-                      {plan.title}
-                    </Link>
+                    {(() => {
+                      const isSubmittable = ['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status)
+                      const isWaitingForDate = plan.isRecurring && plan.nextRepeatDate && new Date() < new Date(plan.nextRepeatDate)
+                      
+                      if (isSubmittable && !isWaitingForDate) {
+                        return (
+                          <button
+                            onClick={() => onOpenSubmission(plan.id)}
+                            className="text-sm font-medium text-gray-900 hover:text-primary-600 truncate text-left"
+                          >
+                            {plan.title}
+                          </button>
+                        )
+                      }
+                      
+                      return (
+                        <Link
+                          href={`/plans/${plan.id}`}
+                          className="text-sm font-medium text-gray-900 hover:text-primary-600 truncate"
+                        >
+                          {plan.title}
+                        </Link>
+                      )
+                    })()}
                     <PlanStatusBadge status={plan.status} />
                   </div>
                   <p className="text-xs text-gray-500">
