@@ -50,6 +50,38 @@
     @apply bg-white rounded-lg border border-gray-200 shadow-sm;
   }
 
+  /* Liquid glass (Apple 스타일 유리 질감)
+     기본: backdrop blur+saturate 유리 / html[data-lg-refract] 시 SVG 굴절 필터 추가(Chromium) */
+  .glass-nav {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.55));
+    -webkit-backdrop-filter: blur(18px) saturate(170%);
+    backdrop-filter: blur(18px) saturate(170%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 1px 0 rgba(21, 55, 143, 0.05), 0 8px 24px -16px rgba(21, 55, 143, 0.18);
+  }
+  html[data-lg-refract='1'] .glass-nav {
+    -webkit-backdrop-filter: blur(6px) saturate(170%) url(#liquid-distort);
+    backdrop-filter: blur(6px) saturate(170%) url(#liquid-distort);
+  }
+  .glass-card {
+    @apply rounded-lg;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.5));
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 1px 2px rgba(21, 55, 143, 0.05),
+      0 12px 32px -16px rgba(21, 55, 143, 0.18);
+  }
+  .glass-track {
+    background: rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: inset 0 1px 2px rgba(21, 55, 143, 0.06);
+  }
+
   /* Custom Scrollbar */
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;

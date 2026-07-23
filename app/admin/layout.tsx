@@ -41,7 +41,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const plansWithoutSignature = allPlans.map(({ signature, ...p }) => p)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative isolate min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/60">
+      {/* 유리 질감 아래로 비치는 은은한 배경 블롭 */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-32 -left-32 w-[28rem] h-[28rem] rounded-full bg-primary-100/50 blur-3xl" />
+        <div className="absolute top-1/4 -right-24 w-96 h-96 rounded-full bg-sky-100/60 blur-3xl" />
+        <div className="absolute -bottom-40 left-1/3 w-[30rem] h-[30rem] rounded-full bg-indigo-100/40 blur-3xl" />
+      </div>
       <AdminAppShell
         dashboardData={{ allPlans: plansWithoutSignature, userCount, teams, milestones }}
         teamsData={{ teams, users }}

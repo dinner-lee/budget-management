@@ -70,7 +70,7 @@ export default function AdminDashboardClient({
 
   return (
     <div className="space-y-6">
-      <div className="inline-flex items-center gap-1 bg-gray-100/80 rounded-xl p-1">
+      <div className="inline-flex items-center gap-1 glass-track rounded-xl p-1">
         {([
           { key: 'DASHBOARD', label: '팀별', title: '대시보드', icon: 'M4 6h16M4 12h16M4 18h16' },
           { key: 'BUDGET', label: '전체', title: '예산 현황', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
@@ -150,217 +150,175 @@ function CombinedDashboardView({
     return matchesStatus && matchesTeam
   })
 
+  // 검토가 필요한 건(검토 대기·재제출)을 리스트 맨 위로
+  const NEEDS_REVIEW = ['UNDER_REVIEW', 'RESUBMIT_REQUIRED']
+  const sortedPlans = [...filteredPlans].sort(
+    (a, b) => Number(NEEDS_REVIEW.includes(b.status)) - Number(NEEDS_REVIEW.includes(a.status)),
+  )
+  const needsReviewCount = filteredPlans.filter((p) => NEEDS_REVIEW.includes(p.status)).length
+
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
 
-  // Calculate team summary data if team selected
   const teamPlans = selectedTeamId ? allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === selectedTeamId) : []
   const teamTotalUsed = teamPlans.reduce((acc: number, p: Plan) => acc + (p.status === 'APPROVED' ? (p.actualAmount ?? p.amount) : p.amount), 0)
 
   return (
-    <div className="space-y-6">
-      {/* Status Summary Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <button
-            key={s.label}
-            type="button"
-            onClick={() => setFilter(filter === s.status ? null : s.status)}
-            className={`card px-4 py-4 text-left cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${filter === s.status ? `${s.bg} ${s.border} ring-1 ring-offset-0 ${s.ring}` : 'hover:border-gray-300'
+    <div className="space-y-4">
+      {/* 상태 필터 칩 */}
+      <div className="flex flex-wrap gap-2">
+        {stats.map((s) => {
+          const active = filter === s.status
+          return (
+            <button
+              key={s.status}
+              type="button"
+              onClick={() => setFilter(active ? null : s.status)}
+              className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all ${
+                active
+                  ? `${s.bg} ${s.border} ${s.color} ring-1 ${s.ring} shadow-sm`
+                  : 'bg-white/70 backdrop-blur-md border-white/70 text-gray-600 shadow-sm hover:border-gray-300 hover:-translate-y-px'
               }`}
-          >
-            <p className="text-xs text-gray-500 font-medium flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+            >
+              <span className={`w-2 h-2 rounded-full ${s.dot}`} />
               {s.label}
-            </p>
-            <p className={`text-3xl font-black tracking-tight tabular-nums mt-1.5 ${s.color}`}>
-              {s.value}
-              <span className="text-sm font-semibold text-gray-400 ml-1">건</span>
-            </p>
-          </button>
-        ))}
+              <span className={`text-base font-black tabular-nums ${s.color}`}>{s.value}</span>
+            </button>
+          )
+        })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column: Team Filter and Metadata */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="card">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h2 className="text-sm font-semibold text-gray-700">팀 필터</h2>
-              {selectedTeamId && (
-                <button
-                  onClick={() => setSelectedTeamId(null)}
-                  className="text-[10px] px-2 py-0.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-100 transition-colors shadow-sm"
-                >
-                  초기화
-                </button>
+      {/* 팀 필터 칩 */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setSelectedTeamId(null)}
+          className={`rounded-full px-3 py-1.5 text-xs font-semibold border transition-all ${
+            !selectedTeamId
+              ? 'bg-primary-500 border-primary-500 text-white shadow-md'
+              : 'bg-white/70 backdrop-blur-md border-white/70 text-gray-600 shadow-sm hover:border-primary-100 hover:text-primary-500'
+          }`}
+        >
+          전체 팀
+        </button>
+        {teams.map((team: Team) => {
+          const tPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
+          const hasPending = tPlans.some((p: Plan) => NEEDS_REVIEW.includes(p.status))
+          const isSelected = selectedTeamId === team.id
+          return (
+            <button
+              key={team.id}
+              type="button"
+              onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
+              title={`${team.leaderName} (${team.leaderAffiliation}) - ${team.researchTopic}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border transition-all ${
+                isSelected
+                  ? 'bg-primary-500 border-primary-500 text-white shadow-md'
+                  : 'bg-white/70 backdrop-blur-md border-white/70 text-gray-700 shadow-sm hover:border-primary-100 hover:bg-primary-50/60'
+              }`}
+            >
+              <span className={`font-black ${isSelected ? 'text-white/70' : 'text-primary-500'}`}>{team.teamNumber}</span>
+              {team.leaderName}
+              {hasPending && !isSelected && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 선택된 팀 요약 + 예산 현황 */}
+      {selectedTeam && (
+        <div className="card overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <span className="text-lg font-black text-primary-500 shrink-0">{selectedTeam.teamNumber}</span>
+              <span className="text-sm font-bold text-gray-900 shrink-0">{selectedTeam.leaderName}</span>
+              <span className="text-xs text-gray-400 truncate">{selectedTeam.leaderAffiliation}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-primary-500 tabular-nums">
+                {teamTotalUsed.toLocaleString()} / 2,000,000원
+              </span>
+              <span className="px-2 py-0.5 bg-primary-100 text-primary-500 rounded-full text-[10px] font-black tabular-nums">
+                {Math.round((teamTotalUsed / 2000000) * 100)}%
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 p-5">
+            <div className="space-y-3">
+              <div>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">구성원</p>
+                <p className="text-xs text-gray-900 font-bold mt-0.5">
+                  {selectedTeam.leaderName} (대표)
+                  {selectedTeam.users?.length > 1 && (
+                    <span className="text-gray-500 font-normal ml-1">외 {selectedTeam.users.length - 1}명</span>
+                  )}
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  {selectedTeam.users?.filter((u: any) => u.name !== selectedTeam.leaderName).map((u: any) => u.name).join(', ')}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">연구 주제</p>
+                <p className="text-xs text-gray-800 font-medium leading-snug mt-0.5" title={selectedTeam.researchTopic}>
+                  {selectedTeam.researchTopic}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1.5">항목별 예산 집행</p>
+              {Object.keys(PURPOSE_LABELS).map(key => {
+                const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
+                const used = teamPlans.filter((p: Plan) => p.purpose === key && p.status === 'APPROVED').reduce((acc: number, p: Plan) => acc + (p.actualAmount ?? p.amount), 0)
+                const limit = selectedTeam.budgetLimits?.find((l: BudgetLimit) => l.purpose === key)?.amount || 0
+                const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+                if (limit === 0 && used === 0) return null
+                return (
+                  <div key={key} className="flex items-center gap-3 py-0.5">
+                    <span className="text-[11px] font-bold text-gray-700 w-24 shrink-0 truncate" title={label}>{label}</span>
+                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden relative shadow-inner">
+                      <div
+                        className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out rounded-full ${percent >= 100 ? 'bg-red-500' : percent >= 80 ? 'bg-yellow-500' : 'bg-blue-500'}`}
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium text-gray-500 w-28 text-right shrink-0 tabular-nums">
+                      <span className="text-primary-500 font-bold">{used.toLocaleString()}</span> / {limit.toLocaleString()}
+                    </span>
+                  </div>
+                )
+              })}
+              {Object.keys(PURPOSE_LABELS).every(key => {
+                const used = teamPlans.filter((p: Plan) => p.purpose === key && p.status === 'APPROVED').reduce((acc: number, p: Plan) => acc + (p.actualAmount ?? p.amount), 0)
+                const limit = selectedTeam.budgetLimits?.find((l: BudgetLimit) => l.purpose === key)?.amount || 0
+                return limit === 0 && used === 0
+              }) && (
+                <p className="py-3 text-xs text-gray-400">설정된 예산 한도가 없습니다.</p>
               )}
             </div>
-            <div className="p-4">
-              <div className="grid grid-cols-2 gap-2 mb-2">
-                {teams.map((team: Team) => {
-                  const teamPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
-                  const hasPending = teamPlans.some((p: Plan) => p.status === 'UNDER_REVIEW' || p.status === 'RESUBMIT_REQUIRED')
-                  const isSelected = selectedTeamId === team.id
-
-                  return (
-                    <button
-                      key={team.id}
-                      onClick={() => setSelectedTeamId(isSelected ? null : team.id)}
-                      className={`relative p-3 rounded-lg transition-all border text-left min-h-[52px] flex items-center ${isSelected
-                        ? 'bg-primary-500 border-primary-500 text-white shadow-md z-10'
-                        : 'bg-white border-gray-200 text-gray-700 hover:border-primary-200 hover:bg-primary-50'
-                        }`}
-                      title={`${team.leaderName} (${team.leaderAffiliation}) - ${team.researchTopic}`}
-                    >
-                      <div className="flex items-baseline flex-wrap gap-x-1.5 w-full pr-4">
-                        <span className={`text-sm font-black shrink-0 ${isSelected ? 'text-white/80' : 'text-primary-500'}`}>
-                          {team.teamNumber}
-                        </span>
-                        <span className="text-sm font-bold truncate max-w-[80px]">
-                          {team.leaderName}
-                        </span>
-                        <span className={`text-[11px] font-normal truncate max-w-[120px] ${isSelected ? 'text-blue-100/80' : 'text-gray-400'}`}>
-                          {team.leaderAffiliation.split(' ').pop()}
-                        </span>
-                      </div>
-                      {hasPending && !isSelected && (
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white shadow-sm animate-pulse"></span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {selectedTeam && (
-              <div className="p-4 border-t border-gray-100 bg-blue-50/20">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg shrink-0">
-                      <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase">구성원</p>
-                      <p className="text-xs text-gray-900 font-bold">
-                        {selectedTeam.leaderName} (대표)
-                        {selectedTeam.users?.length > 1 && (
-                          <span className="text-gray-500 font-normal ml-1">
-                            외 {selectedTeam.users.length - 1}명
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">
-                        {selectedTeam.users?.filter((u: any) => u.name !== selectedTeam.leaderName).map((u: any) => u.name).join(', ')}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg shrink-0">
-                      <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase">연구 주제</p>
-                      <p className="text-xs text-gray-800 font-medium leading-snug line-clamp-2" title={selectedTeam.researchTopic}>
-                        {selectedTeam.researchTopic}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-primary-100/50 flex justify-between items-center">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase">지출액</p>
-                    <p className="text-base font-black text-primary-500">{teamTotalUsed.toLocaleString()}원</p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
+      )}
 
-        {/* Right Column: Charts and Plans List */}
-        <div className="lg:col-span-2 space-y-6">
-          {selectedTeam && (
-            <div className="card overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                <h2 className="text-sm font-semibold text-gray-700">팀 예산 현황 ({selectedTeam.teamNumber})</h2>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-primary-500">
-                    {teamTotalUsed.toLocaleString()} / 2,000,000원
-                  </span>
-                  <span className="px-2 py-0.5 bg-primary-100 text-primary-500 rounded-full text-[10px] font-black">
-                    {Math.round((teamTotalUsed / 2000000) * 100)}%
-                  </span>
-                </div>
-              </div>
-              <div className="p-4 pt-2 space-y-1">
-                {Object.keys(PURPOSE_LABELS).map(key => {
-                  const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
-                  const used = teamPlans.filter((p: Plan) => p.purpose === key && p.status === 'APPROVED').reduce((acc: number, p: Plan) => acc + (p.actualAmount ?? p.amount), 0)
-                  const limit = selectedTeam.budgetLimits?.find((l: BudgetLimit) => l.purpose === key)?.amount || 0
-                  const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
-
-                  if (limit === 0 && used === 0) return null
-
-                  return (
-                    <div key={key} className="flex items-center gap-4 py-0.5 border-b border-gray-50/50 last:border-0">
-                      <span className="text-[11px] font-bold text-gray-700 w-24 shrink-0 truncate" title={label}>{label}</span>
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden relative shadow-inner">
-                        <div
-                          className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out rounded-full ${percent >= 100 ? 'bg-red-500' : percent >= 80 ? 'bg-yellow-500' : 'bg-blue-500'
-                            }`}
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-medium text-gray-500 w-32 text-right shrink-0">
-                        <span className="text-primary-500 font-bold">{used.toLocaleString()}</span> / {limit.toLocaleString()} <span className="text-[9px] text-gray-400">({percent}%)</span>
-                      </span>
-                    </div>
-                  )
-                })}
-                {Object.keys(PURPOSE_LABELS).every(key => {
-                  const used = teamPlans.filter((p: Plan) => p.purpose === key && p.status === 'APPROVED').reduce((acc: number, p: Plan) => acc + (p.actualAmount ?? p.amount), 0)
-                  const limit = selectedTeam.budgetLimits?.find((l: BudgetLimit) => l.purpose === key)?.amount || 0
-                  return limit === 0 && used === 0
-                }) && (
-                    <p className="text-center py-4 text-xs text-gray-400">설정된 예산 한도가 없습니다.</p>
-                  )}
-              </div>
-            </div>
+      {/* 통합 계획서 리스트: 검토 필요 건이 맨 위 */}
+      <div className="card">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <h2 className="text-sm font-semibold text-gray-700">
+            {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'}
+            {filter ? ` (${currentFilterLabel})` : ''}
+            <span className="ml-2 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
+          </h2>
+          {!filter && needsReviewCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-100 rounded-full px-2.5 py-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              검토 필요 {needsReviewCount}건
+            </span>
           )}
-
-          {!filter && (pending.length > 0 || resubmit.length > 0) && !selectedTeamId && (
-            <div className="card border-l-4 border-l-red-400 mb-6">
-              <div className="px-5 py-3 border-b border-gray-100 bg-red-50/30">
-                <h2 className="text-sm font-bold text-red-800">검토 필요 항목 ({pending.length + resubmit.length}건)</h2>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {[...pending, ...resubmit].map((plan) => (
-                  <PlanRow key={plan.id} plan={plan} teams={teams} />
-                ))}
-              </div>
-            </div>
+        </div>
+        <div className="divide-y divide-gray-100">
+          {sortedPlans.length === 0 ? (
+            <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
+          ) : (
+            sortedPlans.map((plan: Plan) => <PlanRow key={plan.id} plan={plan} teams={teams} />)
           )}
-
-          <div className="card">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <h2 className="text-sm font-semibold text-gray-700">
-                {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'}
-                {filter ? ` (${currentFilterLabel})` : ''}
-                <span className="ml-2 text-xs text-gray-400 font-normal">({filteredPlans.length}건)</span>
-              </h2>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {filteredPlans.length === 0 ? (
-                <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
-              ) : (
-                filteredPlans.map((plan: Plan) => <PlanRow key={plan.id} plan={plan} teams={teams} />)
-              )}
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -642,8 +600,11 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
   const total = plan.evidences.length
   const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
 
+  const needsReview = plan.status === 'UNDER_REVIEW' || plan.status === 'RESUBMIT_REQUIRED'
+
   return (
-    <div className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+    <div className={`relative px-5 py-4 flex items-center justify-between transition-colors ${needsReview ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}>
+      {needsReview && <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-400" aria-hidden="true" />}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
@@ -666,9 +627,13 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
       </div>
       <Link
         href={`/admin/plans/${plan.id}`}
-        className="ml-4 shrink-0 inline-flex items-center gap-1 text-xs font-medium text-primary-500 border border-primary-100 bg-primary-50/50 rounded-lg px-2.5 py-1.5 hover:bg-primary-50 hover:border-primary-500/30 hover:shadow-sm transition-all"
+        className={`ml-4 shrink-0 inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-all hover:shadow-sm ${
+          needsReview
+            ? 'text-primary-500 border-primary-100 bg-primary-50/50 hover:bg-primary-50 hover:border-primary-500/30'
+            : 'text-gray-500 border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-700'
+        }`}
       >
-        검토하기
+        {needsReview ? '검토하기' : '상세 보기'}
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
       </Link>
     </div>
