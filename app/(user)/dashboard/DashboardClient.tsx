@@ -5,12 +5,10 @@ import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge } from '@/components/StatusBadge'
 import Link from 'next/link'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, LabelList
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LabelList
 } from 'recharts'
 import { differenceInDays, isAfter, isToday } from 'date-fns'
 import EvidenceSubmissionModal from '@/components/EvidenceSubmissionModal'
-import UpcomingCardNotice from '@/components/UpcomingCardNotice'
 
 export default function DashboardClient({
   budgetStatus,
@@ -33,7 +31,6 @@ export default function DashboardClient({
 
   return (
     <div className="space-y-6">
-      <UpcomingCardNotice plans={plans} />
       <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} />
       <PlanListSection plans={plans} activePlanCount={activePlanCount} onOpenSubmission={openSubmissionModal} />
 
@@ -86,10 +83,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
     잔액: Math.max(0, categoryLimits[key] - (categoryUsage[key] || 0))
   }))
 
-  const pieData = [
-    { name: '사용 금액', value: totalUsed },
-    { name: '잔액', value: totalBalance > 0 ? totalBalance : 0 }
-  ]
+  const usedPercent = totalBudget > 0 ? Math.min(100, Math.round((totalUsed / totalBudget) * 100)) : 0
 
   const upcomingMilestones = milestones
     .filter(m => isAfter(new Date(m.date), new Date()) || isToday(new Date(m.date)))
@@ -112,9 +106,9 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
                     <p className="text-sm font-semibold text-indigo-900">{m.name}</p>
                     <p className="text-xs text-indigo-700 mt-1">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
                   </div>
-                  <div className="text-xl font-black text-indigo-600 tabular-nums">
+                  <span className={`shrink-0 rounded-full text-xs font-bold px-2.5 py-1 tabular-nums shadow-sm ${dDay <= 3 ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white'}`}>
                     {dDay === 0 ? 'D-Day' : `D-${dDay}`}
-                  </div>
+                  </span>
                 </div>
               )
             })}
@@ -124,44 +118,29 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 
       {/* 예산 사용 현황 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 전체 요약 (Pie Chart) */}
-        <div className="card p-5 flex flex-col justify-center items-center">
-          <h2 className="text-sm font-semibold text-gray-700 mb-2 self-start">전체 예산 사용 현황</h2>
-          <div className="w-full h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={45}
-                  outerRadius={60}
-                  paddingAngle={5}
-                  dataKey="value"
-                  isAnimationActive={false}
-                >
-                  <Cell fill="#15378F" />
-                  <Cell fill="#e5e7eb" />
-                </Pie>
-                <Legend
-                  formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
-                  wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+        {/* 전체 예산 요약 카드 */}
+        <div className="relative rounded-2xl p-6 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[15rem]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.15),transparent_55%)]" aria-hidden="true" />
+          <div className="absolute -bottom-20 -right-16 w-52 h-52 rounded-full bg-white/5" aria-hidden="true" />
+
+          <div className="relative">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-blue-100/70">사용 가능 잔액</p>
+            <p className="mt-1.5 text-[2rem] leading-tight font-black tracking-tight tabular-nums">
+              {totalBalance.toLocaleString()}
+              <span className="text-base font-semibold text-blue-100/70 ml-1">원</span>
+            </p>
           </div>
-          <div className="w-full space-y-1 mt-1 text-sm tabular-nums">
-            <div className="flex justify-between">
-              <span className="text-gray-500">총 예산</span>
-              <span className="font-semibold text-gray-900">{totalBudget.toLocaleString()}원</span>
+
+          <div className="relative mt-6">
+            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${usedPercent}%` }}
+              />
             </div>
-            <div className="flex justify-between">
-              <span className="text-red-500">사용 금액</span>
-              <span className="font-semibold text-red-600">{totalUsed.toLocaleString()}원</span>
-            </div>
-            <div className="flex justify-between pt-1 border-t border-gray-100">
-              <span className="text-green-600 font-bold">잔액</span>
-              <span className="font-bold text-green-700">{totalBalance.toLocaleString()}원</span>
+            <div className="mt-2.5 flex justify-between text-xs text-blue-100/80 tabular-nums">
+              <span>사용 {totalUsed.toLocaleString()}원 ({usedPercent}%)</span>
+              <span>총 {totalBudget.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -250,19 +229,23 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">사용 목적:</span>
-          <select
-            value={purposeFilter}
-            onChange={(e) => setPurposeFilter(e.target.value)}
-            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:ring-1 focus:ring-[#15378F] focus:border-[#15378F] bg-white transition-all"
+      </div>
+
+      <div className="px-5 py-3 border-b border-gray-100 flex flex-wrap items-center gap-1.5">
+        {[['ALL', '전체'], ...Object.entries(PURPOSE_LABELS)].map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setPurposeFilter(value)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-all whitespace-nowrap ${
+              purposeFilter === value
+                ? 'bg-primary-500 border-primary-500 text-white shadow-md'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-primary-100 hover:bg-primary-50/60 hover:text-primary-500'
+            }`}
           >
-            <option value="ALL">전체 보기</option>
-            {Object.entries(PURPOSE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </div>
+            {label}
+          </button>
+        ))}
       </div>
 
       {filteredPlans.length === 0 ? (
