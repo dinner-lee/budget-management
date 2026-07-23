@@ -172,7 +172,10 @@ export default function EvidenceSubmissionModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">증빙 서류 제출</h2>
+            <h2 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+              <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              증빙 서류 제출
+            </h2>
             {plan && (
               <p className="text-xs text-gray-500 mt-0.5 truncate max-w-[400px]">
                 {plan.title}
@@ -201,48 +204,49 @@ export default function EvidenceSubmissionModal({
           ) : plan ? (
             <div className="space-y-6">
               {/* Plan Summary Card */}
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
-                  <span>
-                    <span className="text-gray-400">목적:</span> {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS] || plan.purpose}
-                  </span>
-                  <span>
-                    <span className="text-gray-400">계획 금액:</span> {plan.amount.toLocaleString()}원
-                  </span>
-                  <span>
-                    <span className="text-gray-400">일시:</span> {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
-                  </span>
+              <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-100 grid grid-cols-3 gap-3 text-sm text-gray-700 tabular-nums">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">목적</p>
+                  <p className="mt-0.5">{PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS] || plan.purpose}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">계획 금액</p>
+                  <p className="mt-0.5">{plan.amount.toLocaleString()}원</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">일시</p>
+                  <p className="mt-0.5">{new Date(plan.plannedDate).toLocaleDateString('ko-KR')}</p>
                 </div>
               </div>
 
               {/* Status guides */}
               {plan.status === 'RESUBMIT_REQUIRED' && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+                <div className="bg-red-50/70 border border-red-100 rounded-xl p-4 text-sm text-red-800">
                   재제출이 필요한 항목이 있습니다. 추가 파일을 업로드한 후 다시 검토를 요청해주세요.
                 </div>
               )}
 
               {/* NAS Instruction Box */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-sm font-bold text-blue-900 mb-2">증빙 파일 제출 방법</h3>
-                <p className="text-sm text-blue-800 mb-3 leading-relaxed">
+              <div className="bg-primary-50/70 border border-primary-100 rounded-2xl p-4">
+                <h3 className="font-nexon text-sm font-bold text-[#15378F] mb-2">증빙 파일 제출 방법</h3>
+                <p className="text-sm text-gray-700 mb-3 leading-relaxed">
                   1. <strong>NAS 업로드</strong> 버튼을 눌러 파일 업로드 팝업창을 여세요.<br />
                   2. 증빙 파일들을 NAS에 업로드합니다.<br />
                   3. 업로드 완료 후 아래 체크리스트를 확인해 주세요.
                 </p>
 
-                <div className="mt-3 mb-4 bg-white/60 rounded p-3 text-sm border border-blue-100">
-                  <p className="font-semibold text-blue-900 mb-1 flex items-center gap-1">
+                <div className="mt-3 mb-4 bg-white/70 rounded-lg p-3 text-sm border border-primary-100">
+                  <p className="font-semibold text-[#15378F] mb-1 flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-                    파일명 규칙: <span className="font-mono text-blue-700 ml-1">팀번호_날짜_사용목적_증빙항목 (예) 1_0630_회의비_영수증</span>
+                    파일명 규칙: <span className="font-mono text-primary-500 ml-1">팀번호_날짜_사용목적_증빙항목 (예) 1_0630_회의비_영수증</span>
                   </p>
                 </div>
 
                 <button
                   onClick={openNasPopup}
-                  className="w-full bg-blue-600 text-white text-sm font-bold py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition active:scale-[0.98]"
+                  className="font-nexon w-full bg-primary-500 text-white text-sm font-normal py-2.5 rounded-xl shadow-md hover:bg-primary-600 hover:shadow-lg transition active:scale-[0.98]"
                 >
                   NAS에 파일 업로드하기(시간이 다소 소요될 수 있습니다)
                 </button>
@@ -250,7 +254,10 @@ export default function EvidenceSubmissionModal({
 
               {/* Evidence Checklist */}
               <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-3">증빙 항목 체크리스트</h4>
+                <h4 className="font-nexon flex items-center gap-1.5 text-sm font-bold text-gray-800 mb-3">
+                  <svg className="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                  증빙 항목 체크리스트
+                </h4>
                 <div className="space-y-2.5">
                   {plan.evidences.map(evidence => (
                     <div
@@ -270,14 +277,14 @@ export default function EvidenceSubmissionModal({
                           e.stopPropagation()
                           handleToggle(evidence.id)
                         }}
-                        className="w-5 h-5 mt-0.5 text-blue-600 border-gray-300 rounded-md focus:ring-blue-500 cursor-pointer"
+                        className="w-5 h-5 mt-0.5 text-primary-500 border-gray-300 rounded-md focus:ring-primary-500 cursor-pointer"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className={`text-sm font-semibold ${checkedItems.has(evidence.id) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
                             {evidence.label}
                           </span>
-                          {evidence.required && <span className="text-red-500 text-[10px] font-bold border border-red-200 bg-red-50 px-1 rounded">필수</span>}
+                          {evidence.required && <span className="font-nexon text-red-600 text-[10px] font-normal ring-1 ring-inset ring-red-600/20 bg-red-50 px-1.5 py-0.5 rounded-full">필수</span>}
                           
                           {(() => {
                             const formUrl = 
@@ -293,7 +300,7 @@ export default function EvidenceSubmissionModal({
                                 target="_blank"
                                 rel="noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition-colors"
+                                className="inline-flex items-center gap-1 text-[10px] font-medium text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full border border-primary-100 hover:bg-primary-100 transition-colors whitespace-nowrap"
                               >
                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
@@ -307,7 +314,7 @@ export default function EvidenceSubmissionModal({
                           <p className="text-xs text-gray-500 mt-0.5">{evidence.hint}</p>
                         )}
                         {evidence.status === 'RESUBMIT_REQUIRED' && evidence.resubmitNote && (
-                          <div className="mt-2 text-[11px] bg-red-100 border border-red-200 rounded p-2 text-red-700">
+                          <div className="mt-2 text-[11px] bg-red-50 border border-red-100 rounded-lg p-2 text-red-700">
                             <span className="font-bold">재제출 사유:</span> {evidence.resubmitNote}
                           </div>
                         )}
@@ -319,7 +326,7 @@ export default function EvidenceSubmissionModal({
 
               {/* Actual Amount Input */}
               <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
-                <label className="block text-sm font-bold text-gray-700 mb-2" htmlFor="modal-actualAmount">
+                <label className="font-nexon block text-sm font-bold text-gray-800 mb-2" htmlFor="modal-actualAmount">
                   최종 지출 금액 확인
                 </label>
                 <div className="relative">
@@ -328,8 +335,8 @@ export default function EvidenceSubmissionModal({
                     type="number"
                     value={actualAmountRaw}
                     onChange={(e) => handleAmountChange(e.target.value)}
-                    className={`w-full border rounded-xl shadow-sm px-4 py-3 text-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none ${amountTouched && parseInt(actualAmountRaw, 10) !== plan.amount
-                        ? 'border-blue-400 text-blue-700 font-bold bg-blue-50/30'
+                    className={`w-full border rounded-xl shadow-sm px-4 py-3 text-xl focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none tabular-nums ${amountTouched && parseInt(actualAmountRaw, 10) !== plan.amount
+                        ? 'border-primary-500 text-primary-500 font-bold bg-primary-50/40'
                         : 'border-gray-300 text-gray-900'
                       }`}
                     placeholder="0"
@@ -340,7 +347,7 @@ export default function EvidenceSubmissionModal({
                   계획 금액: <span className="font-medium text-gray-700">{plan.amount.toLocaleString()}원</span>
                 </p>
                 {amountTouched && parseInt(actualAmountRaw, 10) !== plan.amount && !isNaN(parseInt(actualAmountRaw, 10)) && (
-                  <div className="mt-3 p-2 bg-blue-50 rounded-lg text-xs text-blue-700 font-medium flex items-center gap-2">
+                  <div className="mt-3 p-2.5 bg-primary-50/70 border border-primary-100 rounded-lg text-xs text-primary-500 font-medium flex items-center gap-2 tabular-nums">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -359,14 +366,14 @@ export default function EvidenceSubmissionModal({
           <div className="flex-1 flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition active:scale-[0.98]"
+              className="font-nexon px-6 py-2.5 text-sm font-normal text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:shadow-sm transition active:scale-[0.98]"
               disabled={submitting}
             >
               취소
             </button>
             <button
               onClick={handleSubmit}
-              className="flex-1 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg hover:bg-blue-700 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="font-nexon flex-1 px-6 py-2.5 text-sm font-normal text-white bg-primary-500 rounded-xl shadow-lg hover:bg-primary-600 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               disabled={submitting || loading || !plan}
             >
               {submitting && (
@@ -396,21 +403,21 @@ export default function EvidenceSubmissionModal({
         {showConfirm && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
             <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-in fade-in zoom-in duration-150">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">실제 지출 금액 확인</h3>
+              <h3 className="font-nexon text-base font-bold text-gray-800 mb-2 tracking-tight">실제 지출 금액 확인</h3>
               <p className="text-sm text-gray-600 mb-5 leading-relaxed">
                 계획서상의 금액 <strong>{plan?.amount.toLocaleString()}원</strong>을 그대로 지출하셨습니까?
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={doSubmit}
-                  className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-xl shadow hover:bg-blue-700 transition"
+                  className="font-nexon flex-1 bg-primary-500 text-white font-normal py-2.5 rounded-xl shadow hover:bg-primary-600 transition"
                   disabled={submitting}
                 >
                   네, 맞습니다
                 </button>
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-200 transition"
+                  className="font-nexon flex-1 bg-gray-100 text-gray-700 font-normal py-2.5 rounded-xl hover:bg-gray-200 transition"
                 >
                   수정하기
                 </button>
