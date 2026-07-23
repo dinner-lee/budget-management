@@ -149,21 +149,19 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
       </div>
 
       {/* 항목별 예산 사용 현황: 색상 카드 블록 */}
-      <div className="card p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">항목별 예산 사용 현황</h2>
-        {(() => {
+      {(() => {
           const visible = Object.keys(PURPOSE_LABELS).filter(
             (key) => (categoryLimits[key] || 0) > 0 || (categoryUsage[key] || 0) > 0,
           )
           if (visible.length === 0) {
             return (
-              <div className="py-10 text-center text-gray-400 text-sm">
+              <div className="py-8 text-center text-gray-400 text-sm border border-dashed border-gray-200 rounded-2xl bg-white/50">
                 설정된 항목별 예산이 없습니다. 예산 계획 설정에서 항목별 한도를 입력해 주세요.
               </div>
             )
           }
           return (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
               {visible.map((key) => {
                 const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
                 const st = CATEGORY_STYLES[key] ?? CATEGORY_STYLES.OTHER
@@ -174,7 +172,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
                 return (
                   <div
                     key={key}
-                    className={`relative rounded-2xl border overflow-hidden p-4 min-h-[9.5rem] flex flex-col justify-between ${st.bg} ${st.border} hover:shadow-md transition-shadow`}
+                    className={`font-nexon relative rounded-2xl border overflow-hidden p-4 min-h-[9rem] flex flex-col justify-between shadow-sm ${st.bg} ${st.border} hover:shadow-md hover:-translate-y-0.5 transition-all`}
                     title={`${label}: ${used.toLocaleString()}원 / ${limit.toLocaleString()}원`}
                   >
                     {/* 사용률만큼 아래에서부터 차오르는 채움 */}
@@ -185,11 +183,11 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
                     />
                     <p className={`relative text-xs font-bold break-keep leading-snug ${st.text}`}>{label}</p>
                     <div className="relative">
-                      <p className={`text-2xl font-black tracking-tight tabular-nums ${over ? 'text-red-600' : st.percent}`}>
+                      <p className={`text-2xl font-bold tracking-tight tabular-nums ${over ? 'text-red-600' : st.percent}`}>
                         {percent}
                         <span className="text-sm font-bold">%</span>
                       </p>
-                      <p className="mt-0.5 text-[11px] text-gray-600 tabular-nums leading-tight">
+                      <p className="mt-0.5 text-[11px] font-normal text-gray-600 tabular-nums leading-tight">
                         {used.toLocaleString()}원
                         <span className="text-gray-400"> / {limit.toLocaleString()}원</span>
                       </p>
@@ -201,7 +199,6 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
             </div>
           )
         })()}
-      </div>
     </div>
   )
 }
