@@ -20,6 +20,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 })
   }
 
+  // 테스트 모드: 구독된 모든 사용자에게 테스트 알림 발송 (?test=1)
+  if (req.nextUrl.searchParams.get('test') === '1') {
+    const allSubs = await prisma.pushSubscription.findMany({ select: { userId: true } })
+    const userIds = Array.from(new Set(allSubs.map((s) => s.userId)))
+    const sent = await sendPushToUsers(userIds, {
+      title: '테스트 알림',
+      body: '웹 푸시 알림이 정상적으로 작동합니다. 카드 사용 당일 아침에 이렇게 알림이 도착합니다.',
+      url: '/dashboard',
+      tag: 'push-test',
+    })
+    return NextResponse.json({ test: true, subscriptions: allSubs.length, sent })
+  }
+
   const now = new Date()
   const kstNow = new Date(now.getTime() + 9 * 3600 * 1000)
   const todayKst = kstNow.toISOString().slice(0, 10) // KST 기준 오늘 날짜
