@@ -47,16 +47,17 @@ interface Team {
 }
 
 // 전체 계획서 목록의 표 컬럼 (헤더/행 공유)
-const PLAN_GRID = 'md:grid-cols-[6.5rem_minmax(0,1fr)_minmax(0,1fr)_6rem_6rem_5.5rem_5.5rem_12.5rem]'
+const PLAN_GRID = 'md:grid-cols-[6rem_minmax(0,1fr)_5.5rem_5rem_5rem_11.5rem] lg:grid-cols-[6.5rem_minmax(0,1fr)_minmax(0,1fr)_6rem_6rem_5.5rem_5.5rem_12.5rem]'
 
 type SortState = { key: string; dir: 'asc' | 'desc' } | null
 
-function SortHeader({ label, sortKey, sort, onToggle, align }: {
+function SortHeader({ label, sortKey, sort, onToggle, align, className = '' }: {
   label: string
   sortKey: string
   sort: SortState
   onToggle: (key: string) => void
   align?: 'right'
+  className?: string
 }) {
   const active = sort?.key === sortKey
   return (
@@ -64,7 +65,7 @@ function SortHeader({ label, sortKey, sort, onToggle, align }: {
       type="button"
       onClick={() => onToggle(sortKey)}
       title="클릭하여 정렬 (오름차순 → 내림차순 → 해제)"
-      className={`flex items-center gap-0.5 transition-colors hover:text-gray-600 ${align === 'right' ? 'justify-end' : ''} ${active ? 'text-primary-500' : ''}`}
+      className={`flex items-center gap-0.5 transition-colors hover:text-gray-600 ${align === 'right' ? 'justify-end' : ''} ${active ? 'text-primary-500' : ''} ${className}`}
     >
       {label}
       <svg className={`w-3 h-3 shrink-0 ${active ? '' : 'opacity-30'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -388,8 +389,8 @@ function CombinedDashboardView({
         <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
           <SortHeader label="팀 / 대표자" sortKey="team" sort={sort} onToggle={toggleSort} />
           <SortHeader label="사용 항목" sortKey="purpose" sort={sort} onToggle={toggleSort} />
-          <SortHeader label="제출자" sortKey="uploader" sort={sort} onToggle={toggleSort} />
-          <SortHeader label="계획 금액" sortKey="planned" sort={sort} onToggle={toggleSort} align="right" />
+          <SortHeader label="제출자" sortKey="uploader" sort={sort} onToggle={toggleSort} className="hidden lg:flex" />
+          <SortHeader label="계획 금액" sortKey="planned" sort={sort} onToggle={toggleSort} align="right" className="hidden lg:flex" />
           <SortHeader label="실제 금액" sortKey="actual" sort={sort} onToggle={toggleSort} align="right" />
           <SortHeader label="사용일" sortKey="usedAt" sort={sort} onToggle={toggleSort} />
           <SortHeader label="처리일" sortKey="processedAt" sort={sort} onToggle={toggleSort} />
@@ -694,8 +695,8 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
       <div className="text-gray-700 truncate">
         {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}
       </div>
-      <div className="text-xs text-gray-500 truncate" title="업로드한 사용자">{plan.user?.name ?? '-'}</div>
-      <div className="md:text-right tabular-nums text-gray-700">{plan.amount.toLocaleString()}원</div>
+      <div className="hidden lg:block text-xs text-gray-500 truncate" title="업로드한 사용자">{plan.user?.name ?? '-'}</div>
+      <div className="hidden lg:block lg:text-right tabular-nums text-gray-700">{plan.amount.toLocaleString()}원</div>
       <div className={`md:text-right tabular-nums ${actual !== null ? (isConfirmed ? 'text-blue-600 font-medium' : 'text-amber-600 font-medium') : 'text-gray-300'}`}>
         {actual !== null ? `${actual.toLocaleString()}원` : '–'}
       </div>
