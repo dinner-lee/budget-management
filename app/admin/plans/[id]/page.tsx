@@ -56,11 +56,19 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
             <span className="text-gray-400 text-xs">금액</span>
             <p>
               {plan.amount.toLocaleString()}원 (계획)
+              {plan.lastSubmittedAmount !== null && (
+                <>
+                  <br />
+                  <span className="font-semibold text-amber-600">
+                    {plan.lastSubmittedAmount.toLocaleString()}원 (제출된 실제 사용 금액)
+                  </span>
+                </>
+              )}
               {plan.actualAmount !== null && (
                 <>
                   <br />
                   <span className="font-semibold text-blue-600">
-                    {plan.actualAmount.toLocaleString()}원 (실제 지출)
+                    {plan.actualAmount.toLocaleString()}원 (실제 지출{plan.isRecurring ? ' 누계' : ''})
                   </span>
                 </>
               )}
