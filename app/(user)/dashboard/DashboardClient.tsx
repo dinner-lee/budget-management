@@ -91,35 +91,10 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 
   return (
     <div className="space-y-6">
-      {/* 주요 일정 (Milestones) */}
-      {upcomingMilestones.length > 0 && (
-        <div className="card overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-            <h2 className="text-sm font-semibold text-gray-700">주요 일정</h2>
-          </div>
-          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {upcomingMilestones.map(m => {
-              const dDay = differenceInDays(new Date(m.date), new Date())
-              return (
-                <div key={m.id} className="border border-indigo-100 bg-indigo-50/50 p-4 rounded-xl flex items-center justify-between hover:shadow-sm transition-shadow">
-                  <div>
-                    <p className="text-sm font-semibold text-indigo-900">{m.name}</p>
-                    <p className="text-xs text-indigo-700 mt-1">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
-                  </div>
-                  <span className={`shrink-0 rounded-full text-xs font-bold px-2.5 py-1 tabular-nums shadow-sm ${dDay <= 3 ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white'}`}>
-                    {dDay === 0 ? 'D-Day' : `D-${dDay}`}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 예산 사용 현황 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 전체 예산 요약 카드 */}
-        <div className="relative rounded-2xl p-6 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[15rem]">
+      {/* 잔액 카드 + 주요 일정 카드 (같은 줄) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* 사용 가능 잔액 */}
+        <div className="relative rounded-2xl p-6 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[13rem]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.15),transparent_55%)]" aria-hidden="true" />
           <div className="absolute -bottom-20 -right-16 w-52 h-52 rounded-full bg-white/5" aria-hidden="true" />
 
@@ -145,62 +120,92 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
           </div>
         </div>
 
-        {/* 항목별 한도/사용액 (Bar Chart) */}
-        <div className="card p-5 lg:col-span-2">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">항목별 예산 사용 현황</h2>
-          {categoryData.length > 0 ? (
-            <div className="w-full h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        {/* 주요 일정 카드 */}
+        {upcomingMilestones.map(m => {
+          const dDay = differenceInDays(new Date(m.date), new Date())
+          const urgent = dDay <= 3
+          return (
+            <div
+              key={m.id}
+              className="relative rounded-2xl bg-white border border-gray-200 shadow-sm p-6 flex flex-col justify-between overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
+            >
+              <div
+                className={`absolute -top-14 -right-14 w-36 h-36 rounded-full ${urgent ? 'bg-red-50' : 'bg-indigo-50'}`}
+                aria-hidden="true"
+              />
+              <div className="relative">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">주요 일정</p>
+                <p className="mt-1.5 text-lg font-bold text-gray-900 break-keep leading-snug">{m.name}</p>
+                <p className="mt-1 text-xs text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
+              </div>
+              <div className="relative mt-5">
+                <span className={`inline-flex rounded-full px-3 py-1 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
+                  {dDay === 0 ? 'D-Day' : `D-${dDay}`}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 항목별 한도/사용액 (Bar Chart) */}
+      <div className="card p-5">
+        <h2 className="text-sm font-semibold text-gray-700 mb-4">항목별 예산 사용 현황</h2>
+        {categoryData.length > 0 ? (
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="name"
                   tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 12, fill: '#000' }}
                   axisLine={{ stroke: '#e5e7eb' }}
                   tickLine={false}
                 />
-                  <YAxis
-                    tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 11, fill: '#6b7280' }}
-                    tickFormatter={(value) => `${value / 10000}만`}
-                    axisLine={false}
-                    tickLine={false}
+                <YAxis
+                  tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 11, fill: '#6b7280' }}
+                  tickFormatter={(value) => `${value / 10000}만`}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Legend
+                  formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
+                  wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px', paddingTop: '5px' }}
+                />
+                <Bar dataKey="사용금액" stackId="a" fill="#15378F" name="사용 금액" isAnimationActive={false}>
+                  <LabelList
+                    dataKey="사용금액"
+                    position="center"
+                    formatter={(v: any) => v > 0 ? `${v.toLocaleString()}` : ''}
+                    style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }}
                   />
-                  <Legend
-                    formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
-                    wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px', paddingTop: '5px' }}
+                </Bar>
+                <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도" isAnimationActive={false}>
+                  <LabelList
+                    dataKey="한도"
+                    position="top"
+                    formatter={(v: any) => v > 0 ? `${v.toLocaleString()}원` : ''}
+                    style={{ fill: '#111827', fontSize: 10, fontWeight: 900, pointerEvents: 'none' }}
                   />
-                  <Bar dataKey="사용금액" stackId="a" fill="#15378F" name="사용 금액" isAnimationActive={false}>
-                    <LabelList
-                      dataKey="사용금액"
-                      position="center"
-                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}` : ''}
-                      style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }}
-                    />
-                  </Bar>
-                  <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도" isAnimationActive={false}>
-                    <LabelList
-                      dataKey="한도"
-                      position="top"
-                      formatter={(v: any) => v > 0 ? `${v.toLocaleString()}원` : ''}
-                      style={{ fill: '#111827', fontSize: 10, fontWeight: 900, pointerEvents: 'none' }}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
-              설정된 항목별 예산이 없습니다.
-            </div>
-          )}
-        </div>
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+            설정된 항목별 예산이 없습니다.
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-function PlanListSection({ plans, activePlanCount, onOpenSubmission }: { 
-  plans: any[], 
+// 계획서 목록의 표 컬럼 (헤더/행 공유)
+const USER_PLAN_GRID = 'md:grid-cols-[minmax(0,1fr)_6rem_6rem_5.5rem_4rem_12rem]'
+
+function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
+  plans: any[],
   activePlanCount: number,
   onOpenSubmission: (id: string) => void
 }) {
@@ -209,6 +214,12 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
   const filteredPlans = purposeFilter === 'ALL'
     ? plans
     : plans.filter(p => p.purpose === purposeFilter)
+
+  // 증빙 제출이 필요한 건을 맨 위로
+  const NEEDS_ACTION = ['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED']
+  const sortedPlans = [...filteredPlans].sort(
+    (a, b) => Number(NEEDS_ACTION.includes(b.status)) - Number(NEEDS_ACTION.includes(a.status)),
+  )
 
   return (
     <div className="card">
@@ -219,14 +230,9 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
             <span className="ml-1 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
           </h2>
           {activePlanCount >= 3 && (
-            <div className="flex items-center gap-2">
-              <span className="font-nexon inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-normal bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 whitespace-nowrap">
-                작성 제한
-              </span>
-              <span className="text-[10px] font-bold text-gray-400">
-                증빙 미완료 3건
-              </span>
-            </div>
+            <span className="font-nexon inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-normal bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 whitespace-nowrap">
+              작성 제한 · 증빙 미완료 3건
+            </span>
           )}
         </div>
       </div>
@@ -248,93 +254,92 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
         ))}
       </div>
 
-      {filteredPlans.length === 0 ? (
+      <div className={`hidden md:grid ${USER_PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
+        <span>계획서</span>
+        <span className="text-right">계획 금액</span>
+        <span className="text-right">실제 금액</span>
+        <span>사용일</span>
+        <span>증빙</span>
+        <span className="text-right">상태 / 작업</span>
+      </div>
+
+      {sortedPlans.length === 0 ? (
         <div className="px-5 py-12 text-center text-gray-400 text-sm">
           {purposeFilter === 'ALL' ? '작성한 계획서가 없습니다.' : '해당 목적의 계획서가 없습니다.'}
         </div>
       ) : (
         <div className="divide-y divide-gray-100">
-          {filteredPlans.map((plan) => {
+          {sortedPlans.map((plan) => {
             const submitted = plan.evidences.filter((e: any) => e.status !== 'PENDING').length
             const total = plan.evidences.length
+            const needsAction = NEEDS_ACTION.includes(plan.status)
+            const isResubmit = plan.status === 'RESUBMIT_REQUIRED'
+            const isWaitingForDate = plan.isRecurring && plan.nextRepeatDate && new Date() < new Date(plan.nextRepeatDate)
+            const canSubmit = needsAction && !isWaitingForDate
+            const actual = plan.actualAmount ?? plan.lastSubmittedAmount ?? null
+            const isConfirmed = plan.actualAmount !== null && plan.actualAmount !== undefined
+
             return (
-              <div key={plan.id} className="px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    {(() => {
-                      const isSubmittable = ['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status)
-                      const isWaitingForDate = plan.isRecurring && plan.nextRepeatDate && new Date() < new Date(plan.nextRepeatDate)
-                      
-                      if (isSubmittable && !isWaitingForDate) {
-                        return (
-                          <button
-                            onClick={() => onOpenSubmission(plan.id)}
-                            className="text-sm font-medium text-gray-900 hover:text-primary-600 truncate text-left"
-                          >
-                            {plan.title}
-                          </button>
-                        )
-                      }
-                      
-                      return (
-                        <Link
-                          href={`/plans/${plan.id}`}
-                          className="text-sm font-medium text-gray-900 hover:text-primary-600 truncate"
-                        >
-                          {plan.title}
-                        </Link>
-                      )
-                    })()}
-                    <PlanStatusBadge status={plan.status} />
-                  </div>
-                  <p className="text-xs text-gray-500 tabular-nums">
-                    {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
-                    {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
-                    {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
-                  </p>
-                  {plan.status !== 'APPROVED' && total > 0 && (
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      증빙 {submitted}/{total}개 제출
-                    </p>
+              <div
+                key={plan.id}
+                className={`relative px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${USER_PLAN_GRID} md:gap-3 text-sm transition-colors ${
+                  isResubmit ? 'bg-red-50/30 hover:bg-red-50/50' : needsAction ? 'bg-amber-50/30 hover:bg-amber-50/50' : 'hover:bg-gray-50'
+                }`}
+              >
+                {needsAction && (
+                  <span className={`absolute left-0 top-0 bottom-0 w-0.5 ${isResubmit ? 'bg-red-400' : 'bg-amber-400'}`} aria-hidden="true" />
+                )}
+                <div className="min-w-0 w-full md:w-auto">
+                  {canSubmit ? (
+                    <button
+                      onClick={() => onOpenSubmission(plan.id)}
+                      className="block max-w-full font-medium text-gray-900 hover:text-primary-500 truncate text-left transition-colors"
+                    >
+                      {plan.title}
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/plans/${plan.id}`}
+                      className="block max-w-full font-medium text-gray-900 hover:text-primary-500 truncate transition-colors"
+                    >
+                      {plan.title}
+                    </Link>
                   )}
                 </div>
-                {['PENDING_EVIDENCE', 'RESUBMIT_REQUIRED'].includes(plan.status) ? (
-                  (() => {
-                    const isWaitingForDate = plan.isRecurring && plan.nextRepeatDate && new Date() < new Date(plan.nextRepeatDate)
-                    if (isWaitingForDate) {
-                      return (
-                        <div className="flex flex-col items-end gap-1">
-                          <button
-                            disabled
-                            className="ml-4 text-[11px] font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 shrink-0 whitespace-nowrap cursor-not-allowed"
-                          >
-                            결제 예정일 대기
-                          </button>
-                          <span className="text-[10px] text-gray-400">
-                            {new Date(plan.nextRepeatDate).toLocaleDateString('ko-KR')} 활성화
-                          </span>
-                        </div>
-                      )
-                    }
-                    return (
-                      <button
-                        onClick={() => onOpenSubmission(plan.id)}
-                        className="ml-4 text-xs font-medium text-white rounded-lg px-3 py-1.5 shrink-0 whitespace-nowrap transition-all shadow-sm active:scale-95 hover:brightness-110 hover:shadow-md"
-                        style={{ backgroundColor: '#15378F' }}
-                      >
-                        증빙 서류 제출
-                      </button>
-                    )
-                  })()
-                ) : (
-                  <Link
-                    href={`/plans/${plan.id}`}
-                    className="ml-4 inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2.5 py-1.5 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm transition-all"
-                  >
-                    상세 보기
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                  </Link>
-                )}
+                <div className="md:text-right tabular-nums text-gray-700">{plan.amount.toLocaleString()}원</div>
+                <div className={`md:text-right tabular-nums ${actual !== null ? (isConfirmed ? 'text-blue-600 font-medium' : 'text-amber-600 font-medium') : 'text-gray-300'}`}>
+                  {actual !== null ? `${actual.toLocaleString()}원` : '–'}
+                </div>
+                <div className="text-xs text-gray-500 tabular-nums">{new Date(plan.plannedDate).toLocaleDateString('ko-KR')}</div>
+                <div className="text-xs text-gray-500 tabular-nums">{total > 0 ? `${submitted}/${total}` : '–'}</div>
+                <div className="flex items-center gap-1.5 md:justify-end w-full md:w-auto">
+                  <PlanStatusBadge status={plan.status} />
+                  {isWaitingForDate ? (
+                    <span
+                      title={`${new Date(plan.nextRepeatDate).toLocaleDateString('ko-KR')} 활성화`}
+                      className="inline-flex items-center whitespace-nowrap shrink-0 text-xs font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg px-2.5 py-1.5 cursor-not-allowed"
+                    >
+                      결제일 대기
+                    </span>
+                  ) : canSubmit ? (
+                    <button
+                      onClick={() => onOpenSubmission(plan.id)}
+                      className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-white rounded-lg px-2.5 py-1.5 shadow-sm transition-all active:scale-95 hover:brightness-110 hover:shadow-md"
+                      style={{ backgroundColor: '#15378F' }}
+                    >
+                      증빙 제출
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/plans/${plan.id}`}
+                      className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2.5 py-1.5 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm transition-all"
+                    >
+                      상세
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </Link>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -343,4 +348,3 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
     </div>
   )
 }
-
