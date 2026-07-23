@@ -94,26 +94,26 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
       {/* 잔액 카드 + 주요 일정 카드 (같은 줄) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* 사용 가능 잔액 */}
-        <div className="relative rounded-2xl p-6 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[13rem]">
+        <div className="font-nexon relative rounded-2xl p-5 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[10.5rem]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.15),transparent_55%)]" aria-hidden="true" />
           <div className="absolute -bottom-20 -right-16 w-52 h-52 rounded-full bg-white/5" aria-hidden="true" />
 
           <div className="relative">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-blue-100/70">사용 가능 잔액</p>
-            <p className="mt-1.5 text-[2rem] leading-tight font-black tracking-tight tabular-nums">
+            <p className="text-[11px] font-light uppercase tracking-wider text-blue-100/80">사용 가능 잔액</p>
+            <p className="mt-1 text-[1.75rem] leading-tight font-bold tracking-tight tabular-nums">
               {totalBalance.toLocaleString()}
-              <span className="text-base font-semibold text-blue-100/70 ml-1">원</span>
+              <span className="text-base font-light text-blue-100/70 ml-1">원</span>
             </p>
           </div>
 
-          <div className="relative mt-6">
+          <div className="relative mt-4">
             <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
               <div
                 className="h-full bg-white rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${usedPercent}%` }}
               />
             </div>
-            <div className="mt-2.5 flex justify-between text-xs text-blue-100/80 tabular-nums">
+            <div className="mt-2 flex justify-between text-xs font-normal text-blue-100/80 tabular-nums">
               <span>사용 {totalUsed.toLocaleString()}원 ({usedPercent}%)</span>
               <span>총 {totalBudget.toLocaleString()}원</span>
             </div>
@@ -127,19 +127,19 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
           return (
             <div
               key={m.id}
-              className="relative rounded-2xl bg-white border border-gray-200 shadow-sm p-6 flex flex-col justify-between overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
+              className="font-nexon relative rounded-2xl bg-white border border-gray-200 shadow-sm p-5 flex flex-col justify-between overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
             >
               <div
                 className={`absolute -top-14 -right-14 w-36 h-36 rounded-full ${urgent ? 'bg-red-50' : 'bg-indigo-50'}`}
                 aria-hidden="true"
               />
               <div className="relative">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">주요 일정</p>
-                <p className="mt-1.5 text-lg font-bold text-gray-900 break-keep leading-snug">{m.name}</p>
-                <p className="mt-1 text-xs text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
+                <p className="text-[11px] font-light uppercase tracking-wider text-gray-400">주요 일정</p>
+                <p className="mt-1 text-base font-bold text-gray-900 break-keep leading-snug">{m.name}</p>
+                <p className="mt-1 text-xs font-normal text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
               </div>
-              <div className="relative mt-5">
-                <span className={`inline-flex rounded-full px-3 py-1 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
+              <div className="relative mt-3">
+                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
                   {dDay === 0 ? 'D-Day' : `D-${dDay}`}
                 </span>
               </div>
