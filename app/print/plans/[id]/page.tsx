@@ -45,6 +45,11 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
   })
   if (!plan) notFound()
 
+  // 사용자명 포맷 '홍길동/학생/교육학과' → [이름, 신분, 학과]
+  const nameParts = (plan.user.name ?? '').split('/').map((part) => part.trim())
+  const displayName = nameParts[0] ?? ''
+  const affiliation = nameParts[2] ?? (plan.team ? `${plan.team.teamNumber}팀` : '')
+
   const purposeLabel = PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]
   const created = new Date(plan.createdAt)
   const plannedDate = new Date(plan.plannedDate)
@@ -80,9 +85,9 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
           <tbody>
             <tr>
               <th className="bg-gray-50 w-24 font-medium text-center">성함</th>
-              <td className="w-[35%]">{plan.user.name ?? ''}</td>
+              <td className="w-[35%]">{displayName}</td>
               <th className="bg-gray-50 w-20 font-medium text-center">소속</th>
-              <td>{plan.team ? `${plan.team.teamNumber}팀` : ''}</td>
+              <td>{affiliation}</td>
             </tr>
             <tr>
               <th className="bg-gray-50 font-medium text-center">사용 목적</th>
@@ -140,15 +145,15 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
         <div className="flex justify-end mt-8 pr-8">
           <div className="relative flex items-center gap-3 text-base">
             <span className="font-bold">신청자:</span>
-            <span className="min-w-[7rem] text-center">{plan.user.name ?? ''}</span>
-            <span className="relative inline-flex items-center justify-center w-16 h-16 text-gray-400">
+            <span className="min-w-[7rem] text-center">{displayName}</span>
+            <span className="relative inline-flex items-center justify-center w-20 h-20 text-gray-400">
               (인)
               {plan.signature && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={plan.signature}
                   alt="신청자 서명"
-                  className="absolute inset-0 w-full h-full object-contain"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-28 max-w-none object-contain"
                 />
               )}
             </span>
