@@ -85,7 +85,7 @@ export default function UserAppShell({
               <div className="flex items-center gap-6">
                 <Link href="/dashboard" className="flex items-center gap-2 mr-2">
                   <Image src="/lsri_logo.png" alt="학습과학연구소" width={130} height={32} className="object-contain" priority />
-                  <span className="font-light text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
+                  <span className="font-normal text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
                 </Link>
                 <div className="hidden lg:flex items-center gap-1">
                   {TAB_CONFIG.map((tab) => (
@@ -117,7 +117,7 @@ export default function UserAppShell({
               {/* 버튼으로 처리하여 즉시 탭 전환 */}
               <button onClick={() => handleTabClick('dashboard')} className="flex items-center gap-2 mr-2 text-left">
                 <Image src="/lsri_logo.png" alt="학습과학연구소" width={130} height={32} className="object-contain" priority />
-                <span className="font-light text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
+                <span className="font-normal text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
               </button>
               <div className="hidden lg:flex items-center gap-1">
                 {TAB_CONFIG.map((tab) => (
