@@ -61,7 +61,7 @@ export default function LoginPage() {
 
           <div className="relative mt-14 w-fit">
             <p className="text-[13px] text-blue-100/80 whitespace-nowrap">학부생·대학원생 학습과학연구지원사업</p>
-            <h2 className="mt-0.5 text-[1.65rem] font-normal leading-snug tracking-[0.12em] whitespace-nowrap">
+            <h2 className="mt-0.5 text-[2rem] font-normal leading-snug tracking-tight whitespace-nowrap">
               예산 관리 시스템
             </h2>
           </div>
