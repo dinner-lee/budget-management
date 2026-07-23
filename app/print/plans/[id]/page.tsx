@@ -153,7 +153,7 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
                 <img
                   src={plan.signature}
                   alt="신청자 서명"
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-28 max-w-none object-contain"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-36 max-w-none object-contain"
                 />
               )}
             </span>
