@@ -7,6 +7,16 @@ import SignaturePad from '@/components/SignaturePad'
 
 const PURPOSES = Object.entries(PURPOSE_LABELS) as [keyof typeof PURPOSE_LABELS, string][]
 
+// 대시보드 항목별 블록과 동일한 색상 계열
+const PURPOSE_DOTS: Record<string, string> = {
+  MEETING_FEE: 'bg-blue-500',
+  EXPERT_FEE: 'bg-indigo-500',
+  PARTICIPANT_FEE: 'bg-violet-500',
+  PURCHASE_FEE: 'bg-emerald-500',
+  SOFTWARE_FEE: 'bg-cyan-500',
+  OTHER: 'bg-amber-500',
+}
+
 const ALL_TIME_OPTIONS: string[] = []
 for (let h = 9; h <= 21; h++) {
   ALL_TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:00`)
@@ -68,6 +78,10 @@ export default function NewPlanPage() {
     setError('')
     setConflictInfo(null)
 
+    if (!form.purpose) {
+      setError('사용 목적을 선택해주세요.')
+      return
+    }
     if (!signature) {
       setError('서명을 입력해주세요. 직접 서명하거나 서명 이미지를 업로드할 수 있습니다.')
       return
@@ -110,13 +124,16 @@ export default function NewPlanPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">새 예산 사용 계획서 작성</h1>
+      <div className="mb-5">
+        <h1 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+          <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          새 예산 사용 계획서 작성
+        </h1>
       </div>
 
       {/* 지출 가이드라인 */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 shadow-sm">
-        <h2 className="text-sm font-bold text-amber-900 mb-3 flex items-center gap-2">
+      <div className="bg-amber-50/70 border border-amber-100 rounded-2xl p-5 mb-6 shadow-sm">
+        <h2 className="font-nexon text-sm font-bold text-amber-900 mb-3 flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -153,29 +170,34 @@ export default function NewPlanPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="card p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="card rounded-2xl p-6 space-y-5">
         {/* 사용 목적 */}
         <div>
-          <label className="label" htmlFor="purpose">사용 목적 <span className="text-red-500">*</span></label>
-          <select
-            id="purpose"
-            className="input"
-            value={form.purpose}
-            onChange={(e) => set('purpose', e.target.value)}
-            required
-            disabled={loading}
-          >
-            <option value="">-- 목적 선택 --</option>
+          <label className="label font-nexon">사용 목적 <span className="text-red-500">*</span></label>
+          <div className="flex flex-wrap gap-1.5">
             {PURPOSES.map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+              <button
+                key={key}
+                type="button"
+                disabled={loading}
+                onClick={() => set('purpose', key)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-all whitespace-nowrap disabled:opacity-50 ${
+                  form.purpose === key
+                    ? 'bg-primary-500 border-primary-500 text-white shadow-md'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-primary-100 hover:bg-primary-50/60 hover:text-primary-500'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${PURPOSE_DOTS[key]}`} aria-hidden="true" />
+                {label}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
 
         {/* 반복 결제 설정 (소프트웨어 구독료 전용) */}
         {form.purpose === 'SOFTWARE_FEE' && (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
-            <label className="block text-sm font-bold text-indigo-900 mb-2" htmlFor="repeatMonths">
+          <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4">
+            <label className="font-nexon block text-sm font-bold text-indigo-900 mb-2" htmlFor="repeatMonths">
               반복 결제 기간 설정 (월 단위)
             </label>
             <div className="flex items-center gap-3">
@@ -200,8 +222,8 @@ export default function NewPlanPage() {
 
         {/* 증빙 항목 미리보기 */}
         {previewItems.length > 0 && (
-          <div className="bg-blue-50 rounded-md p-3">
-            <p className="text-xs font-medium text-blue-700 mb-2">필요한 증빙 항목:</p>
+          <div className="bg-primary-50/70 border border-primary-100 rounded-xl p-3.5">
+            <p className="font-nexon text-xs font-normal text-primary-500 mb-2">필요한 증빙 항목</p>
             <ul className="space-y-0.5">
               {previewItems.map((item) => (
                 <li key={item.key} className="text-xs text-blue-600">
@@ -215,7 +237,7 @@ export default function NewPlanPage() {
 
         {/* 예상 사용 금액 */}
         <div>
-          <label className="label" htmlFor="amount">
+          <label className="label font-nexon" htmlFor="amount">
             {form.purpose === 'SOFTWARE_FEE' && Number(form.repeatMonths) > 1 ? '매달 예상 결제 금액 (원)' : '예상 사용 금액 (원)'}
             <span className="text-red-500"> *</span>
           </label>
@@ -250,7 +272,7 @@ export default function NewPlanPage() {
 
         {/* 사용 예정일 */}
         <div>
-          <label className="label" htmlFor="plannedDate">
+          <label className="label font-nexon" htmlFor="plannedDate">
             {form.purpose === 'SOFTWARE_FEE' && Number(form.repeatMonths) > 1 ? '최초 결제 예정일' : '사용 예정일'}
             <span className="text-red-500"> *</span>
           </label>
@@ -267,7 +289,7 @@ export default function NewPlanPage() {
 
         {/* 사용 시간 */}
         <div>
-          <label className="label">사용 시간 (30분 단위)</label>
+          <label className="label font-nexon">사용 시간 (30분 단위)</label>
           {form.purpose ? (
             <div className="flex items-center gap-2">
               <select
@@ -306,7 +328,7 @@ export default function NewPlanPage() {
 
         {/* 지출 개요 */}
         <div>
-          <label className="label" htmlFor="expenditureOverview">
+          <label className="label font-nexon" htmlFor="expenditureOverview">
             지출 개요 <span className="text-red-500">*</span>
           </label>
           <p className="text-xs text-gray-400 mb-1">지출할 내용을 간략히 입력하세요.</p>
@@ -324,7 +346,7 @@ export default function NewPlanPage() {
 
         {/* 신청자 서명 */}
         <div>
-          <label className="label">
+          <label className="label font-nexon">
             신청자 서명 <span className="text-red-500">*</span>
           </label>
           <p className="text-xs text-gray-400 mb-1">
@@ -338,7 +360,7 @@ export default function NewPlanPage() {
         )}
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn-primary flex-1 sm:flex-none flex items-center justify-center gap-2" disabled={loading}>
+          <button type="submit" className="font-nexon btn-primary rounded-xl font-normal flex-1 sm:flex-none flex items-center justify-center gap-2 px-6" disabled={loading}>
             {loading && (
               <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -347,7 +369,7 @@ export default function NewPlanPage() {
             )}
             {loading ? '제출 중...' : '계획서 제출'}
           </button>
-          <button type="button" className="btn-secondary px-6" onClick={() => router.back()} disabled={loading}>
+          <button type="button" className="font-nexon btn-secondary rounded-xl font-normal px-6" onClick={() => router.back()} disabled={loading}>
             취소
           </button>
         </div>
