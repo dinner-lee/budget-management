@@ -74,17 +74,17 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="card p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="card rounded-2xl p-6 space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">팀 번호</label>
+            <label className="label font-nexon">팀 번호</label>
             <input type="text" className="input bg-gray-50 text-gray-500" value={initialTeam.teamNumber} disabled />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">대표 학생 이름</label>
+            <label className="label font-nexon">대표 학생 이름</label>
             <input
               type="text"
               className="input"
@@ -94,7 +94,7 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
             />
           </div>
           <div>
-            <label className="label">대표 학생 소속</label>
+            <label className="label font-nexon">대표 학생 소속</label>
             <input
               type="text"
               className="input"
@@ -106,7 +106,7 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
         </div>
 
         <div>
-          <label className="label">참여 학생 (이름 및 소속)</label>
+          <label className="label font-nexon">참여 학생 (이름 및 소속)</label>
           <p className="text-xs text-gray-400 mb-1">여러 명일 경우 쉼표(,) 또는 줄바꿈으로 구분해 주세요.</p>
           <textarea
             className="input"
@@ -117,7 +117,7 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
         </div>
 
         <div>
-          <label className="label">연구 주제</label>
+          <label className="label font-nexon">연구 주제</label>
           <input
             type="text"
             className="input"
@@ -134,20 +134,25 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
         )}
 
         <div className="pt-2">
-          <button type="submit" className="btn-primary" disabled={saving}>
+          <button type="submit" className="font-nexon btn-primary rounded-xl px-6 font-normal" disabled={saving}>
             {saving ? '저장 중...' : '정보 저장하기'}
           </button>
         </div>
       </form>
 
       {initialTeam.users && initialTeam.users.length > 0 && (
-        <div className="card p-6 mt-6">
+        <div className="card rounded-2xl p-6 mt-6">
           <h2 className="font-nexon text-sm font-bold text-gray-800 mb-4">함께 할당된 팀원</h2>
           <div className="space-y-2">
             {initialTeam.users.map((u) => (
-              <div key={u.id} className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
-                <span className="text-sm font-medium text-gray-900">{u.name}</span>
-                <span className="text-xs text-gray-500">({u.email})</span>
+              <div key={u.id} className="flex items-center gap-3 bg-gray-50 px-3.5 py-2.5 rounded-xl border border-gray-100 hover:bg-gray-100/70 transition-colors">
+                <span className="w-7 h-7 rounded-full bg-primary-100 text-primary-500 text-xs font-bold flex items-center justify-center shrink-0" aria-hidden="true">
+                  {u.name?.trim()?.[0] ?? '?'}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                </div>
               </div>
             ))}
           </div>

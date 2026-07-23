@@ -8,6 +8,16 @@ interface BudgetLimit {
   amount: number
 }
 
+// 대시보드 항목별 블록과 동일한 색상 계열
+const PURPOSE_DOTS: Record<string, string> = {
+  MEETING_FEE: 'bg-blue-500',
+  EXPERT_FEE: 'bg-indigo-500',
+  PARTICIPANT_FEE: 'bg-violet-500',
+  PURCHASE_FEE: 'bg-emerald-500',
+  SOFTWARE_FEE: 'bg-cyan-500',
+  OTHER: 'bg-amber-500',
+}
+
 export default function BudgetLimitsClient({ initialLimits }: { initialLimits: BudgetLimit[] }) {
   const TOTAL_BUDGET = 2000000
 
@@ -60,17 +70,17 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="card p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="card rounded-2xl p-6 space-y-6">
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">총 예산 한도</p>
-            <p className="mt-1 text-xl font-black tracking-tight tabular-nums text-gray-900">
+            <p className="font-nexon text-[11px] font-light uppercase tracking-wider text-gray-400">총 예산 한도</p>
+            <p className="mt-1 font-nexon text-xl font-bold tracking-tight tabular-nums text-gray-900">
               {TOTAL_BUDGET.toLocaleString()}<span className="text-sm font-semibold text-gray-400 ml-0.5">원</span>
             </p>
           </div>
           <div className={`rounded-xl border p-4 ${isOverBudget ? 'border-red-200 bg-red-50/60' : 'border-primary-100 bg-primary-50/50'}`}>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">현재 계획 총액</p>
-            <p className={`mt-1 text-xl font-black tracking-tight tabular-nums ${isOverBudget ? 'text-red-600' : 'text-primary-500'}`}>
+            <p className="font-nexon text-[11px] font-light uppercase tracking-wider text-gray-400">현재 계획 총액</p>
+            <p className={`mt-1 font-nexon text-xl font-bold tracking-tight tabular-nums ${isOverBudget ? 'text-red-600' : 'text-primary-500'}`}>
               {currentTotal.toLocaleString()}<span className="text-sm font-semibold text-gray-400 ml-0.5">원</span>
             </p>
           </div>
@@ -96,14 +106,15 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
         <div className="space-y-4">
           {Object.entries(PURPOSE_LABELS).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between gap-4">
-              <label className="text-sm font-medium text-gray-700 w-1/3 shrink-0">
+              <label className="font-nexon flex items-center gap-2 text-sm font-normal text-gray-700 w-1/3 shrink-0">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${PURPOSE_DOTS[key] ?? 'bg-gray-400'}`} aria-hidden="true" />
                 {label}
               </label>
               <div className="relative flex-1">
                 <input
                   type="number"
                   min="0"
-                  className="input w-full pr-10 text-right tabular-nums"
+                  className="input w-full pr-10 text-right tabular-nums rounded-lg"
                   value={limits[key] || ''}
                   onChange={(e) => handleAmountChange(key, e.target.value)}
                   placeholder="0"
@@ -123,7 +134,7 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
         )}
 
         <div className="pt-2">
-          <button type="submit" className="btn-primary w-full" disabled={saving || isOverBudget}>
+          <button type="submit" className="font-nexon btn-primary w-full rounded-xl py-2.5 font-normal" disabled={saving || isOverBudget}>
             {saving ? '저장 중...' : '계획 저장하기'}
           </button>
         </div>
