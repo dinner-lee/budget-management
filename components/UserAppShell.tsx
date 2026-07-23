@@ -8,6 +8,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import DashboardClient from '@/app/(user)/dashboard/DashboardClient'
 import BudgetLimitsClient from '@/app/(user)/budget-limits/BudgetLimitsClient'
 import TeamClient from '@/app/(user)/team/TeamClient'
+import { LiquidGlassDefs, useLiquidGlassRefract } from '@/components/LiquidGlass'
 
 type TabKey = 'dashboard' | 'budget-limits' | 'team'
 
@@ -51,6 +52,8 @@ export default function UserAppShell({
     }
   }, [currentTab])
 
+  useLiquidGlassRefract()
+
   const handleTabClick = (tab: TabKey) => {
     setActiveTab(tab)
     setIsOpen(false)
@@ -74,7 +77,8 @@ export default function UserAppShell({
   if (!isTabPage) {
     return (
       <>
-        <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <LiquidGlassDefs />
+        <nav className="glass-nav sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between h-14">
               <div className="flex items-center gap-6">
@@ -104,7 +108,8 @@ export default function UserAppShell({
 
   return (
     <>
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <LiquidGlassDefs />
+      <nav className="glass-nav sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
@@ -119,7 +124,7 @@ export default function UserAppShell({
                     key={tab.key}
                     onClick={() => handleTabClick(tab.key)}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab.key
-                      ? 'bg-primary-50 text-primary-500'
+                      ? 'bg-primary-50 text-primary-500 ring-1 ring-inset ring-primary-100 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
