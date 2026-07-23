@@ -5,12 +5,12 @@ import { PURPOSE_LABELS } from '@/lib/evidence-config'
 
 // 카드 대여가 필요한 목적 (캘린더의 카드 사용 건)
 const CARD_PURPOSES = ['MEETING_FEE', 'PURCHASE_FEE', 'SOFTWARE_FEE', 'OTHER']
-// 시작 시각까지 남은 시간이 이 범위 안이면 알림 발송 (분)
-const REMINDER_WINDOW_MIN = 65
+// 이 시각(KST) 이후 첫 실행 때 당일 건을 발송 (새벽 발송 방지)
+const NOTIFY_FROM_HOUR_KST = 8
 
 export const dynamic = 'force-dynamic'
 
-// 카드 사용 시각이 임박한 계획서를 찾아 해당 팀원(+관리자)에게 웹 푸시 발송.
+// 당일(KST) 카드 사용 예정 계획서를 찾아 해당 팀원(+관리자)에게 웹 푸시 발송.
 // 주기 실행(cron)으로 호출: Vercel Cron 또는 외부 스케줄러에서
 // GET /api/cron/notify (Authorization: Bearer <CRON_SECRET>)
 export async function GET(req: NextRequest) {
@@ -21,7 +21,13 @@ export async function GET(req: NextRequest) {
   }
 
   const now = new Date()
-  // 오늘~내일 날짜 범위의 후보만 조회 (KST 기준 계산은 아래에서)
+  const kstNow = new Date(now.getTime() + 9 * 3600 * 1000)
+  const todayKst = kstNow.toISOString().slice(0, 10) // KST 기준 오늘 날짜
+  if (kstNow.getUTCHours() < NOTIFY_FROM_HOUR_KST) {
+    return NextResponse.json({ checked: 0, notified: 0, skipped: 'before-notify-hour' })
+  }
+
+  // 오늘 날짜 주변 범위의 후보만 조회 (달력 날짜 비교는 아래에서)
   const from = new Date(now.getTime() - 24 * 3600 * 1000)
   const to = new Date(now.getTime() + 48 * 3600 * 1000)
 
@@ -37,13 +43,9 @@ export async function GET(req: NextRequest) {
 
   let notified = 0
   for (const plan of candidates) {
-    // 시작 시각(KST): plannedDate의 달력 날짜 + plannedTime 시작 시각 (시간 미지정 시 09:00)
+    // 당일(KST) 건만 발송
     const dateStr = plan.plannedDate.toISOString().slice(0, 10)
-    const startTime = plan.plannedTime?.split('~')[0] || '09:00'
-    const start = new Date(`${dateStr}T${startTime}:00+09:00`)
-
-    const minutesLeft = (start.getTime() - now.getTime()) / 60000
-    if (minutesLeft < 0 || minutesLeft > REMINDER_WINDOW_MIN) continue
+    if (dateStr !== todayKst) continue
 
     // 수신자: 해당 팀의 팀원 + 관리자
     const [teamUsers, admins] = await Promise.all([
@@ -57,8 +59,8 @@ export async function GET(req: NextRequest) {
     const purposeLabel = PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]
     const timeLabel = plan.plannedTime ? ` ${plan.plannedTime}` : ''
     const sent = await sendPushToUsers(userIds, {
-      title: `곧 카드 사용 예정: ${purposeLabel}`,
-      body: `${plan.team ? `${plan.team.teamNumber}팀 · ` : ''}${new Date(start).toLocaleDateString('ko-KR')}${timeLabel} · ${plan.amount.toLocaleString()}원`,
+      title: `오늘 카드 사용 예정: ${purposeLabel}`,
+      body: `${plan.team ? `${plan.team.teamNumber}팀 · ` : ''}오늘${timeLabel} · ${plan.amount.toLocaleString()}원`,
       url: '/dashboard',
       tag: `card-reminder-${plan.id}`,
     })
