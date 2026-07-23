@@ -224,10 +224,10 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
   )
 
   return (
-    <div className="card">
-      <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-sm font-semibold text-gray-700">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <h2 className="font-nexon text-sm font-bold text-gray-700">
             예산 사용 계획서 내역
             <span className="ml-1 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
           </h2>
@@ -239,7 +239,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
         </div>
       </div>
 
-      <div className="px-5 py-3 border-b border-gray-100 flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {[['ALL', '전체'], ...Object.entries(PURPOSE_LABELS)].map(([value, label]) => (
           <button
             key={value}
@@ -256,7 +256,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
         ))}
       </div>
 
-      <div className={`hidden md:grid ${USER_PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
+      <div className={`hidden md:grid ${USER_PLAN_GRID} gap-3 px-5 pt-2 text-[11px] font-semibold text-gray-400`}>
         <span>계획서</span>
         <span className="text-right">계획 금액</span>
         <span className="text-right">실제 금액</span>
@@ -266,11 +266,11 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
       </div>
 
       {sortedPlans.length === 0 ? (
-        <div className="px-5 py-12 text-center text-gray-400 text-sm">
+        <div className="py-10 text-center text-gray-400 text-sm border border-dashed border-gray-200 rounded-2xl bg-white/50">
           {purposeFilter === 'ALL' ? '작성한 계획서가 없습니다.' : '해당 목적의 계획서가 없습니다.'}
         </div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="space-y-2">
           {sortedPlans.map((plan) => {
             const submitted = plan.evidences.filter((e: any) => e.status !== 'PENDING').length
             const total = plan.evidences.length
@@ -284,8 +284,8 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
             return (
               <div
                 key={plan.id}
-                className={`relative px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${USER_PLAN_GRID} md:gap-3 text-sm transition-colors ${
-                  isResubmit ? 'bg-red-50/30 hover:bg-red-50/50' : needsAction ? 'bg-amber-50/30 hover:bg-amber-50/50' : 'hover:bg-gray-50'
+                className={`relative overflow-hidden rounded-xl border shadow-sm px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${USER_PLAN_GRID} md:gap-3 text-sm transition-all hover:shadow-md ${
+                  isResubmit ? 'border-red-100 bg-red-50/50' : needsAction ? 'border-amber-100 bg-amber-50/50' : 'border-gray-200 bg-white'
                 }`}
               >
                 {needsAction && (
