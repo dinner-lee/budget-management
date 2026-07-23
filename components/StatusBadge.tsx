@@ -15,7 +15,7 @@ const FALLBACK_CLASS = 'bg-gray-50 text-gray-600 ring-gray-500/20'
 
 function Badge({ label, className }: { label: string; className: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset whitespace-nowrap ${className}`}>
+    <span className={`font-nexon inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-normal ring-1 ring-inset whitespace-nowrap ${className}`}>
       {label}
     </span>
   )

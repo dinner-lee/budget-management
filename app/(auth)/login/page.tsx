@@ -71,7 +71,7 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading || googleLoading}
-            className="w-full flex justify-center items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
+            className="w-full flex justify-center items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-normal text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
           >
             {googleLoading ? (
               <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@ export default function LoginPage() {
                 <p className="text-xs text-red-600 bg-red-50 rounded px-2 py-1.5">{error}</p>
               )}
 
-              <button type="submit" className="btn-primary w-full py-2 text-sm flex items-center justify-center gap-2" disabled={loading || googleLoading}>
+              <button type="submit" className="btn-primary w-full py-2 text-sm font-normal flex items-center justify-center gap-2" disabled={loading || googleLoading}>
                 {loading && (
                   <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
