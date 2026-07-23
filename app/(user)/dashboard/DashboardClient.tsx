@@ -4,11 +4,18 @@ import { useState } from 'react'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge } from '@/components/StatusBadge'
 import Link from 'next/link'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LabelList
-} from 'recharts'
 import { differenceInDays, isAfter, isToday } from 'date-fns'
 import EvidenceSubmissionModal from '@/components/EvidenceSubmissionModal'
+
+// 항목별 카드 블록 색상 테마
+const CATEGORY_STYLES: Record<string, { bg: string; border: string; fill: string; text: string; percent: string }> = {
+  MEETING_FEE:     { bg: 'bg-blue-50/60',    border: 'border-blue-100',    fill: 'bg-blue-500/25',    text: 'text-blue-800',    percent: 'text-blue-600' },
+  EXPERT_FEE:      { bg: 'bg-indigo-50/60',  border: 'border-indigo-100',  fill: 'bg-indigo-500/25',  text: 'text-indigo-800',  percent: 'text-indigo-600' },
+  PARTICIPANT_FEE: { bg: 'bg-violet-50/60',  border: 'border-violet-100',  fill: 'bg-violet-500/25',  text: 'text-violet-800',  percent: 'text-violet-600' },
+  PURCHASE_FEE:    { bg: 'bg-emerald-50/60', border: 'border-emerald-100', fill: 'bg-emerald-500/25', text: 'text-emerald-800', percent: 'text-emerald-600' },
+  SOFTWARE_FEE:    { bg: 'bg-cyan-50/60',    border: 'border-cyan-100',    fill: 'bg-cyan-500/25',    text: 'text-cyan-800',    percent: 'text-cyan-600' },
+  OTHER:           { bg: 'bg-amber-50/60',   border: 'border-amber-100',   fill: 'bg-amber-500/25',   text: 'text-amber-800',   percent: 'text-amber-600' },
+}
 
 export default function DashboardClient({
   budgetStatus,
@@ -76,13 +83,6 @@ export default function DashboardClient({
 function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any, milestones: any[] }) {
   const { totalBudget, totalUsed, totalBalance, categoryLimits, categoryUsage } = budgetStatus
 
-  const categoryData = Object.keys(categoryLimits).map(key => ({
-    name: PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS] || key,
-    한도: categoryLimits[key],
-    사용금액: categoryUsage[key] || 0,
-    잔액: Math.max(0, categoryLimits[key] - (categoryUsage[key] || 0))
-  }))
-
   const usedPercent = totalBudget > 0 ? Math.min(100, Math.round((totalUsed / totalBudget) * 100)) : 0
 
   const upcomingMilestones = milestones
@@ -148,54 +148,59 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
         })}
       </div>
 
-      {/* 항목별 한도/사용액 (Bar Chart) */}
+      {/* 항목별 예산 사용 현황: 색상 카드 블록 */}
       <div className="card p-5">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">항목별 예산 사용 현황</h2>
-        {categoryData.length > 0 ? (
-          <div className="w-full h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 12, fill: '#000' }}
-                  axisLine={{ stroke: '#e5e7eb' }}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontFamily: 'Pretendard', fontWeight: 400, fontSize: 11, fill: '#6b7280' }}
-                  tickFormatter={(value) => `${value / 10000}만`}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Legend
-                  formatter={(value: any) => <span style={{ color: '#000', fontWeight: 500 }}>{value}</span>}
-                  wrapperStyle={{ fontFamily: 'Pretendard', fontSize: '11px', paddingTop: '5px' }}
-                />
-                <Bar dataKey="사용금액" stackId="a" fill="#15378F" name="사용 금액" isAnimationActive={false}>
-                  <LabelList
-                    dataKey="사용금액"
-                    position="center"
-                    formatter={(v: any) => v > 0 ? `${v.toLocaleString()}` : ''}
-                    style={{ fill: '#fff', fontSize: 9, fontWeight: 700, pointerEvents: 'none' }}
-                  />
-                </Bar>
-                <Bar dataKey="잔액" stackId="a" fill="#e5e7eb" name="항목별 한도" isAnimationActive={false}>
-                  <LabelList
-                    dataKey="한도"
-                    position="top"
-                    formatter={(v: any) => v > 0 ? `${v.toLocaleString()}원` : ''}
-                    style={{ fill: '#111827', fontSize: 10, fontWeight: 900, pointerEvents: 'none' }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
-            설정된 항목별 예산이 없습니다.
-          </div>
-        )}
+        {(() => {
+          const visible = Object.keys(PURPOSE_LABELS).filter(
+            (key) => (categoryLimits[key] || 0) > 0 || (categoryUsage[key] || 0) > 0,
+          )
+          if (visible.length === 0) {
+            return (
+              <div className="py-10 text-center text-gray-400 text-sm">
+                설정된 항목별 예산이 없습니다. 예산 계획 설정에서 항목별 한도를 입력해 주세요.
+              </div>
+            )
+          }
+          return (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {visible.map((key) => {
+                const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
+                const st = CATEGORY_STYLES[key] ?? CATEGORY_STYLES.OTHER
+                const limit = categoryLimits[key] || 0
+                const used = categoryUsage[key] || 0
+                const percent = limit > 0 ? Math.round((used / limit) * 100) : used > 0 ? 100 : 0
+                const over = limit > 0 && used > limit
+                return (
+                  <div
+                    key={key}
+                    className={`relative rounded-2xl border overflow-hidden p-4 min-h-[9.5rem] flex flex-col justify-between ${st.bg} ${st.border} hover:shadow-md transition-shadow`}
+                    title={`${label}: ${used.toLocaleString()}원 / ${limit.toLocaleString()}원`}
+                  >
+                    {/* 사용률만큼 아래에서부터 차오르는 채움 */}
+                    <div
+                      className={`absolute inset-x-0 bottom-0 transition-all duration-700 ease-out ${over ? 'bg-red-500/25' : st.fill}`}
+                      style={{ height: `${Math.min(100, percent)}%` }}
+                      aria-hidden="true"
+                    />
+                    <p className={`relative text-xs font-bold break-keep leading-snug ${st.text}`}>{label}</p>
+                    <div className="relative">
+                      <p className={`text-2xl font-black tracking-tight tabular-nums ${over ? 'text-red-600' : st.percent}`}>
+                        {percent}
+                        <span className="text-sm font-bold">%</span>
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-gray-600 tabular-nums leading-tight">
+                        {used.toLocaleString()}원
+                        <span className="text-gray-400"> / {limit.toLocaleString()}원</span>
+                      </p>
+                      {over && <p className="text-[10px] font-bold text-red-600 mt-0.5">한도 초과</p>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )
