@@ -46,7 +46,34 @@ interface Team {
 }
 
 // 전체 계획서 목록의 표 컬럼 (헤더/행 공유)
-const PLAN_GRID = 'md:grid-cols-[8.5rem_minmax(0,1fr)_5.5rem_6.5rem_6.5rem_6rem_14rem]'
+const PLAN_GRID = 'md:grid-cols-[6.5rem_minmax(0,1fr)_minmax(0,1fr)_6rem_6rem_5.5rem_5.5rem_12.5rem]'
+
+type SortState = { key: string; dir: 'asc' | 'desc' } | null
+
+function SortHeader({ label, sortKey, sort, onToggle, align }: {
+  label: string
+  sortKey: string
+  sort: SortState
+  onToggle: (key: string) => void
+  align?: 'right'
+}) {
+  const active = sort?.key === sortKey
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(sortKey)}
+      title="클릭하여 정렬 (오름차순 → 내림차순 → 해제)"
+      className={`flex items-center gap-0.5 transition-colors hover:text-gray-600 ${align === 'right' ? 'justify-end' : ''} ${active ? 'text-primary-500' : ''}`}
+    >
+      {label}
+      <svg className={`w-3 h-3 shrink-0 ${active ? '' : 'opacity-30'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        {!active && <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />}
+        {active && sort!.dir === 'asc' && <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />}
+        {active && sort!.dir === 'desc' && <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />}
+      </svg>
+    </button>
+  )
+}
 
 function sortByTeamNumber<T extends { teamNumber: string }>(teams: T[]): T[] {
   return [...teams].sort((a, b) => {
@@ -162,11 +189,42 @@ function CombinedDashboardView({
     return matchesStatus && matchesTeam
   })
 
-  // 검토가 필요한 건(검토 대기·재제출)을 리스트 맨 위로
+  const [sort, setSort] = useState<SortState>(null)
+
+  const sortValue = (p: any, key: string): number | string => {
+    switch (key) {
+      case 'team': {
+        const t = teams.find((tm: any) => tm.id === (p.teamId || p.user?.teamId))
+        const n = parseInt(t?.teamNumber ?? '', 10)
+        return isNaN(n) ? Number.MAX_SAFE_INTEGER : n
+      }
+      case 'purpose': return PURPOSE_LABELS[p.purpose as keyof typeof PURPOSE_LABELS] ?? ''
+      case 'uploader': return p.user?.name ?? ''
+      case 'planned': return p.amount ?? 0
+      case 'actual': return p.actualAmount ?? p.lastSubmittedAmount ?? -1
+      case 'usedAt': return new Date(p.plannedDate).getTime()
+      case 'processedAt': return new Date(p.updatedAt).getTime()
+      default: return 0
+    }
+  }
+
+  const toggleSort = (key: string) => {
+    setSort((prev) => {
+      if (!prev || prev.key !== key) return { key, dir: 'asc' }
+      if (prev.dir === 'asc') return { key, dir: 'desc' }
+      return null
+    })
+  }
+
+  // 정렬 미지정 시: 검토가 필요한 건(검토 대기·재제출)을 리스트 맨 위로
   const NEEDS_REVIEW = ['UNDER_REVIEW', 'RESUBMIT_REQUIRED']
-  const sortedPlans = [...filteredPlans].sort(
-    (a, b) => Number(NEEDS_REVIEW.includes(b.status)) - Number(NEEDS_REVIEW.includes(a.status)),
-  )
+  const sortedPlans = [...filteredPlans].sort((a, b) => {
+    if (!sort) return Number(NEEDS_REVIEW.includes(b.status)) - Number(NEEDS_REVIEW.includes(a.status))
+    const va = sortValue(a, sort.key)
+    const vb = sortValue(b, sort.key)
+    const cmp = typeof va === 'string' ? va.localeCompare(String(vb), 'ko') : (va as number) - (vb as number)
+    return sort.dir === 'asc' ? cmp : -cmp
+  })
   const needsReviewCount = filteredPlans.filter((p) => NEEDS_REVIEW.includes(p.status)).length
 
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
@@ -326,12 +384,13 @@ function CombinedDashboardView({
           )}
         </div>
         <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
-          <span>팀 / 대표자</span>
-          <span>사용 항목</span>
-          <span>제출자</span>
-          <span className="text-right">계획 금액</span>
-          <span className="text-right">실제 금액</span>
-          <span>사용일</span>
+          <SortHeader label="팀 / 대표자" sortKey="team" sort={sort} onToggle={toggleSort} />
+          <SortHeader label="사용 항목" sortKey="purpose" sort={sort} onToggle={toggleSort} />
+          <SortHeader label="제출자" sortKey="uploader" sort={sort} onToggle={toggleSort} />
+          <SortHeader label="계획 금액" sortKey="planned" sort={sort} onToggle={toggleSort} align="right" />
+          <SortHeader label="실제 금액" sortKey="actual" sort={sort} onToggle={toggleSort} align="right" />
+          <SortHeader label="사용일" sortKey="usedAt" sort={sort} onToggle={toggleSort} />
+          <SortHeader label="처리일" sortKey="processedAt" sort={sort} onToggle={toggleSort} />
           <span className="text-right">상태 / 작업</span>
         </div>
         <div className="divide-y divide-gray-100">
@@ -639,6 +698,9 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
         {actual !== null ? `${actual.toLocaleString()}원` : '–'}
       </div>
       <div className="text-xs text-gray-500 tabular-nums">{new Date(plan.plannedDate).toLocaleDateString('ko-KR')}</div>
+      <div className="text-xs text-gray-400 tabular-nums" title="마지막 처리(상태 변경) 일자">
+        {new Date(plan.updatedAt).toLocaleDateString('ko-KR')}
+      </div>
       <div className="flex items-center gap-1.5 md:justify-end w-full md:w-auto">
         <PlanStatusBadge status={plan.status} />
         <a
