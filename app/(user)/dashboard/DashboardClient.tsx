@@ -91,8 +91,8 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 
   return (
     <div className="space-y-6">
-      {/* 잔액 카드 + 주요 일정 카드 (같은 줄) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* 잔액 카드 + 항목별 예산 블록 (같은 줄, 벤토 구성) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         {/* 사용 가능 잔액 */}
         <div className="font-nexon relative rounded-2xl p-5 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[10.5rem]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.15),transparent_55%)]" aria-hidden="true" />
@@ -120,85 +120,89 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
           </div>
         </div>
 
-        {/* 주요 일정 카드 */}
-        {upcomingMilestones.map(m => {
-          const dDay = differenceInDays(new Date(m.date), new Date())
-          const urgent = dDay <= 3
-          return (
-            <div
-              key={m.id}
-              className="font-nexon relative rounded-2xl bg-white border border-gray-200 shadow-sm p-5 flex flex-col justify-between overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
-            >
-              <div
-                className={`absolute -top-14 -right-14 w-36 h-36 rounded-full ${urgent ? 'bg-red-50' : 'bg-indigo-50'}`}
-                aria-hidden="true"
-              />
-              <div className="relative">
-                <p className="text-[11px] font-light uppercase tracking-wider text-gray-400">주요 일정</p>
-                <p className="mt-1 text-base font-bold text-gray-900 break-keep leading-snug">{m.name}</p>
-                <p className="mt-1 text-xs font-normal text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
+        {/* 항목별 예산 블록: 3×2 컴팩트 그리드 */}
+        <div className="lg:col-span-2">
+          {(() => {
+            const visible = Object.keys(PURPOSE_LABELS).filter(
+              (key) => (categoryLimits[key] || 0) > 0 || (categoryUsage[key] || 0) > 0,
+            )
+            if (visible.length === 0) {
+              return (
+                <div className="h-full min-h-[10.5rem] flex items-center justify-center text-gray-400 text-sm border border-dashed border-gray-200 rounded-2xl bg-white/50">
+                  설정된 항목별 예산이 없습니다. 예산 계획 설정에서 항목별 한도를 입력해 주세요.
+                </div>
+              )
+            }
+            return (
+              <div className="h-full grid grid-cols-2 sm:grid-cols-3 gap-3 content-stretch">
+                {visible.map((key) => {
+                  const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
+                  const st = CATEGORY_STYLES[key] ?? CATEGORY_STYLES.OTHER
+                  const limit = categoryLimits[key] || 0
+                  const used = categoryUsage[key] || 0
+                  const percent = limit > 0 ? Math.round((used / limit) * 100) : used > 0 ? 100 : 0
+                  const over = limit > 0 && used > limit
+                  return (
+                    <div
+                      key={key}
+                      className={`font-nexon relative rounded-xl border overflow-hidden p-3 flex flex-col justify-between shadow-sm min-h-[4.75rem] ${st.bg} ${st.border} hover:shadow-md transition-all`}
+                      title={`${label}: ${used.toLocaleString()}원 / ${limit.toLocaleString()}원`}
+                    >
+                      {/* 사용률만큼 아래에서부터 차오르는 채움 */}
+                      <div
+                        className={`absolute inset-x-0 bottom-0 transition-all duration-700 ease-out ${over ? 'bg-red-500/25' : st.fill}`}
+                        style={{ height: `${Math.min(100, percent)}%` }}
+                        aria-hidden="true"
+                      />
+                      <p className={`relative text-[11px] font-bold break-keep leading-tight ${st.text}`}>{label}</p>
+                      <div className="relative flex items-end justify-between gap-1">
+                        <p className={`text-lg font-bold tracking-tight tabular-nums leading-none ${over ? 'text-red-600' : st.percent}`}>
+                          {percent}
+                          <span className="text-[11px] font-bold">%</span>
+                        </p>
+                        <p className="text-[10px] font-normal text-gray-600 tabular-nums text-right leading-tight">
+                          {used.toLocaleString()}
+                          <span className="text-gray-400"> / {limit.toLocaleString()}원</span>
+                          {over && <span className="block font-bold text-red-600">한도 초과</span>}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-              <div className="relative mt-3">
-                <span className={`inline-flex rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
+            )
+          })()}
+        </div>
+      </div>
+
+      {/* 주요 일정: 다음 줄, 가로형 컴팩트 카드 */}
+      {upcomingMilestones.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {upcomingMilestones.map(m => {
+            const dDay = differenceInDays(new Date(m.date), new Date())
+            const urgent = dDay <= 3
+            return (
+              <div
+                key={m.id}
+                className="font-nexon relative rounded-2xl bg-white border border-gray-200 shadow-sm p-4 flex items-center justify-between gap-3 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
+              >
+                <div
+                  className={`absolute -top-10 -right-10 w-24 h-24 rounded-full ${urgent ? 'bg-red-50' : 'bg-indigo-50'}`}
+                  aria-hidden="true"
+                />
+                <div className="relative min-w-0">
+                  <p className="text-[10px] font-light uppercase tracking-wider text-gray-400">주요 일정</p>
+                  <p className="mt-0.5 text-sm font-bold text-gray-900 truncate">{m.name}</p>
+                  <p className="text-[11px] font-normal text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
+                </div>
+                <span className={`relative shrink-0 rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
                   {dDay === 0 ? 'D-Day' : `D-${dDay}`}
                 </span>
               </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* 항목별 예산 사용 현황: 색상 카드 블록 */}
-      {(() => {
-          const visible = Object.keys(PURPOSE_LABELS).filter(
-            (key) => (categoryLimits[key] || 0) > 0 || (categoryUsage[key] || 0) > 0,
-          )
-          if (visible.length === 0) {
-            return (
-              <div className="py-8 text-center text-gray-400 text-sm border border-dashed border-gray-200 rounded-2xl bg-white/50">
-                설정된 항목별 예산이 없습니다. 예산 계획 설정에서 항목별 한도를 입력해 주세요.
-              </div>
             )
-          }
-          return (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
-              {visible.map((key) => {
-                const label = PURPOSE_LABELS[key as keyof typeof PURPOSE_LABELS]
-                const st = CATEGORY_STYLES[key] ?? CATEGORY_STYLES.OTHER
-                const limit = categoryLimits[key] || 0
-                const used = categoryUsage[key] || 0
-                const percent = limit > 0 ? Math.round((used / limit) * 100) : used > 0 ? 100 : 0
-                const over = limit > 0 && used > limit
-                return (
-                  <div
-                    key={key}
-                    className={`font-nexon relative rounded-2xl border overflow-hidden p-4 min-h-[9rem] flex flex-col justify-between shadow-sm ${st.bg} ${st.border} hover:shadow-md hover:-translate-y-0.5 transition-all`}
-                    title={`${label}: ${used.toLocaleString()}원 / ${limit.toLocaleString()}원`}
-                  >
-                    {/* 사용률만큼 아래에서부터 차오르는 채움 */}
-                    <div
-                      className={`absolute inset-x-0 bottom-0 transition-all duration-700 ease-out ${over ? 'bg-red-500/25' : st.fill}`}
-                      style={{ height: `${Math.min(100, percent)}%` }}
-                      aria-hidden="true"
-                    />
-                    <p className={`relative text-xs font-bold break-keep leading-snug ${st.text}`}>{label}</p>
-                    <div className="relative">
-                      <p className={`text-2xl font-bold tracking-tight tabular-nums ${over ? 'text-red-600' : st.percent}`}>
-                        {percent}
-                        <span className="text-sm font-bold">%</span>
-                      </p>
-                      <p className="mt-0.5 text-[11px] font-normal text-gray-600 tabular-nums leading-tight">
-                        {used.toLocaleString()}원
-                        <span className="text-gray-400"> / {limit.toLocaleString()}원</span>
-                      </p>
-                      {over && <p className="text-[10px] font-bold text-red-600 mt-0.5">한도 초과</p>}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )
-        })()}
+          })}
+        </div>
+      )}
     </div>
   )
 }
