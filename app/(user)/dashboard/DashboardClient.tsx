@@ -95,7 +95,10 @@ function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurp
       {/* 주요 일정 (최상단) */}
       {upcomingMilestones.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-nexon text-base font-bold text-gray-800 tracking-tight">주요 일정</h2>
+          <h2 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+            <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            주요 일정
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {upcomingMilestones.map(m => {
             const dDay = differenceInDays(new Date(m.date), new Date())
@@ -110,8 +113,7 @@ function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurp
                   aria-hidden="true"
                 />
                 <div className="relative min-w-0">
-                  <p className="text-[10px] font-light uppercase tracking-wider text-gray-400">주요 일정</p>
-                  <p className="mt-0.5 text-sm font-bold text-gray-900 truncate">{m.name}</p>
+                  <p className="text-sm font-bold text-gray-900 truncate">{m.name}</p>
                   <p className="text-[11px] font-normal text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
                 </div>
                 <span className={`relative shrink-0 rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
@@ -126,7 +128,10 @@ function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurp
 
       {/* 예산 사용 내역: 잔액 카드 + 항목별 예산 블록 */}
       <div className="space-y-3">
-        <h2 className="font-nexon text-base font-bold text-gray-800 tracking-tight">예산 사용 내역</h2>
+        <h2 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+          <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+          예산 사용 내역
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         {/* 사용 가능 잔액 */}
         <div className="group font-nexon relative rounded-2xl p-5 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[10.5rem]">
@@ -249,7 +254,11 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission, purposeFilt
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <p className="font-nexon text-xs font-normal text-gray-400 tabular-nums">계획서 {filteredPlans.length}건</p>
+          <h2 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+            <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            계획서
+            <span className="text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
+          </h2>
           {purposeFilter !== 'ALL' && (
             <button
               type="button"
