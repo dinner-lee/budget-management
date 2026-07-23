@@ -43,9 +43,10 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-3xl px-4">
-      <div className="w-full grid md:grid-cols-2 bg-white rounded-3xl shadow-xl ring-1 ring-gray-900/5 overflow-hidden">
+      <div className="w-full grid md:grid-cols-2 glass-card rounded-3xl shadow-xl ring-1 ring-white/60 overflow-hidden">
         {/* 좌측 브랜드 패널 */}
-        <div className="relative hidden md:flex flex-col justify-between m-3 p-8 rounded-2xl bg-gradient-to-br from-[#15378F] via-[#173c9a] to-[#0d225c] text-white overflow-hidden">
+        <div className="relative hidden md:flex flex-col justify-between m-3 p-8 rounded-2xl bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] text-white overflow-hidden ring-1 ring-inset ring-white/15 shadow-lg">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.16),transparent_55%)]" aria-hidden="true" />
           <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" aria-hidden="true" />
           <div className="absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-white/5" aria-hidden="true" />
 
