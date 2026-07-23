@@ -42,36 +42,48 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md px-4">
-      <div className="w-full bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl ring-1 ring-gray-900/5 p-8 sm:p-10">
-        <div className="mb-8 text-center flex flex-col items-center">
-          <Image
-            src="/lsri_logo.png"
-            alt="학습과학연구소"
-            width={240}
-            height={60}
-            className="object-contain mb-6"
-            priority
-          />
-          <p className="text-sm text-gray-500 break-keep tracking-tight">학부생·대학원생 학습과학연구지원사업</p>
-          <h1 className="mt-1 text-2xl sm:text-[1.75rem] font-bold text-[#15378F] tracking-tight">
-            예산 관리 시스템
-          </h1>
-          <div className="mt-6 bg-primary-50/70 border border-primary-100 rounded-xl px-4 py-3 flex items-center gap-2.5 text-left w-full">
-            <svg className="w-4 h-4 text-primary-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-[13px] text-gray-700 break-keep">
-              <strong className="text-primary-500 font-bold">구글 계정(@snu.ac.kr)</strong>으로 로그인하시기 바랍니다.
+    <div className="flex flex-col items-center w-full max-w-3xl px-4">
+      <div className="w-full grid md:grid-cols-2 bg-white rounded-3xl shadow-xl ring-1 ring-gray-900/5 overflow-hidden">
+        {/* 좌측 브랜드 패널 */}
+        <div className="relative hidden md:flex flex-col justify-between m-3 p-8 rounded-2xl bg-gradient-to-br from-[#15378F] via-[#173c9a] to-[#0d225c] text-white overflow-hidden">
+          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" aria-hidden="true" />
+          <div className="absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-white/5" aria-hidden="true" />
+
+          <div className="relative inline-flex self-start bg-white rounded-xl px-3 py-2 shadow-sm">
+            <Image src="/lsri_logo.png" alt="학습과학연구소" width={150} height={37} className="object-contain" priority />
+          </div>
+
+          <div className="relative">
+            <p className="text-[13px] text-blue-100/80 break-keep">학부생·대학원생 학습과학연구지원사업</p>
+            <h2 className="mt-1.5 text-3xl font-bold leading-snug tracking-tight">
+              예산 관리<br />시스템
+            </h2>
+            <p className="mt-4 text-sm text-blue-100/70 leading-relaxed break-keep">
+              예산 사용 계획서 작성부터 증빙 제출, 검토·승인까지 한 곳에서 관리합니다.
             </p>
           </div>
+
+          <p className="relative text-[11px] text-blue-100/50">서울대학교 학습과학연구소</p>
         </div>
 
-        <div className="space-y-6">
+        {/* 우측 로그인 폼 */}
+        <div className="flex flex-col justify-center p-8 sm:p-10">
+          {/* 모바일 전용 브랜드 헤더 */}
+          <div className="md:hidden flex flex-col items-center text-center mb-8">
+            <Image src="/lsri_logo.png" alt="학습과학연구소" width={170} height={42} className="object-contain mb-4" priority />
+            <p className="text-xs text-gray-500 break-keep">학부생·대학원생 학습과학연구지원사업</p>
+            <h2 className="text-xl font-bold text-[#15378F] tracking-tight">예산 관리 시스템</h2>
+          </div>
+
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">로그인</h1>
+          <p className="mt-1.5 text-sm text-gray-500 break-keep">
+            <strong className="text-[#15378F] font-bold">구글 계정(@snu.ac.kr)</strong>으로 로그인해 주세요.
+          </p>
+
           <button
             onClick={handleGoogleSignIn}
             disabled={loading || googleLoading}
-            className="w-full flex justify-center items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-normal text-gray-700 shadow-sm hover:shadow-md hover:border-gray-300 hover:-translate-y-px active:translate-y-0 active:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:ring-offset-2 disabled:opacity-50 transition-all"
+            className="mt-7 w-full flex justify-center items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-normal text-gray-700 shadow-sm hover:shadow-md hover:border-gray-300 hover:-translate-y-px active:translate-y-0 active:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:ring-offset-2 disabled:opacity-50 transition-all"
           >
             {googleLoading ? (
               <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -89,24 +101,20 @@ export default function LoginPage() {
             {googleLoading ? '연결 중...' : 'Google 계정으로 로그인'}
           </button>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <button
-                type="button"
-                onClick={() => setShowEmailLogin(!showEmailLogin)}
-                disabled={loading || googleLoading}
-                className="bg-white/0 backdrop-blur-sm px-3 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-              >
-                {showEmailLogin ? '이메일 로그인 접기' : '관리자로부터 발급받은 아이디가 있으신가요? 이메일로 로그인'}
-              </button>
-            </div>
+          <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-gray-400 flex-wrap">
+            <span className="whitespace-nowrap">관리자 발급 계정이 있으신가요?</span>
+            <button
+              type="button"
+              onClick={() => setShowEmailLogin(!showEmailLogin)}
+              disabled={loading || googleLoading}
+              className="whitespace-nowrap font-medium text-primary-500 hover:text-primary-600 hover:underline transition-colors disabled:opacity-50"
+            >
+              {showEmailLogin ? '접기' : '이메일로 로그인'}
+            </button>
           </div>
 
           {showEmailLogin && (
-            <form onSubmit={handleSubmit} className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-5 animate-in fade-in slide-in-from-top-2 duration-300">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="email">이메일</label>
                 <input
@@ -152,9 +160,25 @@ export default function LoginPage() {
           )}
         </div>
       </div>
-      <div className="mt-8 text-center text-[11px] text-gray-400 leading-relaxed break-keep">
-        <p className="font-medium text-gray-500">서울대학교 학습과학연구소</p>
-        <p>(08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 · 02-880-4498 · jjl0909@snu.ac.kr</p>
+
+      <div className="mt-8 text-center text-[11px] text-gray-400 leading-relaxed">
+        <p>
+          <a
+            href="https://ls.snu.ac.kr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-gray-500 hover:text-primary-500 hover:underline transition-colors"
+          >
+            서울대학교 학습과학연구소
+          </a>
+        </p>
+        <p className="break-keep">
+          <span className="whitespace-nowrap">(08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호</span>
+          {' · '}
+          <span className="whitespace-nowrap">02-880-4498</span>
+          {' · '}
+          <span className="whitespace-nowrap">jjl0909@snu.ac.kr</span>
+        </p>
       </div>
     </div>
   )
