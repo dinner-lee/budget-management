@@ -48,7 +48,7 @@ export default function DashboardClient({
         {activePlanCount < 3 ? (
           <Link
             href="/plans/new"
-            className="flex items-center text-white rounded-full shadow-2xl transition-all duration-300 ease-in-out h-14 px-6 overflow-hidden border border-white/10"
+            className="flex items-center text-white rounded-full shadow-2xl transition-all duration-300 ease-in-out h-14 px-6 overflow-hidden border border-white/10 hover:-translate-y-0.5 hover:brightness-110"
             style={{ backgroundColor: '#15378F' }}
           >
             <svg className="w-6 h-6 shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="2">
@@ -99,18 +99,20 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
     <div className="space-y-6">
       {/* 주요 일정 (Milestones) */}
       {upcomingMilestones.length > 0 && (
-        <div className="card p-5">
-          <h2 className="text-sm font-bold text-gray-800 mb-4">주요 일정</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="card overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h2 className="text-sm font-semibold text-gray-700">주요 일정</h2>
+          </div>
+          <div className="p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {upcomingMilestones.map(m => {
               const dDay = differenceInDays(new Date(m.date), new Date())
               return (
-                <div key={m.id} className="border border-indigo-100 bg-indigo-50/50 p-4 rounded-lg flex items-center justify-between">
+                <div key={m.id} className="border border-indigo-100 bg-indigo-50/50 p-4 rounded-xl flex items-center justify-between hover:shadow-sm transition-shadow">
                   <div>
                     <p className="text-sm font-semibold text-indigo-900">{m.name}</p>
                     <p className="text-xs text-indigo-700 mt-1">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
                   </div>
-                  <div className="text-xl font-black text-indigo-600">
+                  <div className="text-xl font-black text-indigo-600 tabular-nums">
                     {dDay === 0 ? 'D-Day' : `D-${dDay}`}
                   </div>
                 </div>
@@ -124,7 +126,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 전체 요약 (Pie Chart) */}
         <div className="card p-5 flex flex-col justify-center items-center">
-          <h2 className="text-sm font-bold text-gray-800 mb-2 self-start">전체 예산 사용 현황</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-2 self-start">전체 예산 사용 현황</h2>
           <div className="w-full h-44">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -148,7 +150,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="w-full space-y-1 mt-1 text-sm">
+          <div className="w-full space-y-1 mt-1 text-sm tabular-nums">
             <div className="flex justify-between">
               <span className="text-gray-500">총 예산</span>
               <span className="font-semibold text-gray-900">{totalBudget.toLocaleString()}원</span>
@@ -166,7 +168,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 
         {/* 항목별 한도/사용액 (Bar Chart) */}
         <div className="card p-5 lg:col-span-2">
-          <h2 className="text-sm font-bold text-gray-800 mb-4">항목별 예산 사용 현황</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">항목별 예산 사용 현황</h2>
           {categoryData.length > 0 ? (
             <div className="w-full h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -231,12 +233,15 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
 
   return (
     <div className="card">
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h2 className="text-sm font-semibold text-gray-700">예산 사용 계획서 내역</h2>
+          <h2 className="text-sm font-semibold text-gray-700">
+            예산 사용 계획서 내역
+            <span className="ml-1 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
+          </h2>
           {activePlanCount >= 3 && (
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800">
+              <span className="font-nexon inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-normal bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 whitespace-nowrap">
                 작성 제한
               </span>
               <span className="text-[10px] font-bold text-gray-400">
@@ -250,7 +255,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
           <select
             value={purposeFilter}
             onChange={(e) => setPurposeFilter(e.target.value)}
-            className="text-xs border border-gray-200 rounded px-2 py-1.5 outline-none focus:ring-1 focus:ring-[#15378F] focus:border-[#15378F] bg-white transition-all"
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 outline-none focus:ring-1 focus:ring-[#15378F] focus:border-[#15378F] bg-white transition-all"
           >
             <option value="ALL">전체 보기</option>
             {Object.entries(PURPOSE_LABELS).map(([value, label]) => (
@@ -299,7 +304,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
                     })()}
                     <PlanStatusBadge status={plan.status} />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 tabular-nums">
                     {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
                     {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
                     {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
@@ -318,7 +323,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
                         <div className="flex flex-col items-end gap-1">
                           <button
                             disabled
-                            className="ml-4 text-[11px] font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-md px-3 py-1.5 shrink-0 cursor-not-allowed"
+                            className="ml-4 text-[11px] font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 shrink-0 whitespace-nowrap cursor-not-allowed"
                           >
                             결제 예정일 대기
                           </button>
@@ -331,7 +336,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
                     return (
                       <button
                         onClick={() => onOpenSubmission(plan.id)}
-                        className="ml-4 text-xs font-medium text-white rounded-md px-3 py-1.5 shrink-0 transition-all shadow-sm active:scale-95 hover:brightness-110"
+                        className="ml-4 text-xs font-medium text-white rounded-lg px-3 py-1.5 shrink-0 whitespace-nowrap transition-all shadow-sm active:scale-95 hover:brightness-110 hover:shadow-md"
                         style={{ backgroundColor: '#15378F' }}
                       >
                         증빙 서류 제출
@@ -341,9 +346,10 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
                 ) : (
                   <Link
                     href={`/plans/${plan.id}`}
-                    className="ml-4 text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 rounded-md px-3 py-1.5 shrink-0 transition"
+                    className="ml-4 inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2.5 py-1.5 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm transition-all"
                   >
-                    상세보기
+                    상세 보기
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                   </Link>
                 )}
               </div>

@@ -58,20 +58,36 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
       </div>
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-6">
-        <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-gray-700">총 예산 한도</span>
-            <span className="font-bold text-gray-900">{TOTAL_BUDGET.toLocaleString()}원</span>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">총 예산 한도</p>
+            <p className="mt-1 text-xl font-black tracking-tight tabular-nums text-gray-900">
+              {TOTAL_BUDGET.toLocaleString()}<span className="text-sm font-semibold text-gray-400 ml-0.5">원</span>
+            </p>
           </div>
-          <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
-            <span className="font-semibold text-gray-700">현재 계획 총액</span>
-            <span className={`font-bold ${isOverBudget ? 'text-red-600' : 'text-blue-600'}`}>
-              {currentTotal.toLocaleString()}원
-            </span>
+          <div className={`rounded-xl border p-4 ${isOverBudget ? 'border-red-200 bg-red-50/60' : 'border-primary-100 bg-primary-50/50'}`}>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">현재 계획 총액</p>
+            <p className={`mt-1 text-xl font-black tracking-tight tabular-nums ${isOverBudget ? 'text-red-600' : 'text-primary-500'}`}>
+              {currentTotal.toLocaleString()}<span className="text-sm font-semibold text-gray-400 ml-0.5">원</span>
+            </p>
           </div>
-          {isOverBudget && (
-            <p className="text-xs text-red-600 mt-2 text-right">⚠️ 총 예산 한도를 초과했습니다.</p>
-          )}
+        </div>
+
+        <div>
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ease-out ${isOverBudget ? 'bg-red-500' : 'bg-primary-500'}`}
+              style={{ width: `${Math.min(100, Math.round((currentTotal / TOTAL_BUDGET) * 100))}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-1.5 text-[11px] text-gray-400 tabular-nums">
+            <span>{Math.round((currentTotal / TOTAL_BUDGET) * 100)}% 계획됨</span>
+            {isOverBudget ? (
+              <span className="text-red-600 font-semibold">총 예산 한도 초과</span>
+            ) : (
+              <span>잔여 {Math.max(0, TOTAL_BUDGET - currentTotal).toLocaleString()}원</span>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -84,7 +100,7 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
                 <input
                   type="number"
                   min="0"
-                  className="input w-full pr-10 text-right"
+                  className="input w-full pr-10 text-right tabular-nums"
                   value={limits[key] || ''}
                   onChange={(e) => handleAmountChange(key, e.target.value)}
                   placeholder="0"
@@ -98,7 +114,7 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
         </div>
 
         {message && (
-          <div className={`p-3 rounded-md text-sm ${message.includes('오류') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+          <div className={`p-3 rounded-lg text-sm ${message.includes('오류') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
             {message}
           </div>
         )}
