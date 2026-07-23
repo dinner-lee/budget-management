@@ -61,7 +61,7 @@ export default function LoginPage() {
 
           <div className="relative mt-14 w-fit">
             <p className="text-[13px] text-blue-100/80 whitespace-nowrap">학부생·대학원생 학습과학연구지원사업</p>
-            <h2 className="mt-0.5 text-[1.8rem] font-normal leading-snug tracking-tight [text-align-last:justify]">
+            <h2 className="mt-0.5 text-[1.65rem] font-normal leading-snug tracking-[0.12em] whitespace-nowrap">
               예산 관리 시스템
             </h2>
           </div>
@@ -76,8 +76,7 @@ export default function LoginPage() {
             <h2 className="text-xl font-normal text-[#15378F] tracking-tight whitespace-nowrap">예산 관리 시스템</h2>
           </div>
 
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/60">Welcome</p>
-          <h1 className="mt-1 text-xl font-bold text-gray-900 tracking-tight">로그인</h1>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">로그인</h1>
           <p className="mt-1.5 text-sm text-gray-500 break-keep">
             <strong className="text-[#15378F] font-bold">구글 계정(@snu.ac.kr)</strong>으로 로그인해 주세요.
           </p>
