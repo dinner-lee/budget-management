@@ -78,7 +78,8 @@ export default async function UserLayout({ children }: { children: React.ReactNo
       categoryUsage,
     },
     milestones,
-    plans,
+    // 서명 이미지(base64)는 목록 화면에 불필요하고 payload만 키우므로 제외
+    plans: plans.map(({ signature, ...p }) => p),
     activePlanCount,
     resubmitCount
   }

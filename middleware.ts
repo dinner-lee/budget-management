@@ -5,7 +5,8 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
     const isAdmin = token?.role === 'ADMIN'
-    const isAdminPath = req.nextUrl.pathname.startsWith('/admin')
+    const isAdminPath =
+      req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/print')
 
     if (isAdminPath && !isAdmin) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
@@ -19,5 +20,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/plans/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*', '/plans/:path*', '/admin/:path*', '/print/:path*'],
 }

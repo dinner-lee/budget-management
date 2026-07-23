@@ -25,6 +25,7 @@ export async function GET() {
   const [plans, budgetLimits] = await Promise.all([
     prisma.budgetPlan.findMany({
       where: { teamId: user.teamId },
+      select: { status: true, amount: true, actualAmount: true, purpose: true },
     }),
     prisma.teamBudgetLimit.findMany({
       where: { teamId: user.teamId },

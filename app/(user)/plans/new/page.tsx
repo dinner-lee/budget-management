@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { PURPOSE_LABELS, EVIDENCE_REQUIREMENTS } from '@/lib/evidence-config'
+import SignaturePad from '@/components/SignaturePad'
 
 const PURPOSES = Object.entries(PURPOSE_LABELS) as [keyof typeof PURPOSE_LABELS, string][]
 
@@ -39,6 +40,7 @@ export default function NewPlanPage() {
     expenditureOverview: '',
     repeatMonths: '1',
   })
+  const [signature, setSignature] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [budgetStatus, setBudgetStatus] = useState<any>(null)
@@ -65,6 +67,11 @@ export default function NewPlanPage() {
     e.preventDefault()
     setError('')
     setConflictInfo(null)
+
+    if (!signature) {
+      setError('서명을 입력해주세요. 직접 서명하거나 서명 이미지를 업로드할 수 있습니다.')
+      return
+    }
     setLoading(true)
 
     const res = await fetch('/api/plans', {
@@ -81,6 +88,7 @@ export default function NewPlanPage() {
           : null,
         expenditureOverview: form.expenditureOverview,
         repeatMonths: form.purpose === 'SOFTWARE_FEE' ? Number(form.repeatMonths) : 1,
+        signature,
       }),
     })
 
@@ -312,6 +320,17 @@ export default function NewPlanPage() {
             required
             disabled={loading}
           />
+        </div>
+
+        {/* 신청자 서명 */}
+        <div>
+          <label className="label">
+            신청자 서명 <span className="text-red-500">*</span>
+          </label>
+          <p className="text-xs text-gray-400 mb-1">
+            직접 서명하거나 서명 이미지 파일을 업로드하세요. 서명은 예산 사용 계획서 출력 시 신청자란에 표시됩니다.
+          </p>
+          <SignaturePad value={signature} onChange={setSignature} disabled={loading} />
         </div>
 
         {error && (

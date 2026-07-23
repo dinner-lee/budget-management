@@ -23,7 +23,8 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
   })
 
-  return NextResponse.json(plans)
+  // 서명 이미지(base64)는 목록에 불필요하므로 응답에서 제외
+  return NextResponse.json(plans.map(({ signature, ...p }) => p))
 }
 
 export async function POST(req: NextRequest) {
@@ -54,10 +55,17 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { purpose, amount, plannedDate, plannedTime, expenditureOverview, repeatMonths } = body
+  const { purpose, amount, plannedDate, plannedTime, expenditureOverview, repeatMonths, signature } = body
 
   if (!purpose || !amount || !plannedDate || !expenditureOverview) {
     return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
+  }
+
+  if (!signature || typeof signature !== 'string' || !signature.startsWith('data:image/')) {
+    return NextResponse.json({ error: '서명을 입력해주세요.' }, { status: 400 })
+  }
+  if (signature.length > 1_000_000) {
+    return NextResponse.json({ error: '서명 이미지가 너무 큽니다. 더 작은 이미지를 사용해주세요.' }, { status: 400 })
   }
 
   const purposeKey = purpose as Purpose
@@ -126,6 +134,7 @@ export async function POST(req: NextRequest) {
       plannedDate: new Date(plannedDate),
       plannedTime: plannedTime || null,
       expenditureOverview,
+      signature,
       status: 'PENDING_EVIDENCE',
       isRecurring: purposeKey === 'SOFTWARE_FEE' && Number(repeatMonths) > 1,
       totalRepeats: purposeKey === 'SOFTWARE_FEE' ? Number(repeatMonths) : 1,

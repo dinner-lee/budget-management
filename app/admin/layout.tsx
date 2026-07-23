@@ -38,10 +38,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     })
   ])
 
+  // 서명 이미지(base64)는 목록 화면에 불필요하고 payload만 키우므로 제외
+  const plansWithoutSignature = allPlans.map(({ signature, ...p }) => p)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminAppShell
-        dashboardData={{ allPlans, userCount, teams, milestones }}
+        dashboardData={{ allPlans: plansWithoutSignature, userCount, teams, milestones }}
         teamsData={{ teams, users }}
         usersData={users}
         settingsData={milestones}
