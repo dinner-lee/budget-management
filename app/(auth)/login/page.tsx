@@ -43,9 +43,9 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-3xl px-4">
-      <div className="w-full grid md:grid-cols-2 glass-card rounded-3xl shadow-xl ring-1 ring-white/60 overflow-hidden">
+      <div className="w-full grid md:grid-cols-2 glass-card rounded-3xl shadow-xl ring-1 ring-white/60 overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-500">
         {/* 좌측 브랜드 패널 */}
-        <div className="relative hidden md:flex flex-col p-8 bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] text-white overflow-hidden">
+        <div className="relative hidden md:flex flex-col m-3 p-8 rounded-[1.25rem] bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] text-white overflow-hidden ring-1 ring-inset ring-white/15 shadow-lg">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.16),transparent_55%)]" aria-hidden="true" />
           <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" aria-hidden="true" />
           <div className="absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-white/5" aria-hidden="true" />
@@ -76,7 +76,8 @@ export default function LoginPage() {
             <h2 className="text-xl font-normal text-[#15378F] tracking-tight whitespace-nowrap">예산 관리 시스템</h2>
           </div>
 
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">로그인</h1>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/60">Welcome</p>
+          <h1 className="mt-1 text-xl font-bold text-gray-900 tracking-tight">로그인</h1>
           <p className="mt-1.5 text-sm text-gray-500 break-keep">
             <strong className="text-[#15378F] font-bold">구글 계정(@snu.ac.kr)</strong>으로 로그인해 주세요.
           </p>
