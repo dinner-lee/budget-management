@@ -16,6 +16,7 @@ model User {
   emailVerified DateTime?
   image         String?
   role         String       @default("USER") // USER | ADMIN
+  signature    String?      // 대표 서명 (data URL) — 계획서에서 재사용
   createdAt    DateTime     @default(now())
   teamId       String?
   team         Team?        @relation(fields: [teamId], references: [id])

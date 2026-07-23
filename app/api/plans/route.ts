@@ -61,11 +61,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 })
   }
 
-  if (!signature || typeof signature !== 'string' || !signature.startsWith('data:image/')) {
+  if (!signature || typeof signature !== 'string') {
     return NextResponse.json({ error: '서명을 입력해주세요.' }, { status: 400 })
   }
-  if (signature.length > 1_000_000) {
-    return NextResponse.json({ error: '서명 이미지가 너무 큽니다. 더 작은 이미지를 사용해주세요.' }, { status: 400 })
+
+  // 'REUSE': 저장된 대표 서명 참조(계획서에 원본을 복사하지 않아 저장 공간 절약)
+  let signatureValue: string | null = null
+  let updateUserSignature = false
+  if (signature === 'REUSE') {
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { signature: true },
+    })
+    if (!me?.signature) {
+      return NextResponse.json({ error: '저장된 서명이 없습니다. 직접 서명하거나 이미지를 업로드해주세요.' }, { status: 400 })
+    }
+  } else {
+    if (!signature.startsWith('data:image/')) {
+      return NextResponse.json({ error: '서명을 입력해주세요.' }, { status: 400 })
+    }
+    if (signature.length > 1_000_000) {
+      return NextResponse.json({ error: '서명 이미지가 너무 큽니다. 더 작은 이미지를 사용해주세요.' }, { status: 400 })
+    }
+    signatureValue = signature
+    updateUserSignature = true
   }
 
   const purposeKey = purpose as Purpose
@@ -134,7 +153,7 @@ export async function POST(req: NextRequest) {
       plannedDate: new Date(plannedDate),
       plannedTime: plannedTime || null,
       expenditureOverview,
-      signature,
+      signature: signatureValue,
       status: 'PENDING_EVIDENCE',
       isRecurring: purposeKey === 'SOFTWARE_FEE' && Number(repeatMonths) > 1,
       totalRepeats: purposeKey === 'SOFTWARE_FEE' ? Number(repeatMonths) : 1,
@@ -150,6 +169,14 @@ export async function POST(req: NextRequest) {
       },
     },
   })
+
+  // 새로 입력한 서명을 대표 서명으로 저장 (다음 계획서에서 재사용)
+  if (updateUserSignature && signatureValue) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { signature: signatureValue },
+    })
+  }
 
   return NextResponse.json(plan, { status: 201 })
 }

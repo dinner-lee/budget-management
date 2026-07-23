@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 
-type Mode = 'draw' | 'upload'
+type Mode = 'draw' | 'upload' | 'saved'
 
 const MAX_UPLOAD_MB = 5
 const RESIZE_MAX_WIDTH = 600
@@ -19,6 +19,20 @@ export default function SignaturePad({
   const [mode, setMode] = useState<Mode>('draw')
   const [hasStroke, setHasStroke] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [savedSignature, setSavedSignature] = useState<string | null>(null)
+
+  // 저장된 대표 서명 조회 (있으면 재사용 탭 표시)
+  useEffect(() => {
+    fetch('/api/user/signature')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.signature) {
+          setSavedSignature(data.signature)
+          setMode('saved')
+        }
+      })
+      .catch(() => {})
+  }, [])
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawingRef = useRef(false)
   const lastPointRef = useRef<{ x: number; y: number } | null>(null)
@@ -137,6 +151,18 @@ export default function SignaturePad({
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <div className="flex border-b border-gray-200 bg-gray-50">
+        {savedSignature && (
+          <button
+            type="button"
+            onClick={() => switchMode('saved')}
+            disabled={disabled}
+            className={`flex-1 py-2 text-sm font-medium transition-colors ${
+              mode === 'saved' ? 'bg-white text-primary-500 border-b-2 border-primary-500' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            저장된 서명
+          </button>
+        )}
         <button
           type="button"
           onClick={() => switchMode('draw')}
@@ -159,7 +185,31 @@ export default function SignaturePad({
         </button>
       </div>
 
-      {mode === 'draw' ? (
+      {mode === 'saved' && savedSignature ? (
+        <div className="p-3 space-y-2.5">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(value === 'REUSE' ? null : 'REUSE')}
+            className={`w-full bg-gray-50 rounded-md p-3 flex justify-center border-2 transition-all ${
+              value === 'REUSE' ? 'border-primary-500 ring-1 ring-primary-500 shadow-sm' : 'border-dashed border-gray-300 hover:border-primary-100'
+            }`}
+            title="클릭하여 이 서명 사용"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={savedSignature} alt="저장된 서명" className="max-h-24 object-contain" />
+          </button>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-gray-400">
+              {value === 'REUSE' ? (
+                <span className="text-primary-500 font-medium">✓ 저장된 서명을 사용합니다 (저장 공간 절약)</span>
+              ) : (
+                '이전에 사용한 서명입니다. 클릭하면 이 서명을 재사용합니다.'
+              )}
+            </p>
+          </div>
+        </div>
+      ) : mode === 'draw' ? (
         <div className="p-3">
           <canvas
             ref={canvasRef}
@@ -192,7 +242,7 @@ export default function SignaturePad({
             className="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-primary-50 file:text-primary-500 file:text-sm file:font-medium hover:file:bg-primary-100"
           />
           {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
-          {value && (
+          {value && value !== 'REUSE' && (
             <div className="bg-gray-50 border border-gray-200 rounded-md p-2 flex justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={value} alt="서명 미리보기" className="max-h-24 object-contain" />

@@ -14,7 +14,7 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
   const plan = await prisma.budgetPlan.findUnique({
     where: { id: params.id },
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, signature: true } },
       evidences: { orderBy: { updatedAt: 'asc' } },
       reviews: {
         include: { admin: { select: { name: true } } },
@@ -24,6 +24,7 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
   })
   if (!plan) notFound()
 
+  const signature = plan.signature ?? plan.user.signature
   const canReview = plan.status === 'UNDER_REVIEW'
 
   return (
@@ -96,12 +97,12 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">지출 개요</span>
             <p>{plan.expenditureOverview}</p>
           </div>
-          {plan.signature && (
+          {signature && (
             <div className="col-span-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">신청자 서명</span>
               <div className="mt-1 inline-block bg-gray-50 border border-gray-200 rounded-md p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={plan.signature} alt="신청자 서명" className="h-16 object-contain" />
+                <img src={signature} alt="신청자 서명" className="h-16 object-contain" />
               </div>
             </div>
           )}

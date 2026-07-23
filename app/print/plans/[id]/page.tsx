@@ -39,11 +39,14 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
   const plan = await prisma.budgetPlan.findUnique({
     where: { id: params.id },
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, signature: true } },
       team: { select: { teamNumber: true } },
     },
   })
   if (!plan) notFound()
+
+  // 저장 공간 절약을 위해 재사용된 서명은 사용자 대표 서명을 참조
+  const signature = plan.signature ?? plan.user.signature
 
   // 사용자명 포맷 '홍길동/학생/교육학과' → [이름, 신분, 학과]
   const nameParts = (plan.user.name ?? '').split('/').map((part) => part.trim())
@@ -62,7 +65,7 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 print:bg-white">
+    <div className="min-h-screen bg-[#f5f8fd] print:bg-white">
       <PrintButton />
 
       {/* A4 용지 */}
@@ -148,10 +151,10 @@ export default async function PlanPrintPage({ params }: { params: { id: string }
             <span className="min-w-[7rem] text-center">{displayName}</span>
             <span className="relative inline-flex items-center justify-center w-20 h-20 text-gray-400">
               (인)
-              {plan.signature && (
+              {signature && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={plan.signature}
+                  src={signature}
                   alt="신청자 서명"
                   className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-36 max-w-none object-contain"
                 />
