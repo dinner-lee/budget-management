@@ -59,7 +59,7 @@ export default function DashboardClient({
             <svg className="w-6 h-6 shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span className="whitespace-nowrap ml-3 font-bold text-sm">
+            <span className="font-nexon whitespace-nowrap ml-3 font-normal text-sm">
               새로운 예산 사용 계획서 작성
             </span>
           </Link>
@@ -71,7 +71,7 @@ export default function DashboardClient({
             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m11 3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="whitespace-nowrap ml-3 font-bold text-sm">
+            <span className="font-nexon whitespace-nowrap ml-3 font-normal text-sm">
               예산 사용 계획서 작성 제한
             </span>
           </div>
