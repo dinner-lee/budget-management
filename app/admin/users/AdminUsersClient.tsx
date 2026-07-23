@@ -15,15 +15,15 @@ export default function AdminUsersClient({ initialUsers, currentUserId }: { init
       </div>
 
       <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-700">사용자 목록 ({users.length}명)</h2>
+        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+          <h2 className="text-sm font-semibold text-gray-700">사용자 목록 <span className="ml-1 text-xs text-gray-400 font-normal">({users.length}명)</span></h2>
         </div>
         {users.length === 0 ? (
           <p className="px-5 py-12 text-center text-gray-400 text-sm">사용자가 없습니다.</p>
         ) : (
           <div className="divide-y divide-gray-100">
             {users.map((user) => (
-              <div key={user.id} className="px-5 py-3 flex items-center justify-between">
+              <div key={user.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500">

@@ -55,20 +55,20 @@ export default function AdminSettingsClient({ initialMilestones }: { initialMile
       </form>
 
       <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-700">등록된 일정</h2>
+        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+          <h2 className="text-sm font-semibold text-gray-700">등록된 일정 <span className="ml-1 text-xs text-gray-400 font-normal">({milestones.length}건)</span></h2>
         </div>
         <div className="divide-y divide-gray-100">
           {milestones.length === 0 ? (
             <div className="p-6 text-center text-gray-400 text-sm">등록된 일정이 없습니다.</div>
           ) : (
             milestones.map(m => (
-              <div key={m.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+              <div key={m.id} className="p-4 flex items-center justify-between hover:bg-gray-50/60 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-gray-900">{m.name}</p>
                   <p className="text-xs text-gray-500">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
                 </div>
-                <button onClick={() => handleDelete(m.id)} className="text-xs text-red-600 hover:underline">삭제</button>
+                <button onClick={() => handleDelete(m.id)} className="text-xs font-medium text-red-600 border border-red-100 bg-red-50/50 rounded-lg px-2.5 py-1 hover:bg-red-50 transition-colors">삭제</button>
               </div>
             ))
           )}

@@ -50,7 +50,7 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
         <div className="flex items-start gap-3 mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-lg font-bold text-gray-900">{plan.title}</h1>
+              <h1 className="text-xl font-bold tracking-tight text-gray-900">{plan.title}</h1>
               <PlanStatusBadge status={plan.status} />
             </div>
             <p className="text-sm text-gray-500">
@@ -58,13 +58,13 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm text-gray-600 tabular-nums">
           <div>
-            <span className="text-gray-400 text-xs">목적</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">목적</span>
             <p>{PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}</p>
           </div>
           <div>
-            <span className="text-gray-400 text-xs">금액</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">금액</span>
             <p>
               {plan.amount.toLocaleString()}원 (계획)
               {plan.lastSubmittedAmount !== null && (
@@ -86,19 +86,19 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
             </p>
           </div>
           <div>
-            <span className="text-gray-400 text-xs">사용 예정일</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">사용 예정일</span>
             <p>
               {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
               {plan.plannedTime && ` ${plan.plannedTime}`}
             </p>
           </div>
           <div className="col-span-2">
-            <span className="text-gray-400 text-xs">지출 개요</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">지출 개요</span>
             <p>{plan.expenditureOverview}</p>
           </div>
           {plan.signature && (
             <div className="col-span-2">
-              <span className="text-gray-400 text-xs">신청자 서명</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">신청자 서명</span>
               <div className="mt-1 inline-block bg-gray-50 border border-gray-200 rounded-md p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={plan.signature} alt="신청자 서명" className="h-16 object-contain" />
@@ -115,7 +115,7 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
         </div>
         <div className="divide-y divide-gray-100">
           {plan.evidences.map((evidence) => (
-            <div key={evidence.id} className="px-5 py-4">
+            <div key={evidence.id} className="px-5 py-4 hover:bg-gray-50/60 transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">

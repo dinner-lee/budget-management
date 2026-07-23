@@ -70,31 +70,26 @@ export default function AdminDashboardClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex border-b border-gray-200">
-        <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'DASHBOARD' ? 'border-primary-500 text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-          onClick={() => setView('DASHBOARD')}
-          title="대시보드"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          <span className="hidden sm:inline">팀별</span>
-        </button>
-        <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'BUDGET' ? 'border-primary-500 text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-          onClick={() => setView('BUDGET')}
-          title="예산 현황"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-          <span className="hidden sm:inline">전체</span>
-        </button>
-        <button
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${view === 'CALENDAR' ? 'border-primary-500 text-primary-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-          onClick={() => setView('CALENDAR')}
-          title="캘린더 보기"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          <span className="hidden sm:inline">캘린더</span>
-        </button>
+      <div className="inline-flex items-center gap-1 bg-gray-100/80 rounded-xl p-1">
+        {([
+          { key: 'DASHBOARD', label: '팀별', title: '대시보드', icon: 'M4 6h16M4 12h16M4 18h16' },
+          { key: 'BUDGET', label: '전체', title: '예산 현황', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+          { key: 'CALENDAR', label: '캘린더', title: '캘린더 보기', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+        ] as const).map((tab) => (
+          <button
+            key={tab.key}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+              view === tab.key
+                ? 'bg-white text-primary-500 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+            onClick={() => setView(tab.key)}
+            title={tab.title}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} /></svg>
+            <span className="hidden sm:inline">{tab.label}</span>
+          </button>
+        ))}
       </div>
 
       {view === 'DASHBOARD' && (
@@ -141,10 +136,10 @@ function CombinedDashboardView({
   setSelectedTeamId: (id: string | null) => void
 }) {
   const stats = [
-    { label: '검토 대기', value: pending.length, color: 'text-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
-    { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
-    { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', status: 'PENDING_EVIDENCE' },
-    { label: '승인 완료', value: approved.length, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
+    { label: '검토 대기', value: pending.length, color: 'text-primary-500', dot: 'bg-primary-500', ring: 'ring-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
+    { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', dot: 'bg-red-600', ring: 'ring-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
+    { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600', dot: 'bg-yellow-600', ring: 'ring-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', status: 'PENDING_EVIDENCE' },
+    { label: '승인 완료', value: approved.length, color: 'text-green-600', dot: 'bg-green-600', ring: 'ring-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
   ]
 
   const selectedTeam = teams.find((t: any) => t.id === selectedTeamId)
@@ -166,15 +161,22 @@ function CombinedDashboardView({
       {/* Status Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div
+          <button
             key={s.label}
+            type="button"
             onClick={() => setFilter(filter === s.status ? null : s.status)}
-            className={`card px-4 py-4 text-center cursor-pointer transition-all hover:shadow-md ${filter === s.status ? `${s.bg} ${s.border} ring-1 ring-offset-0 ${s.color.replace('text', 'ring')}` : 'hover:border-gray-300'
+            className={`card px-4 py-4 text-left cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${filter === s.status ? `${s.bg} ${s.border} ring-1 ring-offset-0 ${s.ring}` : 'hover:border-gray-300'
               }`}
           >
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">{s.label}</p>
-          </div>
+            <p className="text-xs text-gray-500 font-medium flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+              {s.label}
+            </p>
+            <p className={`text-3xl font-black tracking-tight tabular-nums mt-1.5 ${s.color}`}>
+              {s.value}
+              <span className="text-sm font-semibold text-gray-400 ml-1">건</span>
+            </p>
+          </button>
         ))}
       </div>
 
@@ -419,7 +421,7 @@ function BudgetView({ teams, allPlans }: any) {
         <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률 (팀당 예산 {TEAM_BUDGET.toLocaleString()}원 기준)</p>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+        <table className="w-full text-xs tabular-nums">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10 min-w-[80px]">팀</th>
@@ -540,11 +542,17 @@ function CalendarView({ allPlans, teams, milestones }: any) {
   return (
     <div className="card p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-900">{format(currentDate, 'yyyy년 MM월')}</h2>
-        <div className="flex gap-2">
-          <button onClick={prevMonth} className="btn-secondary px-3 py-1">&lt; 이전</button>
-          <button onClick={() => setCurrentDate(new Date())} className="btn-secondary px-3 py-1">오늘</button>
-          <button onClick={nextMonth} className="btn-secondary px-3 py-1">다음 &gt;</button>
+        <h2 className="text-xl font-bold tracking-tight text-gray-900 tabular-nums">{format(currentDate, 'yyyy년 MM월')}</h2>
+        <div className="inline-flex items-center rounded-lg border border-gray-200 shadow-sm overflow-hidden divide-x divide-gray-200">
+          <button onClick={prevMonth} className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors" title="이전 달">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            오늘
+          </button>
+          <button onClick={nextMonth} className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors" title="다음 달">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">
@@ -567,9 +575,17 @@ function CalendarView({ allPlans, teams, milestones }: any) {
           })
 
           return (
-            <div key={day.toISOString()} className={`bg-white min-h-[100px] p-2 border-t border-gray-100 ${isToday(day) ? 'bg-blue-50/30' : ''}`}>
-              <div className={`text-xs font-medium mb-1 ${day.getDay() === 0 ? 'text-red-500' : day.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'}`}>
-                {format(day, 'd')}
+            <div key={day.toISOString()} className={`bg-white min-h-[100px] p-2 border-t border-gray-100 ${isToday(day) ? 'bg-primary-50/40' : ''}`}>
+              <div className="mb-1">
+                <span
+                  className={`inline-flex items-center justify-center text-xs font-medium tabular-nums ${
+                    isToday(day)
+                      ? 'w-5 h-5 rounded-full bg-primary-500 text-white font-bold shadow-sm'
+                      : day.getDay() === 0 ? 'text-red-500' : day.getDay() === 6 ? 'text-blue-500' : 'text-gray-700'
+                  }`}
+                >
+                  {format(day, 'd')}
+                </span>
               </div>
               <div className="space-y-1">
                 {dayMilestones.map((m: any) => (
@@ -648,8 +664,12 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
           </p>
         )}
       </div>
-      <Link href={`/admin/plans/${plan.id}`} className="ml-4 text-xs text-primary-500 hover:underline shrink-0">
+      <Link
+        href={`/admin/plans/${plan.id}`}
+        className="ml-4 shrink-0 inline-flex items-center gap-1 text-xs font-medium text-primary-500 border border-primary-100 bg-primary-50/50 rounded-lg px-2.5 py-1.5 hover:bg-primary-50 hover:border-primary-500/30 hover:shadow-sm transition-all"
+      >
         검토하기
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
       </Link>
     </div>
   )

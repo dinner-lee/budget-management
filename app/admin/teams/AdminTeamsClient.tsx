@@ -90,13 +90,13 @@ export default function AdminTeamsClient({ initialTeams, initialUsers }: { initi
 
         <div className="md:col-span-2 space-y-4">
           <div className="card">
-            <div className="px-5 py-4 border-b border-gray-100"><h2 className="text-sm font-semibold text-gray-700">생성된 팀 목록</h2></div>
+            <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50"><h2 className="text-sm font-semibold text-gray-700">생성된 팀 목록 <span className="ml-1 text-xs text-gray-400 font-normal">({teams.length}팀)</span></h2></div>
             <div className="divide-y divide-gray-100">
               {teams.length === 0 ? (
                 <div className="p-6 text-center text-sm text-gray-400">팀이 없습니다.</div>
               ) : (
                 teams.map(team => (
-                  <div key={team.id} className="p-4">
+                  <div key={team.id} className="p-4 hover:bg-gray-50/40 transition-colors">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-sm font-bold text-gray-900">{team.teamNumber}: {team.researchTopic}</p>
@@ -105,7 +105,7 @@ export default function AdminTeamsClient({ initialTeams, initialUsers }: { initi
                       </div>
                       <div className="text-right">
                         {team.editLogs && team.editLogs.length > 0 && (
-                          <button onClick={() => setSelectedLog(team.editLogs[0])} className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          <button onClick={() => setSelectedLog(team.editLogs[0])} className="text-xs font-medium text-primary-500 bg-primary-50 border border-primary-100 px-2.5 py-1 rounded-lg hover:bg-primary-100 transition-colors">
                             최근 수정 기록 보기
                           </button>
                         )}
@@ -126,9 +126,9 @@ export default function AdminTeamsClient({ initialTeams, initialUsers }: { initi
                         <div className="space-y-1">
                           <p className="text-xs font-semibold text-gray-700">할당된 사용자:</p>
                           {team.users.map((u: any) => (
-                            <div key={u.id} className="flex justify-between items-center bg-gray-50 px-2 py-1.5 rounded">
+                            <div key={u.id} className="flex justify-between items-center bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100">
                               <span className="text-xs text-gray-900">{u.name} ({u.email})</span>
-                              <button onClick={() => handleAssignUser(team.id, 'remove', u.id)} disabled={loading} className="text-xs text-red-500 hover:text-red-700">해제</button>
+                              <button onClick={() => handleAssignUser(team.id, 'remove', u.id)} disabled={loading} className="text-xs font-medium text-red-500 hover:text-red-700 hover:underline transition-colors">해제</button>
                             </div>
                           ))}
                         </div>
@@ -145,8 +145,8 @@ export default function AdminTeamsClient({ initialTeams, initialUsers }: { initi
       </div>
 
       {selectedLog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
             <h3 className="text-lg font-bold">정보 수정 로그</h3>
             <p className="text-sm text-gray-500">수정자: {selectedLog.user.name} | 일시: {new Date(selectedLog.createdAt).toLocaleString()}</p>
             <div className="bg-gray-50 p-4 rounded text-sm font-mono overflow-auto max-h-60">
