@@ -50,9 +50,12 @@ export default function BudgetLimitsClient({ initialLimits }: { initialLimits: B
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">항목별 예산 계획 설정</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+      <div className="mb-5">
+        <h1 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+          <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+          항목별 예산 계획 설정
+        </h1>
+        <p className="text-sm text-gray-500 mt-1 pl-7">
           각 항목별로 예산 사용 금액을 설정하세요. 총합은 2,000,000원을 초과할 수 없습니다.
         </p>
       </div>

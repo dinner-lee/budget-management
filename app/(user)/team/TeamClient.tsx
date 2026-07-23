@@ -31,8 +31,11 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
   if (!initialTeam) {
     return (
       <div className="p-6 max-w-2xl">
-        <h1 className="text-xl font-bold text-gray-900 mb-4">나의 팀 정보</h1>
-        <div className="bg-yellow-50 text-yellow-800 p-4 rounded-md border border-yellow-200">
+<h1 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+          <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          나의 팀 정보
+        </h1>
+        <div className="mt-4 bg-yellow-50 text-yellow-800 p-4 rounded-lg border border-yellow-200">
           아직 배정된 팀이 없습니다. 관리자에게 문의하여 팀을 할당받으세요.
         </div>
       </div>
@@ -61,9 +64,12 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">나의 팀 정보</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+      <div className="mb-5">
+        <h1 className="font-nexon flex items-center gap-2 text-base font-bold text-gray-800 tracking-tight">
+          <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          나의 팀 정보
+        </h1>
+        <p className="text-sm text-gray-500 mt-1 pl-7">
           팀 정보를 열람하고 수정할 수 있습니다(수정 시 관리자에게 알림이 전송됩니다).
         </p>
       </div>
@@ -122,7 +128,7 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
         </div>
 
         {message && (
-          <div className={`p-3 rounded-md text-sm ${message.includes('오류') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+          <div className={`p-3 rounded-lg text-sm ${message.includes('오류') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
             {message}
           </div>
         )}
@@ -136,10 +142,10 @@ export default function TeamClient({ initialTeam }: { initialTeam: Team | null }
 
       {initialTeam.users && initialTeam.users.length > 0 && (
         <div className="card p-6 mt-6">
-          <h2 className="text-sm font-bold text-gray-800 mb-4">함께 할당된 팀원</h2>
+          <h2 className="font-nexon text-sm font-bold text-gray-800 mb-4">함께 할당된 팀원</h2>
           <div className="space-y-2">
             {initialTeam.users.map((u) => (
-              <div key={u.id} className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded border border-gray-100">
+              <div key={u.id} className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg border border-gray-100">
                 <span className="text-sm font-medium text-gray-900">{u.name}</span>
                 <span className="text-xs text-gray-500">({u.email})</span>
               </div>
