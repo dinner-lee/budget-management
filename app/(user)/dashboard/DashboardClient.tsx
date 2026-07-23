@@ -8,13 +8,13 @@ import { differenceInDays, isAfter, isToday } from 'date-fns'
 import EvidenceSubmissionModal from '@/components/EvidenceSubmissionModal'
 
 // 항목별 카드 블록 색상 테마
-const CATEGORY_STYLES: Record<string, { bg: string; border: string; fill: string; text: string; percent: string }> = {
-  MEETING_FEE:     { bg: 'bg-blue-50/60',    border: 'border-blue-100',    fill: 'bg-blue-500/25',    text: 'text-blue-800',    percent: 'text-blue-600' },
-  EXPERT_FEE:      { bg: 'bg-indigo-50/60',  border: 'border-indigo-100',  fill: 'bg-indigo-500/25',  text: 'text-indigo-800',  percent: 'text-indigo-600' },
-  PARTICIPANT_FEE: { bg: 'bg-violet-50/60',  border: 'border-violet-100',  fill: 'bg-violet-500/25',  text: 'text-violet-800',  percent: 'text-violet-600' },
-  PURCHASE_FEE:    { bg: 'bg-emerald-50/60', border: 'border-emerald-100', fill: 'bg-emerald-500/25', text: 'text-emerald-800', percent: 'text-emerald-600' },
-  SOFTWARE_FEE:    { bg: 'bg-cyan-50/60',    border: 'border-cyan-100',    fill: 'bg-cyan-500/25',    text: 'text-cyan-800',    percent: 'text-cyan-600' },
-  OTHER:           { bg: 'bg-amber-50/60',   border: 'border-amber-100',   fill: 'bg-amber-500/25',   text: 'text-amber-800',   percent: 'text-amber-600' },
+const CATEGORY_STYLES: Record<string, { bg: string; border: string; fill: string; text: string; percent: string; ring: string }> = {
+  MEETING_FEE:     { bg: 'bg-blue-50/60',    border: 'border-blue-100',    fill: 'bg-blue-500/25',    text: 'text-blue-800',    percent: 'text-blue-600',    ring: 'ring-blue-500' },
+  EXPERT_FEE:      { bg: 'bg-indigo-50/60',  border: 'border-indigo-100',  fill: 'bg-indigo-500/25',  text: 'text-indigo-800',  percent: 'text-indigo-600',  ring: 'ring-indigo-500' },
+  PARTICIPANT_FEE: { bg: 'bg-violet-50/60',  border: 'border-violet-100',  fill: 'bg-violet-500/25',  text: 'text-violet-800',  percent: 'text-violet-600',  ring: 'ring-violet-500' },
+  PURCHASE_FEE:    { bg: 'bg-emerald-50/60', border: 'border-emerald-100', fill: 'bg-emerald-500/25', text: 'text-emerald-800', percent: 'text-emerald-600', ring: 'ring-emerald-500' },
+  SOFTWARE_FEE:    { bg: 'bg-cyan-50/60',    border: 'border-cyan-100',    fill: 'bg-cyan-500/25',    text: 'text-cyan-800',    percent: 'text-cyan-600',    ring: 'ring-cyan-500' },
+  OTHER:           { bg: 'bg-amber-50/60',   border: 'border-amber-100',   fill: 'bg-amber-500/25',   text: 'text-amber-800',   percent: 'text-amber-600',   ring: 'ring-amber-500' },
 }
 
 export default function DashboardClient({
@@ -30,6 +30,7 @@ export default function DashboardClient({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const [purposeFilter, setPurposeFilter] = useState<string>('ALL')
 
   const openSubmissionModal = (planId: string) => {
     setSelectedPlanId(planId)
@@ -38,8 +39,8 @@ export default function DashboardClient({
 
   return (
     <div className="space-y-6">
-      <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} />
-      <PlanListSection plans={plans} activePlanCount={activePlanCount} onOpenSubmission={openSubmissionModal} />
+      <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} purposeFilter={purposeFilter} setPurposeFilter={setPurposeFilter} />
+      <PlanListSection plans={plans} activePlanCount={activePlanCount} onOpenSubmission={openSubmissionModal} purposeFilter={purposeFilter} setPurposeFilter={setPurposeFilter} />
 
       <EvidenceSubmissionModal 
         isOpen={isModalOpen}
@@ -80,7 +81,7 @@ export default function DashboardClient({
   )
 }
 
-function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any, milestones: any[] }) {
+function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurposeFilter }: { budgetStatus: any, milestones: any[], purposeFilter: string, setPurposeFilter: (v: string) => void }) {
   const { totalBudget, totalUsed, totalBalance, categoryLimits, categoryUsage } = budgetStatus
 
   const usedPercent = totalBudget > 0 ? Math.min(100, Math.round((totalUsed / totalBudget) * 100)) : 0
@@ -91,6 +92,35 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 
   return (
     <div className="space-y-6">
+      {/* 주요 일정 (최상단) */}
+      {upcomingMilestones.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {upcomingMilestones.map(m => {
+            const dDay = differenceInDays(new Date(m.date), new Date())
+            const urgent = dDay <= 3
+            return (
+              <div
+                key={m.id}
+                className="font-nexon relative rounded-2xl bg-white border border-gray-200 shadow-sm p-4 flex items-center justify-between gap-3 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
+              >
+                <div
+                  className={`absolute -top-10 -right-10 w-24 h-24 rounded-full ${urgent ? 'bg-red-50' : 'bg-indigo-50'}`}
+                  aria-hidden="true"
+                />
+                <div className="relative min-w-0">
+                  <p className="text-[10px] font-light uppercase tracking-wider text-gray-400">주요 일정</p>
+                  <p className="mt-0.5 text-sm font-bold text-gray-900 truncate">{m.name}</p>
+                  <p className="text-[11px] font-normal text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
+                </div>
+                <span className={`relative shrink-0 rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
+                  {dDay === 0 ? 'D-Day' : `D-${dDay}`}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {/* 잔액 카드 + 항목별 예산 블록 (같은 줄, 벤토 구성) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         {/* 사용 가능 잔액 */}
@@ -143,10 +173,14 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
                   const percent = limit > 0 ? Math.round((used / limit) * 100) : used > 0 ? 100 : 0
                   const over = limit > 0 && used > limit
                   return (
-                    <div
+                    <button
                       key={key}
-                      className={`font-nexon relative rounded-xl border overflow-hidden p-3 flex flex-col justify-between shadow-sm min-h-[4.75rem] ${st.bg} ${st.border} hover:shadow-md transition-all`}
-                      title={`${label}: ${used.toLocaleString()}원 / ${limit.toLocaleString()}원`}
+                      type="button"
+                      onClick={() => setPurposeFilter(purposeFilter === key ? 'ALL' : key)}
+                      className={`font-nexon relative rounded-xl border overflow-hidden p-3 flex flex-col justify-between shadow-sm min-h-[4.75rem] text-left ${st.bg} ${st.border} transition-all ${
+                        purposeFilter === key ? `ring-2 ${st.ring} shadow-md` : 'hover:shadow-md hover:-translate-y-0.5'
+                      }`}
+                      title={`${label} 계획서만 보기 — ${used.toLocaleString()}원 / ${limit.toLocaleString()}원`}
                     >
                       {/* 사용률만큼 아래에서부터 차오르는 채움 */}
                       <div
@@ -166,7 +200,7 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
                           {over && <span className="block font-bold text-red-600">한도 초과</span>}
                         </p>
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
@@ -175,34 +209,6 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
         </div>
       </div>
 
-      {/* 주요 일정: 다음 줄, 가로형 컴팩트 카드 */}
-      {upcomingMilestones.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {upcomingMilestones.map(m => {
-            const dDay = differenceInDays(new Date(m.date), new Date())
-            const urgent = dDay <= 3
-            return (
-              <div
-                key={m.id}
-                className="font-nexon relative rounded-2xl bg-white border border-gray-200 shadow-sm p-4 flex items-center justify-between gap-3 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all"
-              >
-                <div
-                  className={`absolute -top-10 -right-10 w-24 h-24 rounded-full ${urgent ? 'bg-red-50' : 'bg-indigo-50'}`}
-                  aria-hidden="true"
-                />
-                <div className="relative min-w-0">
-                  <p className="text-[10px] font-light uppercase tracking-wider text-gray-400">주요 일정</p>
-                  <p className="mt-0.5 text-sm font-bold text-gray-900 truncate">{m.name}</p>
-                  <p className="text-[11px] font-normal text-gray-500 tabular-nums">{new Date(m.date).toLocaleDateString('ko-KR')}</p>
-                </div>
-                <span className={`relative shrink-0 rounded-full px-2.5 py-0.5 text-sm font-bold tabular-nums shadow-sm text-white ${urgent ? 'bg-red-500' : 'bg-indigo-600'}`}>
-                  {dDay === 0 ? 'D-Day' : `D-${dDay}`}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
     </div>
   )
 }
@@ -210,13 +216,13 @@ function BudgetSummarySection({ budgetStatus, milestones }: { budgetStatus: any,
 // 계획서 목록의 표 컬럼 (헤더/행 공유)
 const USER_PLAN_GRID = 'md:grid-cols-[minmax(0,1fr)_6rem_6rem_5.5rem_4rem_12rem]'
 
-function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
+function PlanListSection({ plans, activePlanCount, onOpenSubmission, purposeFilter, setPurposeFilter }: {
   plans: any[],
   activePlanCount: number,
-  onOpenSubmission: (id: string) => void
+  onOpenSubmission: (id: string) => void,
+  purposeFilter: string,
+  setPurposeFilter: (v: string) => void
 }) {
-  const [purposeFilter, setPurposeFilter] = useState<string>('ALL')
-
   const filteredPlans = purposeFilter === 'ALL'
     ? plans
     : plans.filter(p => p.purpose === purposeFilter)
@@ -235,29 +241,23 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission }: {
             예산 사용 계획서 내역
             <span className="ml-1 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
           </h2>
+          {purposeFilter !== 'ALL' && (
+            <button
+              type="button"
+              onClick={() => setPurposeFilter('ALL')}
+              title="필터 해제"
+              className="inline-flex items-center gap-1 rounded-full bg-primary-50 border border-primary-100 text-primary-500 text-xs font-medium px-2.5 py-1 hover:bg-primary-100 transition-colors whitespace-nowrap"
+            >
+              {PURPOSE_LABELS[purposeFilter as keyof typeof PURPOSE_LABELS]}
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
           {activePlanCount >= 3 && (
             <span className="font-nexon inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-normal bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 whitespace-nowrap">
               작성 제한 · 증빙 미완료 3건
             </span>
           )}
         </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        {[['ALL', '전체'], ...Object.entries(PURPOSE_LABELS)].map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setPurposeFilter(value)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-all whitespace-nowrap ${
-              purposeFilter === value
-                ? 'bg-primary-500 border-primary-500 text-white shadow-md'
-                : 'bg-white border-gray-200 text-gray-600 hover:border-primary-100 hover:bg-primary-50/60 hover:text-primary-500'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       <div className={`hidden md:grid ${USER_PLAN_GRID} gap-3 px-5 pt-2 text-[11px] font-semibold text-gray-400`}>
