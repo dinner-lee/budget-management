@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import { differenceInDays, isAfter, isToday } from 'date-fns'
 import EvidenceSubmissionModal from '@/components/EvidenceSubmissionModal'
+import UpcomingCardNotice from '@/components/UpcomingCardNotice'
 
 export default function DashboardClient({
   budgetStatus,
@@ -32,6 +33,7 @@ export default function DashboardClient({
 
   return (
     <div className="space-y-6">
+      <UpcomingCardNotice plans={plans} />
       <BudgetSummarySection budgetStatus={budgetStatus} milestones={milestones} />
       <PlanListSection plans={plans} activePlanCount={activePlanCount} onOpenSubmission={openSubmissionModal} />
 

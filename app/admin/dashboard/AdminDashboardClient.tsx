@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge } from '@/components/StatusBadge'
+import UpcomingCardNotice from '@/components/UpcomingCardNotice'
 import Link from 'next/link'
 import {
   startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isToday, parseISO
@@ -109,6 +110,7 @@ export default function AdminDashboardClient({
 
   return (
     <div className="space-y-6">
+      <UpcomingCardNotice plans={allPlans} teams={teams} />
       <div className="inline-flex items-center gap-1 glass-track rounded-xl p-1">
         {([
           { key: 'DASHBOARD', label: '팀별', title: '대시보드', icon: 'M4 6h16M4 12h16M4 18h16' },
@@ -377,7 +379,7 @@ function CombinedDashboardView({
             <span className="ml-2 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
           </h2>
           {!filter && needsReviewCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-100 rounded-full px-2.5 py-1">
+            <span className="font-nexon inline-flex items-center gap-1.5 text-[11px] font-normal text-red-600 bg-red-50 border border-red-100 rounded-full px-2.5 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               검토 필요 {needsReviewCount}건
             </span>
