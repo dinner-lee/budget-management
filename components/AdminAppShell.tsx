@@ -10,6 +10,7 @@ import AdminTeamsClient from '@/app/admin/teams/AdminTeamsClient'
 import AdminUsersClient from '@/app/admin/users/AdminUsersClient'
 import AdminSettingsClient from '@/app/admin/settings/AdminSettingsClient'
 import { LiquidGlassDefs, useLiquidGlassRefract } from '@/components/LiquidGlass'
+import UserAvatar from '@/components/UserAvatar'
 
 type TabKey = 'dashboard' | 'teams' | 'users' | 'settings'
 
@@ -116,6 +117,7 @@ export default function AdminAppShell({
 
             <div className="hidden lg:flex items-center gap-4">
               <div className="flex items-center gap-2">
+                <UserAvatar image={session?.user.image} name={session?.user.name} />
                 <span className="text-sm text-gray-600">{session?.user.name}</span>
                 <span className="text-[10px] bg-primary-100 text-primary-500 px-1.5 py-0.5 rounded font-bold">관리자</span>
               </div>
@@ -146,9 +148,12 @@ export default function AdminAppShell({
               ))}
               <div className="pt-4 pb-2 border-t border-gray-100 mt-2">
                 <div className="flex items-center justify-between px-3">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-gray-900">{session?.user.name}</span>
-                    <span className="text-xs text-gray-500">관리자 계정</span>
+                  <div className="flex items-center gap-2.5">
+                    <UserAvatar image={session?.user.image} name={session?.user.name} size="lg" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-gray-900">{session?.user.name}</span>
+                      <span className="text-xs text-gray-500">관리자 계정</span>
+                    </div>
                   </div>
                   <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-sm text-red-600 font-bold px-3 py-1.5 border border-red-100 rounded-md bg-red-50">로그아웃</button>
                 </div>

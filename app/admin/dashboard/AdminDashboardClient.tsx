@@ -45,6 +45,18 @@ interface Team {
   budgetLimits: BudgetLimit[]
 }
 
+// 전체 계획서 목록의 표 컬럼 (헤더/행 공유)
+const PLAN_GRID = 'md:grid-cols-[8.5rem_minmax(0,1fr)_5.5rem_6.5rem_6.5rem_6rem_14rem]'
+
+function sortByTeamNumber<T extends { teamNumber: string }>(teams: T[]): T[] {
+  return [...teams].sort((a, b) => {
+    const na = parseInt(a.teamNumber, 10)
+    const nb = parseInt(b.teamNumber, 10)
+    if (!isNaN(na) && !isNaN(nb)) return na - nb
+    return String(a.teamNumber).localeCompare(String(b.teamNumber), 'ko')
+  })
+}
+
 interface Milestone {
   id: string
   name: string
@@ -200,7 +212,7 @@ function CombinedDashboardView({
         >
           전체 팀
         </button>
-        {teams.map((team: Team) => {
+        {sortByTeamNumber(teams).map((team: Team) => {
           const tPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
           const hasPending = tPlans.some((p: Plan) => NEEDS_REVIEW.includes(p.status))
           const isSelected = selectedTeamId === team.id
@@ -312,6 +324,15 @@ function CombinedDashboardView({
               검토 필요 {needsReviewCount}건
             </span>
           )}
+        </div>
+        <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
+          <span>팀 / 대표자</span>
+          <span>사용 항목</span>
+          <span>제출자</span>
+          <span className="text-right">계획 금액</span>
+          <span className="text-right">실제 금액</span>
+          <span>사용일</span>
+          <span className="text-right">상태 / 작업</span>
         </div>
         <div className="divide-y divide-gray-100">
           {sortedPlans.length === 0 ? (
@@ -596,46 +617,52 @@ function CalendarView({ allPlans, teams, milestones }: any) {
 }
 
 function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
-  const submitted = plan.evidences.filter((e: any) => e.status === 'SUBMITTED').length
-  const total = plan.evidences.length
   const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
-
   const needsReview = plan.status === 'UNDER_REVIEW' || plan.status === 'RESUBMIT_REQUIRED'
+  // 승인 전에는 제출된 실제 금액(lastSubmittedAmount), 승인 후에는 확정 실제 금액(actualAmount)
+  const actual = plan.actualAmount ?? plan.lastSubmittedAmount ?? null
+  const isConfirmed = plan.actualAmount !== null && plan.actualAmount !== undefined
 
   return (
-    <div className={`relative px-5 py-4 flex items-center justify-between transition-colors ${needsReview ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}>
+    <div className={`relative px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${PLAN_GRID} md:gap-3 text-sm transition-colors ${needsReview ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}>
       {needsReview && <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-400" aria-hidden="true" />}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-            {team?.teamNumber || '알 수 없음'}
-          </span>
-          <span className="text-sm font-medium text-gray-900 truncate">{plan.title}</span>
-          <PlanStatusBadge status={plan.status} />
-        </div>
-        <p className="text-xs text-gray-500">
-          {plan.user.name} &middot;{' '}
-          {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]} &middot;{' '}
-          {(plan.actualAmount ?? plan.amount).toLocaleString()}원 &middot;{' '}
-          {new Date(plan.plannedDate).toLocaleDateString('ko-KR')}
-        </p>
-        {plan.status !== 'APPROVED' && total > 0 && (
-          <p className="text-xs text-gray-400 mt-0.5">
-            증빙 {submitted}/{total}개 제출
-          </p>
-        )}
+      <div className="flex items-baseline gap-1.5 min-w-0">
+        <span className="text-xs font-black text-primary-500 shrink-0">{team?.teamNumber || '-'}</span>
+        <span className="font-medium text-gray-900 truncate">{team?.leaderName || '알 수 없음'}</span>
       </div>
-      <Link
-        href={`/admin/plans/${plan.id}`}
-        className={`ml-4 shrink-0 inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-all hover:shadow-sm ${
-          needsReview
-            ? 'text-primary-500 border-primary-100 bg-primary-50/50 hover:bg-primary-50 hover:border-primary-500/30'
-            : 'text-gray-500 border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-700'
-        }`}
-      >
-        {needsReview ? '검토하기' : '상세 보기'}
-        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-      </Link>
+      <div className="text-gray-700 truncate">
+        {PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]}
+      </div>
+      <div className="text-xs text-gray-500 truncate" title="업로드한 사용자">{plan.user?.name ?? '-'}</div>
+      <div className="md:text-right tabular-nums text-gray-700">{plan.amount.toLocaleString()}원</div>
+      <div className={`md:text-right tabular-nums ${actual !== null ? (isConfirmed ? 'text-blue-600 font-medium' : 'text-amber-600 font-medium') : 'text-gray-300'}`}>
+        {actual !== null ? `${actual.toLocaleString()}원` : '–'}
+      </div>
+      <div className="text-xs text-gray-500 tabular-nums">{new Date(plan.plannedDate).toLocaleDateString('ko-KR')}</div>
+      <div className="flex items-center gap-1.5 md:justify-end w-full md:w-auto">
+        <PlanStatusBadge status={plan.status} />
+        <a
+          href={`/print/plans/${plan.id}?autoprint=1`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="계획서 PDF 다운로드"
+          className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2 py-1.5 hover:bg-gray-50 hover:text-gray-700 hover:shadow-sm transition-all"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          PDF
+        </a>
+        <Link
+          href={`/admin/plans/${plan.id}`}
+          className={`inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-all hover:shadow-sm ${
+            needsReview
+              ? 'text-primary-500 border-primary-100 bg-primary-50/50 hover:bg-primary-50 hover:border-primary-500/30'
+              : 'text-gray-500 border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-700'
+          }`}
+        >
+          {needsReview ? '검토' : '상세'}
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        </Link>
+      </div>
     </div>
   )
 }

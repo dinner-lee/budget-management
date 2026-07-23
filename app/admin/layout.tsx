@@ -4,7 +4,6 @@ import { prisma } from '@/lib/db'
 import { getMilestones } from '@/lib/milestones'
 import { redirect } from 'next/navigation'
 import AdminAppShell from '@/components/AdminAppShell'
-import { AmbientBackground } from '@/components/LiquidGlass'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -42,8 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const plansWithoutSignature = allPlans.map(({ signature, ...p }) => p)
 
   return (
-    <div className="relative isolate min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/60">
-      <AmbientBackground />
+    <div className="min-h-screen bg-[#f5f8fd]">
       <AdminAppShell
         dashboardData={{ allPlans: plansWithoutSignature, userCount, teams, milestones }}
         teamsData={{ teams, users }}

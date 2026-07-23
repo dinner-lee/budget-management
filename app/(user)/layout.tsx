@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getMilestones } from '@/lib/milestones'
-import { AmbientBackground } from '@/components/LiquidGlass'
 import { redirect } from 'next/navigation'
 import UserAppShell from '@/components/UserAppShell'
 
@@ -85,8 +84,7 @@ export default async function UserLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <div className="relative isolate min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/60">
-      <AmbientBackground />
+    <div className="min-h-screen bg-[#f5f8fd]">
       <UserAppShell
         dashboardData={dashboardData}
         budgetLimitsData={budgetLimits}
