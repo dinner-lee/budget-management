@@ -49,21 +49,24 @@ export default function LoginPage() {
           <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" aria-hidden="true" />
           <div className="absolute -bottom-24 -left-10 w-64 h-64 rounded-full bg-white/5" aria-hidden="true" />
 
-          <div className="relative inline-flex self-start bg-white rounded-xl px-3 py-2 shadow-sm">
-            <Image src="/lsri_logo.png" alt="학습과학연구소" width={150} height={37} className="object-contain" priority />
-          </div>
+          <Image
+            src="/lsri_logo_white.png"
+            alt="학습과학연구소"
+            width={182}
+            height={40}
+            className="relative object-contain self-start"
+            priority
+          />
 
-          <div className="relative">
+          <div className="relative flex-1 flex flex-col justify-center">
             <p className="text-[13px] text-blue-100/80 break-keep">학부생·대학원생 학습과학연구지원사업</p>
-            <h2 className="mt-1.5 text-3xl font-bold leading-snug tracking-tight">
-              예산 관리<br />시스템
+            <h2 className="mt-1.5 text-[1.75rem] font-normal leading-snug tracking-tight whitespace-nowrap">
+              예산 관리 시스템
             </h2>
             <p className="mt-4 text-sm text-blue-100/70 leading-relaxed break-keep">
               예산 사용 계획서 작성부터 증빙 제출, 검토·승인까지 한 곳에서 관리합니다.
             </p>
           </div>
-
-          <p className="relative text-[11px] text-blue-100/50">서울대학교 학습과학연구소</p>
         </div>
 
         {/* 우측 로그인 폼 */}
@@ -72,7 +75,7 @@ export default function LoginPage() {
           <div className="md:hidden flex flex-col items-center text-center mb-8">
             <Image src="/lsri_logo.png" alt="학습과학연구소" width={170} height={42} className="object-contain mb-4" priority />
             <p className="text-xs text-gray-500 break-keep">학부생·대학원생 학습과학연구지원사업</p>
-            <h2 className="text-xl font-bold text-[#15378F] tracking-tight">예산 관리 시스템</h2>
+            <h2 className="text-xl font-normal text-[#15378F] tracking-tight whitespace-nowrap">예산 관리 시스템</h2>
           </div>
 
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">로그인</h1>
