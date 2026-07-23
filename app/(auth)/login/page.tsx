@@ -43,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-md px-4">
-      <div className="card w-full p-8">
+      <div className="w-full bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl ring-1 ring-gray-900/5 p-8 sm:p-10">
         <div className="mb-8 text-center flex flex-col items-center">
           <Image
             src="/lsri_logo.png"
@@ -53,16 +53,16 @@ export default function LoginPage() {
             className="object-contain mb-6"
             priority
           />
-          <h1 className="text-xl sm:text-2xl font-light text-gray-900 break-keep leading-tight tracking-tight">
-            학부생·대학원생 학습과학연구지원사업<br />
-            <span className="text-[#15378F] font-bold">예산 관리 시스템</span>
+          <p className="text-sm text-gray-500 break-keep tracking-tight">학부생·대학원생 학습과학연구지원사업</p>
+          <h1 className="mt-1 text-2xl sm:text-[1.75rem] font-bold text-[#15378F] tracking-tight">
+            예산 관리 시스템
           </h1>
-          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-start gap-3 text-left w-full">
-            <svg className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-6 bg-primary-50/70 border border-primary-100 rounded-xl px-4 py-3 flex items-center gap-2.5 text-left w-full">
+            <svg className="w-4 h-4 text-primary-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-sm text-gray-700 break-keep">
-              <strong>구글 계정(@snu.ac.kr)</strong>으로 로그인하시기 바랍니다.
+            <p className="text-[13px] text-gray-700 break-keep">
+              <strong className="text-primary-500 font-bold">구글 계정(@snu.ac.kr)</strong>으로 로그인하시기 바랍니다.
             </p>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading || googleLoading}
-            className="w-full flex justify-center items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-normal text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all"
+            className="w-full flex justify-center items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-normal text-gray-700 shadow-sm hover:shadow-md hover:border-gray-300 hover:-translate-y-px active:translate-y-0 active:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:ring-offset-2 disabled:opacity-50 transition-all"
           >
             {googleLoading ? (
               <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowEmailLogin(!showEmailLogin)}
                 disabled={loading || googleLoading}
-                className="bg-white px-3 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                className="bg-white/0 backdrop-blur-sm px-3 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
               >
                 {showEmailLogin ? '이메일 로그인 접기' : '관리자로부터 발급받은 아이디가 있으신가요? 이메일로 로그인'}
               </button>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                 <p className="text-xs text-red-600 bg-red-50 rounded px-2 py-1.5">{error}</p>
               )}
 
-              <button type="submit" className="btn-primary w-full py-2 text-sm font-normal flex items-center justify-center gap-2" disabled={loading || googleLoading}>
+              <button type="submit" className="btn-primary w-full py-2.5 text-sm font-normal rounded-xl flex items-center justify-center gap-2" disabled={loading || googleLoading}>
                 {loading && (
                   <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -152,8 +152,9 @@ export default function LoginPage() {
           )}
         </div>
       </div>
-      <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
-        서울대학교 학습과학연구소 | (08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 | 02-880-4498 | jjl0909@snu.ac.kr
+      <div className="mt-8 text-center text-[11px] text-gray-400 leading-relaxed break-keep">
+        <p className="font-medium text-gray-500">서울대학교 학습과학연구소</p>
+        <p>(08826) 서울시 관악구 관악로 1 서울대학교 학습과학연구소 10-1동 401호 · 02-880-4498 · jjl0909@snu.ac.kr</p>
       </div>
     </div>
   )
