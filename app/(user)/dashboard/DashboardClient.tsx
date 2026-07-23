@@ -94,7 +94,9 @@ function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurp
     <div className="space-y-6">
       {/* 주요 일정 (최상단) */}
       {upcomingMilestones.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="space-y-3">
+          <h2 className="font-nexon text-base font-bold text-gray-800 tracking-tight">주요 일정</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {upcomingMilestones.map(m => {
             const dDay = differenceInDays(new Date(m.date), new Date())
             const urgent = dDay <= 3
@@ -118,13 +120,23 @@ function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurp
               </div>
             )
           })}
+          </div>
         </div>
       )}
 
-      {/* 잔액 카드 + 항목별 예산 블록 (같은 줄, 벤토 구성) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+      {/* 예산 사용 내역: 잔액 카드 + 항목별 예산 블록 */}
+      <div className="space-y-3">
+        <h2 className="font-nexon text-base font-bold text-gray-800 tracking-tight">예산 사용 내역</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         {/* 사용 가능 잔액 */}
-        <div className="font-nexon relative rounded-2xl p-5 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[10.5rem]">
+        <div className="group font-nexon relative rounded-2xl p-5 text-white overflow-hidden bg-gradient-to-br from-[#1c46ac] via-[#15378F] to-[#0a1d52] shadow-lg flex flex-col justify-between min-h-[10.5rem]">
+          <Link
+            href="/budget-limits"
+            title="예산 계획 설정"
+            className="absolute top-3.5 right-3.5 z-10 p-2 rounded-lg bg-white/15 text-white opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-white/25 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+          </Link>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.15),transparent_55%)]" aria-hidden="true" />
           <div className="absolute -bottom-20 -right-16 w-52 h-52 rounded-full bg-white/5" aria-hidden="true" />
 
@@ -207,8 +219,8 @@ function BudgetSummarySection({ budgetStatus, milestones, purposeFilter, setPurp
             )
           })()}
         </div>
+        </div>
       </div>
-
     </div>
   )
 }
@@ -237,10 +249,7 @@ function PlanListSection({ plans, activePlanCount, onOpenSubmission, purposeFilt
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <h2 className="font-nexon text-sm font-bold text-gray-700">
-            예산 사용 계획서 내역
-            <span className="ml-1 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
-          </h2>
+          <p className="font-nexon text-xs font-normal text-gray-400 tabular-nums">계획서 {filteredPlans.length}건</p>
           {purposeFilter !== 'ALL' && (
             <button
               type="button"
