@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getMilestones } from '@/lib/milestones'
 import { redirect } from 'next/navigation'
 import UserAppShell from '@/components/UserAppShell'
 
@@ -28,9 +29,7 @@ export default async function UserLayout({ children }: { children: React.ReactNo
           where: { teamId: user.teamId },
         })
       : Promise.resolve([]),
-    prisma.milestone.findMany({
-      orderBy: { date: 'asc' }
-    }),
+    getMilestones(),
     user?.teamId
       ? prisma.team.findUnique({
           where: { id: user.teamId },

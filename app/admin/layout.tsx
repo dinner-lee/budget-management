@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getMilestones } from '@/lib/milestones'
 import { redirect } from 'next/navigation'
 import AdminAppShell from '@/components/AdminAppShell'
 
@@ -29,9 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         }
       }
     }),
-    prisma.milestone.findMany({
-      orderBy: { date: 'asc' }
-    }),
+    getMilestones(),
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { plans: true } } },

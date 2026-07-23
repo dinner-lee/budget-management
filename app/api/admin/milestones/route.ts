@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { getMilestones, MILESTONES_TAG } from '@/lib/milestones'
+import { revalidateTag } from 'next/cache'
 
 export async function GET() {
-  const milestones = await prisma.milestone.findMany({
-    orderBy: { date: 'asc' }
-  })
+  const milestones = await getMilestones()
   return NextResponse.json({ milestones })
 }
 
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     }
   })
 
+  revalidateTag(MILESTONES_TAG)
   return NextResponse.json({ milestone }, { status: 201 })
 }
 
@@ -40,6 +41,7 @@ export async function DELETE(req: NextRequest) {
   if (!id) return NextResponse.json({ error: 'ID 필요' }, { status: 400 })
 
   await prisma.milestone.delete({ where: { id } })
-  
+
+  revalidateTag(MILESTONES_TAG)
   return NextResponse.json({ success: true })
 }

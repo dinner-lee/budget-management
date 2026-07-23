@@ -5,10 +5,6 @@ import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge } from '@/components/StatusBadge'
 import Link from 'next/link'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from 'recharts'
-import {
   startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isToday, parseISO
 } from 'date-fns'
 
