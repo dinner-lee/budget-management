@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge, EvidenceStatusBadge } from '@/components/StatusBadge'
@@ -18,6 +19,10 @@ interface Props {
 }
 
 export default function PlanReviewModal({ plan, team, onClose, onReviewed, onOpenPrint }: Props) {
+  // body 직속 포털로 렌더링해 navbar 등 상위 요소와의 backdrop-filter 합성 간섭을 차단
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   // ESC로 닫기 + 배경 스크롤 잠금 + navbar 블러 아티팩트 방지 플래그
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -35,7 +40,9 @@ export default function PlanReviewModal({ plan, team, onClose, onReviewed, onOpe
   const canReview = plan.status === 'UNDER_REVIEW'
   const purposeLabel = PURPOSE_LABELS[plan.purpose as keyof typeof PURPOSE_LABELS]
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
       <div
         className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200"
@@ -182,6 +189,7 @@ export default function PlanReviewModal({ plan, team, onClose, onReviewed, onOpe
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
