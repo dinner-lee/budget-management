@@ -106,14 +106,20 @@ export default function AdminDashboardClient({
   const [filter, setFilter] = useState<string | null>(null)
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
 
-  // 검토 처리 직후 서버 재조회를 기다리지 않고 즉시 화면에 반영하기 위한 로컬 덮어쓰기
+  // 검토·삭제 처리 직후 서버 재조회를 기다리지 않고 즉시 화면에 반영하기 위한 로컬 상태
   const [planOverrides, setPlanOverrides] = useState<Record<string, any>>({})
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const plans = useMemo(
-    () => allPlans.map((p) => (planOverrides[p.id] ? { ...p, ...planOverrides[p.id] } : p)),
-    [allPlans, planOverrides],
+    () =>
+      allPlans
+        .filter((p) => !deletedIds.has(p.id))
+        .map((p) => (planOverrides[p.id] ? { ...p, ...planOverrides[p.id] } : p)),
+    [allPlans, planOverrides, deletedIds],
   )
   const applyPlanUpdate = (updated: any) =>
     setPlanOverrides((prev) => ({ ...prev, [updated.id]: updated }))
+  const markPlanDeleted = (planId: string) =>
+    setDeletedIds((prev) => new Set(prev).add(planId))
 
   // 검토 모달: 페이지 이동 없이 팝업으로 검토
   const [reviewPlanId, setReviewPlanId] = useState<string | null>(null)
@@ -164,6 +170,7 @@ export default function AdminDashboardClient({
           setSelectedTeamId={setSelectedTeamId}
           onOpenReview={setReviewPlanId}
           onPlanUpdated={applyPlanUpdate}
+          onPlanDeleted={markPlanDeleted}
         />
       )}
 
@@ -189,7 +196,7 @@ export default function AdminDashboardClient({
 
 function CombinedDashboardView({
   pending, resubmit, allPlans, userCount, inProgress, approved, teams,
-  filter, setFilter, selectedTeamId, setSelectedTeamId, onOpenReview, onPlanUpdated
+  filter, setFilter, selectedTeamId, setSelectedTeamId, onOpenReview, onPlanUpdated, onPlanDeleted
 }: {
   pending: Plan[]
   resubmit: Plan[]
@@ -204,6 +211,7 @@ function CombinedDashboardView({
   setSelectedTeamId: (id: string | null) => void
   onOpenReview: (planId: string) => void
   onPlanUpdated: (updatedPlan: any) => void
+  onPlanDeleted: (planId: string) => void
 }) {
   const router = useRouter()
 
@@ -265,10 +273,12 @@ function CombinedDashboardView({
   })
   const needsReviewCount = filteredPlans.filter((p) => NEEDS_REVIEW.includes(p.status)).length
 
-  // 일괄 승인은 '검토 대기' 건만 대상
-  const reviewablePlans = sortedPlans.filter((p) => p.status === 'UNDER_REVIEW')
-  const allChecked = reviewablePlans.length > 0 && reviewablePlans.every((p) => selectedIds.has(p.id))
+  // 모든 건 선택 가능 (승인·재제출은 '검토 대기' 건만, 삭제는 전체에 적용)
+  const allChecked = sortedPlans.length > 0 && sortedPlans.every((p) => selectedIds.has(p.id))
   const selectedCount = selectedIds.size
+  const reviewableSelectedCount = allPlans.filter(
+    (p) => selectedIds.has(p.id) && p.status === 'UNDER_REVIEW',
+  ).length
 
   const toggleSelect = (planId: string) => {
     setSelectedIds((prev) => {
@@ -280,7 +290,7 @@ function CombinedDashboardView({
   }
 
   const toggleSelectAll = () => {
-    setSelectedIds(allChecked ? new Set() : new Set(reviewablePlans.map((p) => p.id)))
+    setSelectedIds(allChecked ? new Set() : new Set(sortedPlans.map((p) => p.id)))
   }
 
   async function handleBulk(action: 'approve' | 'resubmit') {
@@ -324,6 +334,31 @@ function CombinedDashboardView({
     setSelectedIds(new Set())
     router.refresh() // 서버 데이터 동기화는 백그라운드로
     if (failCount > 0) window.alert(`${failCount}건 ${label}에 실패했습니다. 새로고침 후 다시 시도해주세요.`)
+  }
+
+  async function handleBulkDelete() {
+    const targets = allPlans.filter((p) => selectedIds.has(p.id))
+    if (targets.length === 0) return
+    if (!window.confirm(`선택한 ${targets.length}건의 계획서를 삭제할까요?\n증빙·검토 이력도 함께 삭제되며 되돌릴 수 없습니다.`)) return
+
+    setBulkLoading(true)
+    let failCount = 0
+    for (const plan of targets) {
+      try {
+        const res = await fetch(`/api/admin/plans/${plan.id}`, { method: 'DELETE' })
+        if (!res.ok) {
+          failCount++
+          continue
+        }
+        onPlanDeleted(plan.id) // 응답 즉시 목록에서 제거
+      } catch {
+        failCount++
+      }
+    }
+    setBulkLoading(false)
+    setSelectedIds(new Set())
+    router.refresh() // 서버 데이터 동기화는 백그라운드로
+    if (failCount > 0) window.alert(`${failCount}건 삭제에 실패했습니다. 새로고침 후 다시 시도해주세요.`)
   }
 
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
@@ -479,30 +514,44 @@ function CombinedDashboardView({
             /* 일괄 검토 버튼: 검토 대기 건 선택 시 표시 */
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-bold text-primary-500 tabular-nums whitespace-nowrap">{selectedCount}건 선택</span>
+              {reviewableSelectedCount > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleBulk('approve')}
+                    disabled={bulkLoading}
+                    className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+                  >
+                    {bulkLoading ? (
+                      <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    )}
+                    승인
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleBulk('resubmit')}
+                    disabled={bulkLoading}
+                    className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    재제출 요구
+                  </button>
+                </>
+              )}
               <button
                 type="button"
-                onClick={() => handleBulk('approve')}
+                onClick={handleBulkDelete}
                 disabled={bulkLoading}
-                className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+                title="선택한 계획서 삭제 (증빙·검토 이력 포함)"
+                className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
               >
-                {bulkLoading ? (
-                  <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                )}
-                승인
-              </button>
-              <button
-                type="button"
-                onClick={() => handleBulk('resubmit')}
-                disabled={bulkLoading}
-                className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                재제출 요구
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                삭제
               </button>
               <button
                 type="button"
@@ -529,8 +578,8 @@ function CombinedDashboardView({
               type="checkbox"
               checked={allChecked}
               onChange={toggleSelectAll}
-              disabled={reviewablePlans.length === 0}
-              title="검토 대기 건 전체 선택 (일괄 승인)"
+              disabled={sortedPlans.length === 0}
+              title="표시된 계획서 전체 선택 (일괄 승인·재제출·삭제)"
               className="w-3.5 h-3.5 accent-primary-500 cursor-pointer disabled:cursor-default"
             />
           </span>
@@ -865,7 +914,6 @@ function PlanRow({ plan, teams, selected, onToggleSelect, onOpenReview }: {
 }) {
   const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
   const needsReview = plan.status === 'UNDER_REVIEW' || plan.status === 'RESUBMIT_REQUIRED'
-  const selectable = plan.status === 'UNDER_REVIEW'
   // 승인 전에는 제출된 실제 금액(lastSubmittedAmount), 승인 후에는 확정 실제 금액(actualAmount)
   const actual = plan.actualAmount ?? plan.lastSubmittedAmount ?? null
   const isConfirmed = plan.actualAmount !== null && plan.actualAmount !== undefined
@@ -873,16 +921,14 @@ function PlanRow({ plan, teams, selected, onToggleSelect, onOpenReview }: {
   return (
     <div className={`relative px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${PLAN_GRID} md:gap-3 text-sm transition-colors ${selected ? 'bg-primary-50/60 hover:bg-primary-50/80' : needsReview ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}>
       {needsReview && <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-400" aria-hidden="true" />}
-      <div className={`${selectable ? '' : 'hidden md:flex'} flex items-center`}>
-        {selectable && (
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={() => onToggleSelect(plan.id)}
-            title="일괄 승인 대상으로 선택"
-            className="w-3.5 h-3.5 accent-primary-500 cursor-pointer"
-          />
-        )}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={() => onToggleSelect(plan.id)}
+          title="일괄 승인·재제출·삭제 대상으로 선택"
+          className="w-3.5 h-3.5 accent-primary-500 cursor-pointer"
+        />
       </div>
       <div className="flex items-baseline gap-1.5 min-w-0">
         <span className="text-xs font-black text-primary-500 shrink-0">{team?.teamNumber || '-'}</span>
