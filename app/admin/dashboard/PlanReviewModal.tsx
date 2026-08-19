@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge, EvidenceStatusBadge } from '@/components/StatusBadge'
 import AdminReviewForm from '../plans/[id]/AdminReviewForm'
+import { lockBodyForModal, unlockBodyForModal } from '@/lib/modal-lock'
 
 interface Props {
   plan: any
@@ -12,20 +13,22 @@ interface Props {
   onClose: () => void
   // 검토 처리 성공 시 갱신된 계획서를 대시보드에 즉시 반영
   onReviewed: (updatedPlan: any) => void
+  // PDF 버튼: 페이지 이동 없이 인쇄 모달 열기
+  onOpenPrint: (planId: string) => void
 }
 
-export default function PlanReviewModal({ plan, team, onClose, onReviewed }: Props) {
-  // ESC로 닫기 + 배경 스크롤 잠금
+export default function PlanReviewModal({ plan, team, onClose, onReviewed, onOpenPrint }: Props) {
+  // ESC로 닫기 + 배경 스크롤 잠금 + navbar 블러 아티팩트 방지 플래그
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      // 위에 인쇄 모달이 떠 있으면 그쪽만 닫히도록 무시
+      if (e.key === 'Escape' && document.body.dataset.printPlan !== '1') onClose()
     }
     document.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    lockBodyForModal()
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
+      unlockBodyForModal()
     }
   }, [onClose])
 
@@ -57,16 +60,15 @@ export default function PlanReviewModal({ plan, team, onClose, onReviewed }: Pro
             <PlanStatusBadge status={plan.status} />
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <a
-              href={`/print/plans/${plan.id}?autoprint=1`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => onOpenPrint(plan.id)}
               title="계획서 PDF 다운로드"
               className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2 py-1.5 hover:bg-gray-50 hover:text-gray-700 transition-all"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
               PDF
-            </a>
+            </button>
             <Link
               href={`/admin/plans/${plan.id}`}
               title="검토 이력·서명 등 전체 상세 페이지"
