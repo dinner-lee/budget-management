@@ -520,7 +520,7 @@ function CombinedDashboardView({
                     type="button"
                     onClick={() => handleBulk('approve')}
                     disabled={bulkLoading}
-                    className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+                    className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-green-600 border border-green-200 bg-green-50/50 rounded-lg px-2.5 py-1.5 hover:bg-green-50 hover:border-green-500/30 hover:shadow-sm transition-all disabled:opacity-60"
                   >
                     {bulkLoading ? (
                       <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -536,7 +536,7 @@ function CombinedDashboardView({
                     type="button"
                     onClick={() => handleBulk('resubmit')}
                     disabled={bulkLoading}
-                    className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+                    className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-red-600 border border-red-200 bg-red-50/50 rounded-lg px-2.5 py-1.5 hover:bg-red-50 hover:border-red-500/30 hover:shadow-sm transition-all disabled:opacity-60"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                     재제출 요구
@@ -548,7 +548,7 @@ function CombinedDashboardView({
                 onClick={handleBulkDelete}
                 disabled={bulkLoading}
                 title="선택한 계획서 삭제 (증빙·검토 이력 포함)"
-                className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+                className="inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2.5 py-1.5 hover:bg-red-50 hover:text-red-600 hover:border-red-200 hover:shadow-sm transition-all disabled:opacity-60"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 삭제
