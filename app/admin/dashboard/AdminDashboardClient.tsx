@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
 import { PlanStatusBadge } from '@/components/StatusBadge'
 import UpcomingCardNotice from '@/components/UpcomingCardNotice'
+import PlanReviewModal from './PlanReviewModal'
 import Link from 'next/link'
 import {
   startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isToday, parseISO
@@ -46,8 +48,8 @@ interface Team {
   budgetLimits: BudgetLimit[]
 }
 
-// 전체 계획서 목록의 표 컬럼 (헤더/행 공유)
-const PLAN_GRID = 'md:grid-cols-[6rem_minmax(0,1fr)_5.5rem_5rem_5rem_11.5rem] lg:grid-cols-[6.5rem_minmax(0,1fr)_minmax(0,1fr)_6rem_6rem_5.5rem_5.5rem_12.5rem]'
+// 전체 계획서 목록의 표 컬럼 (헤더/행 공유) — 첫 열은 일괄 검토용 체크박스
+const PLAN_GRID = 'md:grid-cols-[1.25rem_6rem_minmax(0,1fr)_5.5rem_5rem_5rem_11.5rem] lg:grid-cols-[1.25rem_6.5rem_minmax(0,1fr)_minmax(0,1fr)_6rem_6rem_5.5rem_5.5rem_12.5rem]'
 
 type SortState = { key: string; dir: 'asc' | 'desc' } | null
 
@@ -104,14 +106,27 @@ export default function AdminDashboardClient({
   const [filter, setFilter] = useState<string | null>(null)
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
 
-  const pending = allPlans.filter((p) => p.status === 'UNDER_REVIEW')
-  const resubmit = allPlans.filter((p) => p.status === 'RESUBMIT_REQUIRED')
-  const approved = allPlans.filter((p) => p.status === 'APPROVED')
-  const inProgress = allPlans.filter((p) => p.status === 'PENDING_EVIDENCE')
+  // 검토 처리 직후 서버 재조회를 기다리지 않고 즉시 화면에 반영하기 위한 로컬 덮어쓰기
+  const [planOverrides, setPlanOverrides] = useState<Record<string, any>>({})
+  const plans = useMemo(
+    () => allPlans.map((p) => (planOverrides[p.id] ? { ...p, ...planOverrides[p.id] } : p)),
+    [allPlans, planOverrides],
+  )
+  const applyPlanUpdate = (updated: any) =>
+    setPlanOverrides((prev) => ({ ...prev, [updated.id]: updated }))
+
+  // 검토 모달: 페이지 이동 없이 팝업으로 검토
+  const [reviewPlanId, setReviewPlanId] = useState<string | null>(null)
+  const reviewPlan = reviewPlanId ? plans.find((p) => p.id === reviewPlanId) : null
+
+  const pending = plans.filter((p) => p.status === 'UNDER_REVIEW')
+  const resubmit = plans.filter((p) => p.status === 'RESUBMIT_REQUIRED')
+  const approved = plans.filter((p) => p.status === 'APPROVED')
+  const inProgress = plans.filter((p) => p.status === 'PENDING_EVIDENCE')
 
   return (
     <div className="space-y-6">
-      <UpcomingCardNotice plans={allPlans} teams={teams} />
+      <UpcomingCardNotice plans={plans} teams={teams} />
       <div className="inline-flex items-center gap-1 glass-track rounded-xl p-1">
         {([
           { key: 'DASHBOARD', label: '팀별', title: '대시보드', icon: 'M4 6h16M4 12h16M4 18h16' },
@@ -138,7 +153,7 @@ export default function AdminDashboardClient({
         <CombinedDashboardView
           pending={pending}
           resubmit={resubmit}
-          allPlans={allPlans}
+          allPlans={plans}
           userCount={userCount}
           inProgress={inProgress}
           approved={approved}
@@ -147,15 +162,26 @@ export default function AdminDashboardClient({
           setFilter={setFilter}
           selectedTeamId={selectedTeamId}
           setSelectedTeamId={setSelectedTeamId}
+          onOpenReview={setReviewPlanId}
+          onPlanUpdated={applyPlanUpdate}
         />
       )}
 
       {view === 'BUDGET' && (
-        <BudgetView teams={teams} allPlans={allPlans} />
+        <BudgetView teams={teams} allPlans={plans} />
       )}
 
       {view === 'CALENDAR' && (
-        <CalendarView allPlans={allPlans} teams={teams} milestones={milestones} />
+        <CalendarView allPlans={plans} teams={teams} milestones={milestones} />
+      )}
+
+      {reviewPlan && (
+        <PlanReviewModal
+          plan={reviewPlan}
+          team={teams.find((t) => t.id === (reviewPlan.teamId || reviewPlan.user?.teamId))}
+          onClose={() => setReviewPlanId(null)}
+          onReviewed={applyPlanUpdate}
+        />
       )}
     </div>
   )
@@ -163,7 +189,7 @@ export default function AdminDashboardClient({
 
 function CombinedDashboardView({
   pending, resubmit, allPlans, userCount, inProgress, approved, teams,
-  filter, setFilter, selectedTeamId, setSelectedTeamId
+  filter, setFilter, selectedTeamId, setSelectedTeamId, onOpenReview, onPlanUpdated
 }: {
   pending: Plan[]
   resubmit: Plan[]
@@ -176,7 +202,16 @@ function CombinedDashboardView({
   setFilter: (f: string | null) => void
   selectedTeamId: string | null
   setSelectedTeamId: (id: string | null) => void
+  onOpenReview: (planId: string) => void
+  onPlanUpdated: (updatedPlan: any) => void
 }) {
+  const router = useRouter()
+
+  // 일괄 검토(승인) 대상 선택
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkNote, setBulkNote] = useState('')
+  const [bulkLoading, setBulkLoading] = useState(false)
+
   const stats = [
     { label: '검토 대기', value: pending.length, color: 'text-primary-500', dot: 'bg-primary-500', ring: 'ring-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
     { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', dot: 'bg-red-600', ring: 'ring-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
@@ -229,6 +264,58 @@ function CombinedDashboardView({
     return sort.dir === 'asc' ? cmp : -cmp
   })
   const needsReviewCount = filteredPlans.filter((p) => NEEDS_REVIEW.includes(p.status)).length
+
+  // 일괄 승인은 '검토 대기' 건만 대상
+  const reviewablePlans = sortedPlans.filter((p) => p.status === 'UNDER_REVIEW')
+  const allChecked = reviewablePlans.length > 0 && reviewablePlans.every((p) => selectedIds.has(p.id))
+  const selectedCount = selectedIds.size
+
+  const toggleSelect = (planId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(planId)) next.delete(planId)
+      else next.add(planId)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    setSelectedIds(allChecked ? new Set() : new Set(reviewablePlans.map((p) => p.id)))
+  }
+
+  async function handleBulkApprove() {
+    // 필터가 바뀌었어도 실제 검토 대기 상태인 건만 처리
+    const ids = Array.from(selectedIds).filter((id) =>
+      allPlans.some((p) => p.id === id && p.status === 'UNDER_REVIEW'),
+    )
+    if (ids.length === 0) return
+    if (!window.confirm(`선택한 ${ids.length}건을 일괄 승인할까요?`)) return
+
+    setBulkLoading(true)
+    let failCount = 0
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/admin/plans/${id}/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'approve', note: bulkNote, resubmitItems: [] }),
+        })
+        if (!res.ok) {
+          failCount++
+          continue
+        }
+        const data = await res.json()
+        if (data.plan) onPlanUpdated(data.plan) // 응답 즉시 화면 반영
+      } catch {
+        failCount++
+      }
+    }
+    setBulkLoading(false)
+    setSelectedIds(new Set())
+    setBulkNote('')
+    router.refresh() // 서버 데이터 동기화는 백그라운드로
+    if (failCount > 0) window.alert(`${failCount}건 승인에 실패했습니다. 새로고침 후 다시 시도해주세요.`)
+  }
 
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
 
@@ -371,6 +458,47 @@ function CombinedDashboardView({
         </div>
       )}
 
+      {/* 일괄 승인 바: 검토 대기 건을 선택하면 표시 */}
+      {selectedCount > 0 && (
+        <div className="card px-4 py-3 flex flex-wrap items-center gap-3 ring-1 ring-primary-500/30 bg-primary-50/60 animate-in fade-in slide-in-from-top-1 duration-200">
+          <span className="text-sm font-bold text-primary-500 tabular-nums shrink-0">{selectedCount}건 선택됨</span>
+          <input
+            type="text"
+            className="input flex-1 min-w-[10rem] py-1.5 text-xs"
+            placeholder="일괄 승인 메모 (선택, 모든 건에 동일하게 기록)"
+            value={bulkNote}
+            onChange={(e) => setBulkNote(e.target.value)}
+            disabled={bulkLoading}
+          />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleBulkApprove}
+              disabled={bulkLoading}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg px-3 py-2 shadow-sm transition-colors disabled:opacity-60"
+            >
+              {bulkLoading ? (
+                <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+              )}
+              {bulkLoading ? '처리 중...' : '일괄 승인'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              disabled={bulkLoading}
+              className="whitespace-nowrap text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2.5 py-2 hover:bg-gray-50 transition-colors disabled:opacity-60"
+            >
+              선택 해제
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 통합 계획서 리스트: 검토 필요 건이 맨 위 */}
       <div className="card">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -387,6 +515,16 @@ function CombinedDashboardView({
           )}
         </div>
         <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
+          <span className="flex items-center">
+            <input
+              type="checkbox"
+              checked={allChecked}
+              onChange={toggleSelectAll}
+              disabled={reviewablePlans.length === 0}
+              title="검토 대기 건 전체 선택 (일괄 승인)"
+              className="w-3.5 h-3.5 accent-primary-500 cursor-pointer disabled:cursor-default"
+            />
+          </span>
           <SortHeader label="팀 / 대표자" sortKey="team" sort={sort} onToggle={toggleSort} />
           <SortHeader label="사용 항목" sortKey="purpose" sort={sort} onToggle={toggleSort} />
           <SortHeader label="제출자" sortKey="uploader" sort={sort} onToggle={toggleSort} className="hidden lg:flex" />
@@ -400,7 +538,16 @@ function CombinedDashboardView({
           {sortedPlans.length === 0 ? (
             <p className="px-5 py-12 text-center text-gray-400 text-sm">해당하는 계획서가 없습니다.</p>
           ) : (
-            sortedPlans.map((plan: Plan) => <PlanRow key={plan.id} plan={plan} teams={teams} />)
+            sortedPlans.map((plan: Plan) => (
+              <PlanRow
+                key={plan.id}
+                plan={plan}
+                teams={teams}
+                selected={selectedIds.has(plan.id)}
+                onToggleSelect={toggleSelect}
+                onOpenReview={onOpenReview}
+              />
+            ))
           )}
         </div>
       </div>
@@ -412,8 +559,8 @@ function BudgetView({ teams, allPlans }: any) {
   const TEAM_BUDGET = 2000000 // 팀당 총 예산 200만 원
   const purposes = Object.keys(PURPOSE_LABELS) as Array<keyof typeof PURPOSE_LABELS>
 
-  // Build per-team data
-  const teamData = teams.map((team: Team) => {
+  // Build per-team data (팀 번호순)
+  const teamData = sortByTeamNumber(teams as Team[]).map((team: Team) => {
     const teamPlans = allPlans.filter((p: Plan) => (p.teamId || p.user?.teamId) === team.id)
 
     const byPurpose: Record<string, { planned: number; actual: number; hasPlan: boolean }> = {}
@@ -461,82 +608,90 @@ function BudgetView({ teams, allPlans }: any) {
         <h2 className="text-sm font-semibold text-gray-900">팀별 예산 현황</h2>
         <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률 (팀당 예산 {TEAM_BUDGET.toLocaleString()}원 기준)</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs tabular-nums">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10 min-w-[80px]">팀</th>
-              {purposes.map(p => (
-                <th key={p} className="text-right px-3 py-3 font-semibold text-gray-700 whitespace-nowrap min-w-[100px]">
-                  {PURPOSE_LABELS[p]}
-                </th>
-              ))}
-              <th className="text-right px-4 py-3 font-bold text-gray-900 whitespace-nowrap min-w-[110px] border-l border-gray-200">합계</th>
-              <th className="text-center px-4 py-3 font-bold text-gray-900 whitespace-nowrap min-w-[70px]">집행률</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {teamData.map((td: any) => {
-              const rate = Math.round((td.totalActual / TEAM_BUDGET) * 100)
-              return (
-                <tr key={td.team.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900 sticky left-0 bg-white z-10">
-                    {td.team.teamNumber}
-                  </td>
-                  {purposes.map(p => (
-                    <td key={p} className="text-right px-3 py-3">
-                      <div className="text-gray-700">{td.byPurpose[p].planned > 0 ? td.byPurpose[p].planned.toLocaleString() : '-'}</div>
-                      {(td.byPurpose[p].actual > 0 || td.byPurpose[p].planned > 0 || td.byPurpose[p].hasPlan) && (
-                        <div className="text-green-600 font-medium">{td.byPurpose[p].actual.toLocaleString()}</div>
-                      )}
-                    </td>
-                  ))}
-                  <td className="text-right px-4 py-3 border-l border-gray-100">
-                    <div className="font-semibold text-gray-900">{td.totalPlanned.toLocaleString()}</div>
-                    {(td.totalActual > 0 || td.totalPlanned > 0) && (
-                      <div className="font-semibold text-green-600">{td.totalActual.toLocaleString()}</div>
+      {/* 좌우 스크롤 없이 화면 폭에 맞춰 배치 (table-fixed + 컴팩트 패딩) */}
+      <table className="w-full table-fixed text-[11px] tabular-nums">
+        <colgroup>
+          <col className="w-9" />
+          <col className="w-16" />
+          {purposes.map(p => <col key={p} />)}
+          <col />
+          <col className="w-14" />
+        </colgroup>
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-200">
+            <th className="text-left px-2 py-2.5 font-semibold text-gray-700">팀</th>
+            <th className="text-left px-2 py-2.5 font-semibold text-gray-700">대표자</th>
+            {purposes.map(p => (
+              <th key={p} className="text-right px-2 py-2.5 font-semibold text-gray-700 break-keep leading-tight">
+                {PURPOSE_LABELS[p]}
+              </th>
+            ))}
+            <th className="text-right px-2 py-2.5 font-bold text-gray-900 border-l border-gray-200">합계</th>
+            <th className="text-center px-2 py-2.5 font-bold text-gray-900">집행률</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {teamData.map((td: any) => {
+            const rate = Math.round((td.totalActual / TEAM_BUDGET) * 100)
+            return (
+              <tr key={td.team.id} className="hover:bg-gray-50/50 transition-colors">
+                <td className="px-2 py-2.5 font-black text-primary-500">{td.team.teamNumber}</td>
+                <td className="px-2 py-2.5 font-medium text-gray-900 truncate" title={td.team.leaderName}>
+                  {td.team.leaderName}
+                </td>
+                {purposes.map(p => (
+                  <td key={p} className="text-right px-2 py-2.5">
+                    <div className="text-gray-700 whitespace-nowrap">{td.byPurpose[p].planned > 0 ? td.byPurpose[p].planned.toLocaleString() : '-'}</div>
+                    {(td.byPurpose[p].actual > 0 || td.byPurpose[p].planned > 0 || td.byPurpose[p].hasPlan) && (
+                      <div className="text-green-600 font-medium whitespace-nowrap">{td.byPurpose[p].actual.toLocaleString()}</div>
                     )}
                   </td>
-                  <td className="text-center px-4 py-3">
-                    <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(rate)}`}>
-                      {pct(td.totalActual, TEAM_BUDGET)}
-                    </span>
-                  </td>
-                </tr>
+                ))}
+                <td className="text-right px-2 py-2.5 border-l border-gray-100">
+                  <div className="font-semibold text-gray-900 whitespace-nowrap">{td.totalPlanned.toLocaleString()}</div>
+                  {(td.totalActual > 0 || td.totalPlanned > 0) && (
+                    <div className="font-semibold text-green-600 whitespace-nowrap">{td.totalActual.toLocaleString()}</div>
+                  )}
+                </td>
+                <td className="text-center px-1 py-2.5">
+                  <span className={`inline-block px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${pctColor(rate)}`}>
+                    {pct(td.totalActual, TEAM_BUDGET)}
+                  </span>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+        <tfoot>
+          <tr className="bg-gray-50 border-t-2 border-gray-300 font-semibold">
+            <td colSpan={2} className="px-2 py-2.5 text-gray-900">전체 합계</td>
+            {purposes.map(p => {
+              const pPlanned = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].planned, 0)
+              const pActual = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].actual, 0)
+              const pHasPlan = teamData.some((t: any) => t.byPurpose[p].hasPlan)
+              return (
+                <td key={p} className="text-right px-2 py-2.5">
+                  <div className="text-gray-900 whitespace-nowrap">{pPlanned > 0 ? pPlanned.toLocaleString() : '-'}</div>
+                  {(pActual > 0 || pPlanned > 0 || pHasPlan) && (
+                    <div className="text-green-600 whitespace-nowrap">{pActual.toLocaleString()}</div>
+                  )}
+                </td>
               )
             })}
-          </tbody>
-          <tfoot>
-            <tr className="bg-gray-50 border-t-2 border-gray-300 font-semibold">
-              <td className="px-4 py-3 text-gray-900 sticky left-0 bg-gray-50 z-10">전체 합계</td>
-              {purposes.map(p => {
-                const pPlanned = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].planned, 0)
-                const pActual = teamData.reduce((s: number, t: any) => s + t.byPurpose[p].actual, 0)
-                const pHasPlan = teamData.some((t: any) => t.byPurpose[p].hasPlan)
-                return (
-                  <td key={p} className="text-right px-3 py-3">
-                    <div className="text-gray-900">{pPlanned > 0 ? pPlanned.toLocaleString() : '-'}</div>
-                    {(pActual > 0 || pPlanned > 0 || pHasPlan) && (
-                      <div className="text-green-600">{pActual.toLocaleString()}</div>
-                    )}
-                  </td>
-                )
-              })}
-              <td className="text-right px-4 py-3 border-l border-gray-200">
-                <div className="text-gray-900">{grandPlanned.toLocaleString()}</div>
-                {(grandActual > 0 || grandPlanned > 0) && (
-                  <div className="text-green-600">{grandActual.toLocaleString()}</div>
-                )}
-              </td>
-              <td className="text-center px-4 py-3">
-                <span className={`inline-block px-2 py-0.5 rounded-full font-semibold ${pctColor(grandTotalBudget > 0 ? Math.round((grandActual / grandTotalBudget) * 100) : 0)}`}>
-                  {pct(grandActual, grandTotalBudget)}
-                </span>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+            <td className="text-right px-2 py-2.5 border-l border-gray-200">
+              <div className="text-gray-900 whitespace-nowrap">{grandPlanned.toLocaleString()}</div>
+              {(grandActual > 0 || grandPlanned > 0) && (
+                <div className="text-green-600 whitespace-nowrap">{grandActual.toLocaleString()}</div>
+              )}
+            </td>
+            <td className="text-center px-1 py-2.5">
+              <span className={`inline-block px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${pctColor(grandTotalBudget > 0 ? Math.round((grandActual / grandTotalBudget) * 100) : 0)}`}>
+                {pct(grandActual, grandTotalBudget)}
+              </span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
       <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-xs text-gray-500">
         <span>상단: 계획 금액</span>
         <span className="text-green-600 font-medium">하단: 실제 사용 금액</span>
@@ -678,16 +833,34 @@ function CalendarView({ allPlans, teams, milestones }: any) {
   )
 }
 
-function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
+function PlanRow({ plan, teams, selected, onToggleSelect, onOpenReview }: {
+  plan: any
+  teams: any[]
+  selected: boolean
+  onToggleSelect: (planId: string) => void
+  onOpenReview: (planId: string) => void
+}) {
   const team = teams.find(t => t.id === (plan.teamId || plan.user?.teamId))
   const needsReview = plan.status === 'UNDER_REVIEW' || plan.status === 'RESUBMIT_REQUIRED'
+  const selectable = plan.status === 'UNDER_REVIEW'
   // 승인 전에는 제출된 실제 금액(lastSubmittedAmount), 승인 후에는 확정 실제 금액(actualAmount)
   const actual = plan.actualAmount ?? plan.lastSubmittedAmount ?? null
   const isConfirmed = plan.actualAmount !== null && plan.actualAmount !== undefined
 
   return (
-    <div className={`relative px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${PLAN_GRID} md:gap-3 text-sm transition-colors ${needsReview ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}>
+    <div className={`relative px-5 py-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 md:grid ${PLAN_GRID} md:gap-3 text-sm transition-colors ${selected ? 'bg-primary-50/60 hover:bg-primary-50/80' : needsReview ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'}`}>
       {needsReview && <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-400" aria-hidden="true" />}
+      <div className={`${selectable ? '' : 'hidden md:flex'} flex items-center`}>
+        {selectable && (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect(plan.id)}
+            title="일괄 승인 대상으로 선택"
+            className="w-3.5 h-3.5 accent-primary-500 cursor-pointer"
+          />
+        )}
+      </div>
       <div className="flex items-baseline gap-1.5 min-w-0">
         <span className="text-xs font-black text-primary-500 shrink-0">{team?.teamNumber || '-'}</span>
         <span className="font-medium text-gray-900 truncate">{team?.leaderName || '알 수 없음'}</span>
@@ -716,8 +889,9 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
           PDF
         </a>
-        <Link
-          href={`/admin/plans/${plan.id}`}
+        <button
+          type="button"
+          onClick={() => onOpenReview(plan.id)}
           className={`inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-all hover:shadow-sm ${
             needsReview
               ? 'text-primary-500 border-primary-100 bg-primary-50/50 hover:bg-primary-50 hover:border-primary-500/30'
@@ -726,7 +900,7 @@ function PlanRow({ plan, teams }: { plan: any; teams: any[] }) {
         >
           {needsReview ? '검토' : '상세'}
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-        </Link>
+        </button>
       </div>
     </div>
   )

@@ -12,9 +12,13 @@ interface EvidenceSummary {
 interface Props {
   planId: string
   evidences: EvidenceSummary[]
+  // 모달 등 카드 외부 컨테이너에 삽입할 때 true
+  bare?: boolean
+  // 성공 시 갱신된 계획서를 전달 (모달에서 낙관적 갱신에 사용)
+  onSuccess?: (updatedPlan?: any) => void
 }
 
-export default function AdminReviewForm({ planId, evidences }: Props) {
+export default function AdminReviewForm({ planId, evidences, bare = false, onSuccess }: Props) {
   const router = useRouter()
   const [action, setAction] = useState<'approve' | 'resubmit'>('approve')
   const [note, setNote] = useState('')
@@ -61,11 +65,13 @@ export default function AdminReviewForm({ planId, evidences }: Props) {
       return
     }
 
+    // 갱신 결과를 먼저 화면에 반영하고, 서버 데이터 동기화는 백그라운드로 진행
+    onSuccess?.(data.plan)
     router.refresh()
   }
 
   return (
-    <div className="card p-5">
+    <div className={bare ? '' : 'card p-5'}>
       <h2 className="text-sm font-semibold text-gray-700 mb-4">검토 결정</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">

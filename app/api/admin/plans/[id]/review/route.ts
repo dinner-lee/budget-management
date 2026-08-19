@@ -106,5 +106,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: '올바르지 않은 action입니다.' }, { status: 400 })
   }
 
-  return NextResponse.json({ success: true })
+  // 갱신된 계획서를 돌려주어 클라이언트가 전체 재조회 없이 즉시 화면에 반영할 수 있게 함
+  const updated = await prisma.budgetPlan.findUnique({
+    where: { id: params.id },
+    include: {
+      user: { select: { name: true, email: true, teamId: true } },
+      evidences: true,
+    },
+  })
+  if (!updated) return NextResponse.json({ success: true })
+  const { signature: _signature, ...planOut } = updated
+  return NextResponse.json({ success: true, plan: planOut })
 }
