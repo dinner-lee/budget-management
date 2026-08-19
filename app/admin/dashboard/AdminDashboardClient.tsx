@@ -207,9 +207,8 @@ function CombinedDashboardView({
 }) {
   const router = useRouter()
 
-  // 일괄 검토(승인) 대상 선택
+  // 일괄 검토(승인·재제출) 대상 선택
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [bulkNote, setBulkNote] = useState('')
   const [bulkLoading, setBulkLoading] = useState(false)
 
   const stats = [
@@ -284,22 +283,32 @@ function CombinedDashboardView({
     setSelectedIds(allChecked ? new Set() : new Set(reviewablePlans.map((p) => p.id)))
   }
 
-  async function handleBulkApprove() {
+  async function handleBulk(action: 'approve' | 'resubmit') {
     // 필터가 바뀌었어도 실제 검토 대기 상태인 건만 처리
-    const ids = Array.from(selectedIds).filter((id) =>
-      allPlans.some((p) => p.id === id && p.status === 'UNDER_REVIEW'),
-    )
-    if (ids.length === 0) return
-    if (!window.confirm(`선택한 ${ids.length}건을 일괄 승인할까요?`)) return
+    const targets = allPlans.filter((p) => selectedIds.has(p.id) && p.status === 'UNDER_REVIEW')
+    if (targets.length === 0) return
+    const label = action === 'approve' ? '승인' : '재제출 요구'
+    if (!window.confirm(`선택한 ${targets.length}건을 일괄 ${label}할까요?`)) return
 
     setBulkLoading(true)
     let failCount = 0
-    for (const id of ids) {
+    for (const plan of targets) {
+      // 일괄 재제출은 제출된 증빙 전체를 재제출 대상으로 지정
+      const resubmitItems =
+        action === 'resubmit'
+          ? (plan.evidences ?? [])
+              .filter((e) => e.status === 'SUBMITTED')
+              .map((e) => ({ evidenceId: e.id, note: '재제출이 필요합니다.' }))
+          : []
+      if (action === 'resubmit' && resubmitItems.length === 0) {
+        failCount++
+        continue
+      }
       try {
-        const res = await fetch(`/api/admin/plans/${id}/review`, {
+        const res = await fetch(`/api/admin/plans/${plan.id}/review`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'approve', note: bulkNote, resubmitItems: [] }),
+          body: JSON.stringify({ action, note: '', resubmitItems }),
         })
         if (!res.ok) {
           failCount++
@@ -313,9 +322,8 @@ function CombinedDashboardView({
     }
     setBulkLoading(false)
     setSelectedIds(new Set())
-    setBulkNote('')
     router.refresh() // 서버 데이터 동기화는 백그라운드로
-    if (failCount > 0) window.alert(`${failCount}건 승인에 실패했습니다. 새로고침 후 다시 시도해주세요.`)
+    if (failCount > 0) window.alert(`${failCount}건 ${label}에 실패했습니다. 새로고침 후 다시 시도해주세요.`)
   }
 
   const currentFilterLabel = stats.find(s => s.status === filter)?.label
@@ -459,47 +467,6 @@ function CombinedDashboardView({
         </div>
       )}
 
-      {/* 일괄 승인 바: 검토 대기 건을 선택하면 표시 */}
-      {selectedCount > 0 && (
-        <div className="card px-4 py-3 flex flex-wrap items-center gap-3 ring-1 ring-primary-500/30 bg-primary-50/60 animate-in fade-in slide-in-from-top-1 duration-200">
-          <span className="text-sm font-bold text-primary-500 tabular-nums shrink-0">{selectedCount}건 선택됨</span>
-          <input
-            type="text"
-            className="input flex-1 min-w-[10rem] py-1.5 text-xs"
-            placeholder="일괄 승인 메모 (선택, 모든 건에 동일하게 기록)"
-            value={bulkNote}
-            onChange={(e) => setBulkNote(e.target.value)}
-            disabled={bulkLoading}
-          />
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={handleBulkApprove}
-              disabled={bulkLoading}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg px-3 py-2 shadow-sm transition-colors disabled:opacity-60"
-            >
-              {bulkLoading ? (
-                <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              )}
-              {bulkLoading ? '처리 중...' : '일괄 승인'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedIds(new Set())}
-              disabled={bulkLoading}
-              className="whitespace-nowrap text-xs font-medium text-gray-500 border border-gray-200 bg-white rounded-lg px-2.5 py-2 hover:bg-gray-50 transition-colors disabled:opacity-60"
-            >
-              선택 해제
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* 통합 계획서 리스트: 검토 필요 건이 맨 위 */}
       <div className="card">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -508,11 +475,52 @@ function CombinedDashboardView({
             {filter ? ` (${currentFilterLabel})` : ''}
             <span className="ml-2 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
           </h2>
-          {!filter && needsReviewCount > 0 && (
-            <span className="font-nexon inline-flex items-center gap-1.5 text-[11px] font-normal text-red-600 bg-red-50 border border-red-100 rounded-full px-2.5 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              검토 필요 {needsReviewCount}건
-            </span>
+          {selectedCount > 0 ? (
+            /* 일괄 검토 버튼: 검토 대기 건 선택 시 표시 */
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-primary-500 tabular-nums whitespace-nowrap">{selectedCount}건 선택</span>
+              <button
+                type="button"
+                onClick={() => handleBulk('approve')}
+                disabled={bulkLoading}
+                className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+              >
+                {bulkLoading ? (
+                  <svg className="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                )}
+                승인
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulk('resubmit')}
+                disabled={bulkLoading}
+                className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg px-2.5 py-1.5 shadow-sm transition-colors disabled:opacity-60"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                재제출 요구
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                disabled={bulkLoading}
+                title="선택 해제"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-60"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          ) : (
+            !filter && needsReviewCount > 0 && (
+              <span className="font-nexon inline-flex items-center gap-1.5 text-[11px] font-normal text-red-600 bg-red-50 border border-red-100 rounded-full px-2.5 py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                검토 필요 {needsReviewCount}건
+              </span>
+            )
           )}
         </div>
         <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
