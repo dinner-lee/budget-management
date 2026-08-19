@@ -241,7 +241,8 @@ function CombinedDashboardView({
       case 'planned': return p.amount ?? 0
       case 'actual': return p.actualAmount ?? p.lastSubmittedAmount ?? -1
       case 'usedAt': return new Date(p.plannedDate).getTime()
-      case 'processedAt': return new Date(p.updatedAt).getTime()
+      // 처리일 = 마지막 검토일. 미처리 건은 맨 앞(오름차순 기준)으로
+      case 'processedAt': return p.reviews?.[0]?.createdAt ? new Date(p.reviews[0].createdAt).getTime() : 0
       default: return 0
     }
   }
@@ -532,7 +533,21 @@ function CombinedDashboardView({
           <SortHeader label="실제 금액" sortKey="actual" sort={sort} onToggle={toggleSort} align="right" />
           <SortHeader label="사용일" sortKey="usedAt" sort={sort} onToggle={toggleSort} />
           <SortHeader label="처리일" sortKey="processedAt" sort={sort} onToggle={toggleSort} />
-          <span className="text-right">상태 / 작업</span>
+          <div className="flex items-center justify-end">
+            <select
+              value={filter ?? ''}
+              onChange={(e) => setFilter(e.target.value || null)}
+              title="상태별 필터"
+              className={`text-[11px] font-semibold bg-transparent border rounded-md px-1 py-0.5 cursor-pointer transition-colors focus:outline-none focus:ring-1 focus:ring-primary-500/40 ${
+                filter ? 'text-primary-500 border-primary-100' : 'text-gray-400 border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <option value="">상태: 전체</option>
+              {stats.map((s) => (
+                <option key={s.status} value={s.status}>{s.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="divide-y divide-gray-100">
           {sortedPlans.length === 0 ? (
@@ -874,8 +889,8 @@ function PlanRow({ plan, teams, selected, onToggleSelect, onOpenReview }: {
         {actual !== null ? `${actual.toLocaleString()}원` : '–'}
       </div>
       <div className="text-xs text-gray-500 tabular-nums">{new Date(plan.plannedDate).toLocaleDateString('ko-KR')}</div>
-      <div className="text-xs text-gray-400 tabular-nums" title="마지막 처리(상태 변경) 일자">
-        {new Date(plan.updatedAt).toLocaleDateString('ko-KR')}
+      <div className="text-xs text-gray-400 tabular-nums" title="검토(승인·재제출 요구) 처리 일자">
+        {plan.reviews?.[0]?.createdAt ? new Date(plan.reviews[0].createdAt).toLocaleDateString('ko-KR') : ''}
       </div>
       <div className="flex items-center gap-1.5 md:justify-end w-full md:w-auto">
         <PlanStatusBadge status={plan.status} />

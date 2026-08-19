@@ -112,6 +112,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     include: {
       user: { select: { name: true, email: true, teamId: true } },
       evidences: true,
+      reviews: { select: { createdAt: true }, orderBy: { createdAt: 'desc' }, take: 1 },
     },
   })
   if (!updated) return NextResponse.json({ success: true })

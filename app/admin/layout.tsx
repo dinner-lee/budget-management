@@ -15,6 +15,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       include: {
         user: { select: { name: true, email: true, teamId: true } },
         evidences: true,
+        // 처리일(마지막 검토일) 표시용 — 최신 검토 1건만
+        reviews: { select: { createdAt: true }, orderBy: { createdAt: 'desc' }, take: 1 },
       },
       orderBy: { updatedAt: 'desc' },
     }),
