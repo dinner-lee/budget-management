@@ -133,33 +133,67 @@ export default function AdminDashboardClient({
   const approved = plans.filter((p) => p.status === 'APPROVED')
   const inProgress = plans.filter((p) => p.status === 'PENDING_EVIDENCE')
 
+  const stats = [
+    { label: '검토 대기', value: pending.length, color: 'text-primary-500', dot: 'bg-primary-500', ring: 'ring-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
+    { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', dot: 'bg-red-600', ring: 'ring-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
+    { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600', dot: 'bg-yellow-600', ring: 'ring-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', status: 'PENDING_EVIDENCE' },
+    { label: '승인 완료', value: approved.length, color: 'text-green-600', dot: 'bg-green-600', ring: 'ring-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
+  ]
+
   return (
     <div className="space-y-6">
       <UpcomingCardNotice plans={plans} teams={teams} />
-      <div className="inline-flex items-center gap-1 glass-track rounded-xl p-1">
-        {([
-          { key: 'DASHBOARD', label: '팀별', title: '대시보드', icon: 'M4 6h16M4 12h16M4 18h16' },
-          { key: 'BUDGET', label: '전체', title: '예산 현황', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
-          { key: 'CALENDAR', label: '캘린더', title: '캘린더 보기', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-        ] as const).map((tab) => (
-          <button
-            key={tab.key}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-              view === tab.key
-                ? 'bg-white text-primary-500 shadow-sm ring-1 ring-black/5'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-            onClick={() => setView(tab.key)}
-            title={tab.title}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} /></svg>
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
+      {/* 뷰 전환 탭 + 상태 필터 칩 (같은 줄, 칩은 우측 정렬 · 탭 버튼과 동일한 36px 높이) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="inline-flex items-center gap-1 glass-track rounded-xl p-1">
+          {([
+            { key: 'DASHBOARD', label: '팀별', title: '대시보드', icon: 'M4 6h16M4 12h16M4 18h16' },
+            { key: 'BUDGET', label: '전체', title: '예산 현황', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+            { key: 'CALENDAR', label: '캘린더', title: '캘린더 보기', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+          ] as const).map((tab) => (
+            <button
+              key={tab.key}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                view === tab.key
+                  ? 'bg-white text-primary-500 shadow-sm ring-1 ring-black/5'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+              onClick={() => setView(tab.key)}
+              title={tab.title}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} /></svg>
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+        {view === 'DASHBOARD' && (
+          <div className="flex flex-wrap items-center gap-2">
+            {stats.map((s) => {
+              const active = filter === s.status
+              return (
+                <button
+                  key={s.status}
+                  type="button"
+                  onClick={() => setFilter(active ? null : s.status)}
+                  className={`inline-flex items-center gap-1.5 h-9 rounded-full border px-3 text-sm font-medium transition-all ${
+                    active
+                      ? `${s.bg} ${s.border} ${s.color} ring-1 ${s.ring} shadow-sm`
+                      : 'bg-white/70 backdrop-blur-md border-white/70 text-gray-600 shadow-sm hover:border-gray-300 hover:-translate-y-px'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${s.dot}`} />
+                  {s.label}
+                  <span className={`text-sm font-black tabular-nums ${s.color}`}>{s.value}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {view === 'DASHBOARD' && (
         <CombinedDashboardView
+          stats={stats}
           pending={pending}
           resubmit={resubmit}
           allPlans={plans}
@@ -208,9 +242,10 @@ export default function AdminDashboardClient({
 }
 
 function CombinedDashboardView({
-  pending, resubmit, allPlans, userCount, inProgress, approved, teams,
+  stats, pending, resubmit, allPlans, userCount, inProgress, approved, teams,
   filter, setFilter, selectedTeamId, setSelectedTeamId, onOpenReview, onOpenPrint, onPlanUpdated, onPlanDeleted
 }: {
+  stats: { label: string; value: number; color: string; dot: string; ring: string; bg: string; border: string; status: string }[]
   pending: Plan[]
   resubmit: Plan[]
   allPlans: Plan[]
@@ -232,13 +267,6 @@ function CombinedDashboardView({
   // 일괄 검토(승인·재제출) 대상 선택
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = useState(false)
-
-  const stats = [
-    { label: '검토 대기', value: pending.length, color: 'text-primary-500', dot: 'bg-primary-500', ring: 'ring-primary-500', bg: 'bg-primary-50', border: 'border-primary-100', status: 'UNDER_REVIEW' },
-    { label: '재제출 대기', value: resubmit.length, color: 'text-red-600', dot: 'bg-red-600', ring: 'ring-red-600', bg: 'bg-red-50', border: 'border-red-200', status: 'RESUBMIT_REQUIRED' },
-    { label: '증빙 작성 중', value: inProgress.length, color: 'text-yellow-600', dot: 'bg-yellow-600', ring: 'ring-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', status: 'PENDING_EVIDENCE' },
-    { label: '승인 완료', value: approved.length, color: 'text-green-600', dot: 'bg-green-600', ring: 'ring-green-600', bg: 'bg-green-50', border: 'border-green-200', status: 'APPROVED' },
-  ]
 
   const selectedTeam = teams.find((t: any) => t.id === selectedTeamId)
 
@@ -382,29 +410,6 @@ function CombinedDashboardView({
 
   return (
     <div className="space-y-4">
-      {/* 상태 필터 칩 */}
-      <div className="flex flex-wrap gap-2">
-        {stats.map((s) => {
-          const active = filter === s.status
-          return (
-            <button
-              key={s.status}
-              type="button"
-              onClick={() => setFilter(active ? null : s.status)}
-              className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all ${
-                active
-                  ? `${s.bg} ${s.border} ${s.color} ring-1 ${s.ring} shadow-sm`
-                  : 'bg-white/70 backdrop-blur-md border-white/70 text-gray-600 shadow-sm hover:border-gray-300 hover:-translate-y-px'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${s.dot}`} />
-              {s.label}
-              <span className={`text-base font-black tabular-nums ${s.color}`}>{s.value}</span>
-            </button>
-          )
-        })}
-      </div>
-
       {/* 팀 필터 칩 */}
       <div className="flex flex-wrap items-center gap-1.5">
         <button
