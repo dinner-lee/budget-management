@@ -52,7 +52,7 @@ export default function PlanReviewModal({ plan, team, onClose, onReviewed, onOpe
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-xl max-h-[88vh] flex flex-col rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+        className="relative w-full max-w-[850px] max-h-[92vh] flex flex-col rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
       >
         {/* 헤더 */}
         <div className="shrink-0 px-5 py-4 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between gap-3">
