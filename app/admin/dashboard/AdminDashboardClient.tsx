@@ -504,15 +504,16 @@ function CombinedDashboardView({
 
       {/* 통합 계획서 리스트: 검토 필요 건이 맨 위 */}
       <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <h2 className="text-sm font-semibold text-gray-700">
-            {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'}
-            {filter ? ` (${currentFilterLabel})` : ''}
-            <span className="ml-2 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
-          </h2>
-          {selectedCount > 0 ? (
-            /* 일괄 검토 버튼: 검토 대기 건 선택 시 표시 */
-            <div className="flex items-center gap-1.5">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3 bg-gray-50/50">
+          <div className="flex items-center gap-3 flex-wrap min-w-0">
+            <h2 className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+              {selectedTeam ? `${selectedTeam.teamNumber} 계획서` : '전체 계획서'}
+              {filter ? ` (${currentFilterLabel})` : ''}
+              <span className="ml-2 text-xs text-gray-400 font-normal tabular-nums">({filteredPlans.length}건)</span>
+            </h2>
+            {selectedCount > 0 && (
+              /* 일괄 검토·삭제 버튼: 선택 시 제목 옆에 표시 */
+              <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs font-bold text-primary-500 tabular-nums whitespace-nowrap">{selectedCount}건 선택</span>
               {reviewableSelectedCount > 0 && (
                 <>
@@ -562,15 +563,20 @@ function CombinedDashboardView({
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
-            </div>
-          ) : (
-            !filter && needsReviewCount > 0 && (
-              <span className="font-nexon inline-flex items-center gap-1.5 text-[11px] font-normal text-red-600 bg-red-50 border border-red-100 rounded-full px-2.5 py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                검토 필요 {needsReviewCount}건
-              </span>
-            )
-          )}
+              </div>
+            )}
+          </div>
+          {/* 검토 필요 배지: 선택 여부와 관계없이 항상 오른쪽에 표시 */}
+          <span
+            className={`font-nexon inline-flex items-center gap-1.5 shrink-0 text-[11px] font-normal rounded-full px-2.5 py-1 border ${
+              needsReviewCount > 0
+                ? 'text-red-600 bg-red-50 border-red-100'
+                : 'text-gray-400 bg-gray-50 border-gray-200'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${needsReviewCount > 0 ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`} />
+            검토 필요 {needsReviewCount}건
+          </span>
         </div>
         <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
           <span className="flex items-center">
