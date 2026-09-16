@@ -171,11 +171,12 @@ export default function PlanReviewModal({ plan, team, onClose, onReviewed, onOpe
             </div>
           </div>
 
-          {/* 검토 결정 폼 */}
-          {canReview && (
+          {/* 검토 결정 폼 (반려 상태에서는 반려 취소·재승인 폼) */}
+          {(canReview || plan.status === 'RESUBMIT_REQUIRED') && (
             <AdminReviewForm
               planId={plan.id}
               bare
+              mode={canReview ? 'review' : 'cancelResubmit'}
               evidences={(plan.evidences ?? []).map((e: any) => ({
                 id: e.id,
                 label: e.label,

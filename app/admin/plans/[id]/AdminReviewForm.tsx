@@ -16,9 +16,11 @@ interface Props {
   bare?: boolean
   // 성공 시 갱신된 계획서를 전달 (모달에서 낙관적 갱신에 사용)
   onSuccess?: (updatedPlan?: any) => void
+  // 'cancelResubmit': 반려(재제출 요구)된 계획서를 취소하고 다시 승인하는 전용 모드
+  mode?: 'review' | 'cancelResubmit'
 }
 
-export default function AdminReviewForm({ planId, evidences, bare = false, onSuccess }: Props) {
+export default function AdminReviewForm({ planId, evidences, bare = false, onSuccess, mode = 'review' }: Props) {
   const router = useRouter()
   const [action, setAction] = useState<'approve' | 'resubmit'>('approve')
   const [note, setNote] = useState('')
@@ -70,11 +72,22 @@ export default function AdminReviewForm({ planId, evidences, bare = false, onSuc
     router.refresh()
   }
 
+  const isCancelResubmit = mode === 'cancelResubmit'
+
   return (
     <div className={bare ? '' : 'card p-5'}>
-      <h2 className="text-sm font-semibold text-gray-700 mb-4">검토 결정</h2>
+      <h2 className="text-sm font-semibold text-gray-700 mb-4">
+        {isCancelResubmit ? '반려 취소 · 재승인' : '검토 결정'}
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {isCancelResubmit && (
+          <p className="text-xs text-gray-600 bg-green-50 border border-green-100 rounded-lg px-3 py-2 leading-relaxed">
+            재제출 요구를 취소하고 이 계획서를 승인합니다. 재제출 요청됐던 증빙 항목은
+            &lsquo;제출됨&rsquo; 상태로 되돌아갑니다.
+          </p>
+        )}
+        {!isCancelResubmit && (
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
@@ -101,6 +114,7 @@ export default function AdminReviewForm({ planId, evidences, bare = false, onSuc
             재제출 요구
           </button>
         </div>
+        )}
 
         {action === 'resubmit' && (
           <div className="space-y-2">
@@ -149,7 +163,13 @@ export default function AdminReviewForm({ planId, evidences, bare = false, onSuc
           }`}
           disabled={loading}
         >
-          {loading ? '처리 중...' : action === 'approve' ? '승인하기' : '재제출 요구하기'}
+          {loading
+            ? '처리 중...'
+            : isCancelResubmit
+              ? '재제출 요구 취소 후 승인하기'
+              : action === 'approve'
+                ? '승인하기'
+                : '재제출 요구하기'}
         </button>
       </form>
     </div>

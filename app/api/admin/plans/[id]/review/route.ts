@@ -19,11 +19,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     include: { evidences: true },
   })
   if (!plan) return NextResponse.json({ error: '찾을 수 없습니다.' }, { status: 404 })
-  if (plan.status !== 'UNDER_REVIEW') {
-    return NextResponse.json({ error: '검토 중인 계획서가 아닙니다.' }, { status: 400 })
-  }
 
   const { action, note, resubmitItems } = await req.json()
+
+  // 반려(재제출 요구) 취소 후 승인: RESUBMIT_REQUIRED 상태에서도 승인 허용
+  const cancelResubmitApprove = plan.status === 'RESUBMIT_REQUIRED' && action === 'approve'
+  if (plan.status !== 'UNDER_REVIEW' && !cancelResubmitApprove) {
+    return NextResponse.json({ error: '검토 중인 계획서가 아닙니다.' }, { status: 400 })
+  }
 
   if (action === 'approve') {
     const isLastRepeat = !plan.isRecurring || (plan.completedRepeats + 1 >= plan.totalRepeats)
@@ -35,9 +38,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const newActualTotal = currentActual + submittedAmount
 
     await prisma.$transaction([
+      // 반려 취소 승인 시: 재제출 요청됐던 증빙 항목을 '제출됨'으로 되돌림
+      ...(cancelResubmitApprove
+        ? [prisma.evidence.updateMany({
+            where: { planId: params.id, status: 'RESUBMIT_REQUIRED' },
+            data: { status: 'SUBMITTED', resubmitNote: null },
+          })]
+        : []),
       prisma.budgetPlan.update({
         where: { id: params.id },
-        data: { 
+        data: {
           status: nextStatus,
           actualAmount: newActualTotal,
           completedRepeats: plan.isRecurring ? plan.completedRepeats + 1 : plan.completedRepeats,
@@ -60,7 +70,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         data: {
           planId: params.id,
           adminId: session.user.id,
-          note: note || null,
+          note: note || (cancelResubmitApprove ? '재제출 요구 취소 후 승인' : null),
         },
       }),
     ])

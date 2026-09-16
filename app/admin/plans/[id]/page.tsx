@@ -146,10 +146,11 @@ export default async function AdminPlanDetailPage({ params }: { params: { id: st
         </div>
       </div>
 
-      {/* Admin review form */}
-      {canReview && (
+      {/* Admin review form (반려 상태에서는 반려 취소·재승인 폼) */}
+      {(canReview || plan.status === 'RESUBMIT_REQUIRED') && (
         <AdminReviewForm
           planId={plan.id}
+          mode={canReview ? 'review' : 'cancelResubmit'}
           evidences={plan.evidences.map((e) => ({
             id: e.id,
             label: e.label,
