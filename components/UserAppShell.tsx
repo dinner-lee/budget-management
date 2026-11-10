@@ -82,7 +82,7 @@ export default function UserAppShell({
         <nav className="glass-nav font-nexon sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between h-14">
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 xl:gap-6 shrink-0">
                 <Link href="/dashboard" className="flex items-center gap-2 mr-2">
                   <Image src="/lsri_logo.png" alt="학습과학연구소" width={130} height={32} className="object-contain" priority />
                   <span className="font-normal text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
@@ -92,7 +92,7 @@ export default function UserAppShell({
                     <Link
                       key={tab.key}
                       href={tab.path}
-                      className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      className="px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     >
                       {tab.label}
                     </Link>
@@ -113,7 +113,7 @@ export default function UserAppShell({
       <nav className="glass-nav font-nexon sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 xl:gap-6 shrink-0">
               {/* 버튼으로 처리하여 즉시 탭 전환 */}
               <button onClick={() => handleTabClick('dashboard')} className="flex items-center gap-2 mr-2 text-left">
                 <Image src="/lsri_logo.png" alt="학습과학연구소" width={130} height={32} className="object-contain" priority />
@@ -124,7 +124,7 @@ export default function UserAppShell({
                   <button
                     key={tab.key}
                     onClick={() => handleTabClick(tab.key)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab.key
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab.key
                       ? 'bg-primary-50 text-primary-500 ring-1 ring-inset ring-primary-100 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
@@ -135,12 +135,12 @@ export default function UserAppShell({
               </div>
             </div>
 
-            <div className="hidden lg:flex items-center gap-4">
-              <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-4 min-w-0 ml-4">
+              <div className="flex items-center gap-2 min-w-0">
                 <UserAvatar image={session?.user.image} name={session?.user.name} />
-                <span className="text-sm text-gray-600">{session?.user.name}</span>
+                <span className="text-sm text-gray-600 truncate" title={session?.user.name ?? undefined}>{session?.user.name}</span>
               </div>
-              <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-sm text-gray-500 hover:text-gray-700 font-medium">로그아웃</button>
+              <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-sm text-gray-500 hover:text-gray-700 font-medium whitespace-nowrap shrink-0">로그아웃</button>
             </div>
 
             <div className="lg:hidden flex items-center">

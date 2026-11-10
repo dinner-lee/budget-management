@@ -100,8 +100,8 @@ export default function AdminAppShell({
       <nav className="glass-nav font-nexon sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-6">
-              <button onClick={() => handleTabClick('dashboard')} className="flex items-center gap-2 mr-2 text-left">
+            <div className="flex items-center gap-4 xl:gap-6 shrink-0">
+              <button onClick={() => handleTabClick('dashboard')} className="flex items-center gap-2 mr-2 text-left shrink-0">
                 <Image src="/lsri_logo.png" alt="학습과학연구소" width={130} height={32} className="object-contain" priority />
                 <span className="font-normal text-[#15378F] text-lg border-l border-gray-300 pl-3 whitespace-nowrap">예산 관리</span>
               </button>
@@ -110,7 +110,7 @@ export default function AdminAppShell({
                   <button
                     key={tab.key}
                     onClick={() => handleTabClick(tab.key)}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab.key
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab.key
                       ? 'bg-primary-50 text-primary-500 ring-1 ring-inset ring-primary-100 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
@@ -121,13 +121,14 @@ export default function AdminAppShell({
               </div>
             </div>
 
-            <div className="hidden lg:flex items-center gap-4">
-              <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-4 min-w-0 ml-4">
+              <div className="flex items-center gap-2 min-w-0">
                 <UserAvatar image={session?.user.image} name={session?.user.name} />
-                <span className="text-sm text-gray-600">{session?.user.name}</span>
-                <span className="text-[10px] bg-primary-100 text-primary-500 px-1.5 py-0.5 rounded font-bold">관리자</span>
+                {/* 이름이 길면(예: 이름 / 직원 / 소속) 줄바꿈 대신 말줄임 */}
+                <span className="text-sm text-gray-600 truncate" title={session?.user.name ?? undefined}>{session?.user.name}</span>
+                <span className="text-[10px] bg-primary-100 text-primary-500 px-1.5 py-0.5 rounded font-bold whitespace-nowrap shrink-0">관리자</span>
               </div>
-              <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-sm text-gray-500 hover:text-gray-700 font-medium">로그아웃</button>
+              <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-sm text-gray-500 hover:text-gray-700 font-medium whitespace-nowrap shrink-0">로그아웃</button>
             </div>
 
             <div className="lg:hidden flex items-center">
