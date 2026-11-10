@@ -185,3 +185,11 @@ model Milestone {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// 사용 목적별 첨부(증빙) 문서 목록. 관리자가 수정한 목적만 행이 생기고,
+// 행이 없는 목적은 lib/evidence-config.ts의 기본값을 사용한다.
+model EvidenceConfig {
+  purpose   String   @id // MEETING_FEE | EXPERT_FEE | ...
+  items     Json     // EvidenceItem[] — { key, label, hint?, required? }
+  updatedAt DateTime @updatedAt
+}

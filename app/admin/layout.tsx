@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getMilestones } from '@/lib/milestones'
+import { getEvidenceRequirements } from '@/lib/evidence-requirements'
 import { redirect } from 'next/navigation'
 import AdminAppShell from '@/components/AdminAppShell'
 
@@ -10,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session || session.user.role !== 'ADMIN') redirect('/dashboard')
 
   // Fetch all admin data
-  const [allPlans, userCount, teams, milestones, users] = await Promise.all([
+  const [allPlans, userCount, teams, milestones, users, evidence] = await Promise.all([
     prisma.budgetPlan.findMany({
       include: {
         user: { select: { name: true, email: true, teamId: true } },
@@ -36,7 +37,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { plans: true } } },
-    })
+    }),
+    getEvidenceRequirements(),
   ])
 
   // 서명 이미지(base64)는 목록 화면에 불필요하고 payload만 키우므로 제외
@@ -49,6 +51,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         teamsData={{ teams, users }}
         usersData={users}
         settingsData={milestones}
+        evidenceData={evidence}
       >
         {children}
       </AdminAppShell>

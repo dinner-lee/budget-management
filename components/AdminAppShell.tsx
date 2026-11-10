@@ -9,15 +9,18 @@ import AdminDashboardClient from '@/app/admin/dashboard/AdminDashboardClient'
 import AdminTeamsClient from '@/app/admin/teams/AdminTeamsClient'
 import AdminUsersClient from '@/app/admin/users/AdminUsersClient'
 import AdminSettingsClient from '@/app/admin/settings/AdminSettingsClient'
+import AdminEvidenceClient from '@/app/admin/evidence/AdminEvidenceClient'
 import { LiquidGlassDefs, useLiquidGlassRefract } from '@/components/LiquidGlass'
 import UserAvatar from '@/components/UserAvatar'
+import type { EvidenceRequirementsData } from '@/app/admin/evidence/AdminEvidenceClient'
 
-type TabKey = 'dashboard' | 'teams' | 'users' | 'settings'
+type TabKey = 'dashboard' | 'teams' | 'users' | 'evidence' | 'settings'
 
 const TAB_CONFIG: { key: TabKey; label: string; path: string }[] = [
   { key: 'dashboard', label: '대시보드', path: '/admin/dashboard' },
   { key: 'teams', label: '팀 관리', path: '/admin/teams' },
   { key: 'users', label: '사용자 관리', path: '/admin/users' },
+  { key: 'evidence', label: '첨부 문서', path: '/admin/evidence' },
   { key: 'settings', label: '일정', path: '/admin/settings' },
 ]
 
@@ -25,6 +28,7 @@ function pathToTab(pathname: string): TabKey | null {
   if (pathname === '/admin/dashboard') return 'dashboard'
   if (pathname === '/admin/teams') return 'teams'
   if (pathname === '/admin/users') return 'users'
+  if (pathname === '/admin/evidence') return 'evidence'
   if (pathname === '/admin/settings') return 'settings'
   return null
 }
@@ -34,12 +38,14 @@ export default function AdminAppShell({
   teamsData,
   usersData,
   settingsData,
+  evidenceData,
   children,
 }: {
   dashboardData: any
   teamsData: { teams: any[], users: any[] }
   usersData: any[]
   settingsData: any[]
+  evidenceData: EvidenceRequirementsData
   children: React.ReactNode
 }) {
   const { data: session } = useSession()
@@ -172,6 +178,9 @@ export default function AdminAppShell({
         </div>
         <div style={{ display: activeTab === 'users' ? 'block' : 'none' }}>
           <AdminUsersClient initialUsers={usersData} currentUserId={session?.user.id || ''} />
+        </div>
+        <div style={{ display: activeTab === 'evidence' ? 'block' : 'none' }}>
+          <AdminEvidenceClient initial={evidenceData} />
         </div>
         <div style={{ display: activeTab === 'settings' ? 'block' : 'none' }}>
           <AdminSettingsClient initialMilestones={settingsData} />

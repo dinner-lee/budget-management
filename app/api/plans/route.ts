@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { EVIDENCE_REQUIREMENTS, PURPOSE_LABELS, type Purpose } from '@/lib/evidence-config'
+import { PURPOSE_LABELS, type Purpose } from '@/lib/evidence-config'
+import { getEvidenceRequirements } from '@/lib/evidence-requirements'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -88,7 +89,8 @@ export async function POST(req: NextRequest) {
   }
 
   const purposeKey = purpose as Purpose
-  const evidenceItems = EVIDENCE_REQUIREMENTS[purposeKey]
+  const { requirements } = await getEvidenceRequirements()
+  const evidenceItems = requirements[purposeKey]
   if (!evidenceItems) {
     return NextResponse.json({ error: '올바르지 않은 예산 목적입니다.' }, { status: 400 })
   }

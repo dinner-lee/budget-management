@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { PURPOSE_LABELS, EVIDENCE_REQUIREMENTS } from '@/lib/evidence-config'
+import { PURPOSE_LABELS, EVIDENCE_REQUIREMENTS, type EvidenceItem } from '@/lib/evidence-config'
 import SignaturePad from '@/components/SignaturePad'
 
 const PURPOSES = Object.entries(PURPOSE_LABELS) as [keyof typeof PURPOSE_LABELS, string][]
@@ -56,14 +56,21 @@ export default function NewPlanPage() {
   const [budgetStatus, setBudgetStatus] = useState<any>(null)
   const [conflictInfo, setConflictInfo] = useState<any>(null)
 
+  // 관리자가 수정한 첨부 문서 목록 (불러오기 전에는 기본값 표시)
+  const [requirements, setRequirements] = useState<Record<string, EvidenceItem[]>>(EVIDENCE_REQUIREMENTS)
+
   useEffect(() => {
     fetch('/api/user/budget-status')
       .then(res => res.json())
       .then(data => setBudgetStatus(data))
+    fetch('/api/evidence-requirements')
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (data?.requirements) setRequirements(data.requirements) })
+      .catch(() => {})
   }, [])
 
-  const selectedPurpose = form.purpose as keyof typeof EVIDENCE_REQUIREMENTS | ''
-  const previewItems = selectedPurpose ? EVIDENCE_REQUIREMENTS[selectedPurpose] : []
+  const selectedPurpose = form.purpose
+  const previewItems = selectedPurpose ? requirements[selectedPurpose] ?? [] : []
   const timeOptions = getTimeOptions(form.purpose)
 
   function set(field: string, value: string) {
@@ -229,6 +236,7 @@ export default function NewPlanPage() {
                 <li key={item.key} className="text-xs text-blue-600">
                   • {item.label}
                   {item.hint && <span className="text-blue-400"> ({item.hint})</span>}
+                  {item.required === false && <span className="text-blue-400"> · 선택</span>}
                 </li>
               ))}
             </ul>
