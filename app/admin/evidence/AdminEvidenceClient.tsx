@@ -7,6 +7,8 @@ import {
   type EvidenceItem,
   type Purpose,
 } from '@/lib/evidence-config'
+import ExcelDownloadButton from '@/components/ExcelDownloadButton'
+import type { ExcelSheet } from '@/lib/excel-export'
 
 export interface EvidenceRequirementsData {
   requirements: Record<Purpose, EvidenceItem[]>
@@ -119,10 +121,40 @@ export default function AdminEvidenceClient({ initial }: { initial: EvidenceRequ
     setMessage({ type: 'ok', text: '기본 목록으로 되돌렸습니다.' })
   }
 
+  // 저장된 목록 기준(편집 중인 미저장 내용 제외), 모든 사용 목적을 한 시트에
+  const evidenceSheets = (): ExcelSheet[] => [{
+    name: '첨부 문서 목록',
+    columns: [
+      { header: '사용 목적', width: 16 },
+      { header: '순서', width: 6, type: 'number' },
+      { header: '문서 이름', width: 22 },
+      { header: '설명', width: 40 },
+      { header: '필수 여부', width: 9 },
+      { header: '목록 구분', width: 10 },
+    ],
+    rows: PURPOSES.flatMap(p =>
+      saved[p].map((item, i) => [
+        PURPOSE_LABELS[p],
+        i + 1,
+        item.label,
+        item.hint ?? '',
+        item.required === false ? '선택' : '필수',
+        customized.has(p) ? '수정됨' : '기본값',
+      ]),
+    ),
+  }]
+
   return (
     <div className="max-w-3xl space-y-4">
       <div className="card p-4">
-        <p className="label mb-2">사용 목적</p>
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <p className="label mb-0">사용 목적</p>
+          <ExcelDownloadButton
+            fileName="첨부문서목록"
+            title="모든 사용 목적의 저장된 첨부 문서 목록을 엑셀로 내려받기"
+            getSheets={evidenceSheets}
+          />
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {PURPOSES.map(p => (
             <button

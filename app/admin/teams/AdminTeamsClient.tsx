@@ -1,6 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ExcelDownloadButton from '@/components/ExcelDownloadButton'
+import type { ExcelSheet } from '@/lib/excel-export'
+
+function byTeamNumber(a: any, b: any) {
+  const na = parseInt(a.teamNumber, 10), nb = parseInt(b.teamNumber, 10)
+  if (!isNaN(na) && !isNaN(nb)) return na - nb
+  return String(a.teamNumber).localeCompare(String(b.teamNumber), 'ko')
+}
 
 export default function AdminTeamsClient({ initialTeams, initialUsers }: { initialTeams: any[], initialUsers: any[] }) {
   const [teams, setTeams] = useState<any[]>(initialTeams)
@@ -53,6 +61,30 @@ export default function AdminTeamsClient({ initialTeams, initialUsers }: { initi
     fetchUsers()
   }
 
+  const teamSheets = (): ExcelSheet[] => [{
+    name: '팀 목록',
+    columns: [
+      { header: '팀 번호', width: 9 },
+      { header: '대표자', width: 10 },
+      { header: '대표자 소속', width: 20 },
+      { header: '연구 주제', width: 45 },
+      { header: '팀원', width: 35 },
+      { header: '할당된 사용자 수', width: 10, type: 'number' },
+      { header: '할당된 사용자', width: 30 },
+      { header: '사용자 이메일', width: 40 },
+    ],
+    rows: [...teams].sort(byTeamNumber).map((t) => [
+      t.teamNumber,
+      t.leaderName,
+      t.leaderAffiliation,
+      t.researchTopic,
+      t.members ?? '',
+      t.users?.length ?? 0,
+      (t.users ?? []).map((u: any) => u.name ?? '').join(', '),
+      (t.users ?? []).map((u: any) => u.email).join(', '),
+    ]),
+  }]
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -90,7 +122,10 @@ export default function AdminTeamsClient({ initialTeams, initialUsers }: { initi
 
         <div className="md:col-span-2 space-y-4">
           <div className="card">
-            <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50"><h2 className="text-sm font-semibold text-gray-700">생성된 팀 목록 <span className="ml-1 text-xs text-gray-400 font-normal">({teams.length}팀)</span></h2></div>
+            <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold text-gray-700">생성된 팀 목록 <span className="ml-1 text-xs text-gray-400 font-normal">({teams.length}팀)</span></h2>
+              <ExcelDownloadButton fileName="팀목록" getSheets={teamSheets} />
+            </div>
             <div className="divide-y divide-gray-100">
               {teams.length === 0 ? (
                 <div className="p-6 text-center text-sm text-gray-400">팀이 없습니다.</div>

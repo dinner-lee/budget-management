@@ -3,7 +3,9 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PURPOSE_LABELS } from '@/lib/evidence-config'
-import { PlanStatusBadge } from '@/components/StatusBadge'
+import { PlanStatusBadge, PLAN_STATUS_MAP } from '@/components/StatusBadge'
+import ExcelDownloadButton from '@/components/ExcelDownloadButton'
+import { asDate, type ExcelSheet } from '@/lib/excel-export'
 import UpcomingCardNotice from '@/components/UpcomingCardNotice'
 import PlanReviewModal from './PlanReviewModal'
 import PlanPrintModal from './PlanPrintModal'
@@ -93,6 +95,53 @@ interface Milestone {
   id: string
   name: string
   date: string | Date
+}
+
+// 계획서 목록 → 엑셀 시트 (팀별 목록·캘린더 내보내기 공용)
+function planSheet(name: string, plans: any[], teams: Team[]): ExcelSheet {
+  return {
+    name,
+    columns: [
+      { header: '팀 번호', width: 9 },
+      { header: '대표자', width: 10 },
+      { header: '사용 항목', width: 16 },
+      { header: '제출자', width: 12 },
+      { header: '제출자 이메일', width: 26 },
+      { header: '계획 금액', width: 12, type: 'number' },
+      { header: '실제 금액', width: 12, type: 'number' },
+      { header: '실제 금액 구분', width: 13 },
+      { header: '사용일', width: 12, type: 'date' },
+      { header: '사용 시간', width: 13 },
+      { header: '처리일', width: 12, type: 'date' },
+      { header: '상태', width: 11 },
+      { header: '증빙 제출', width: 10 },
+      { header: '지출 개요', width: 50 },
+      { header: '작성일', width: 12, type: 'date' },
+    ],
+    rows: plans.map((p) => {
+      const team = teams.find((t) => t.id === (p.teamId || p.user?.teamId))
+      const actual = p.actualAmount ?? p.lastSubmittedAmount ?? null
+      const evidences = p.evidences ?? []
+      const submitted = evidences.filter((e: any) => e.status === 'SUBMITTED').length
+      return [
+        team?.teamNumber ?? '',
+        team?.leaderName ?? '',
+        PURPOSE_LABELS[p.purpose as keyof typeof PURPOSE_LABELS] ?? p.purpose,
+        p.user?.name ?? '',
+        p.user?.email ?? '',
+        p.amount,
+        actual,
+        actual === null ? '' : p.actualAmount != null ? '확정' : '제출(미확정)',
+        asDate(p.plannedDate),
+        p.plannedTime ?? '',
+        asDate(p.reviews?.[0]?.createdAt),
+        PLAN_STATUS_MAP[p.status]?.label ?? p.status,
+        evidences.length ? `${submitted}/${evidences.length}` : '',
+        p.expenditureOverview ?? '',
+        asDate(p.createdAt),
+      ]
+    }),
+  }
 }
 
 export default function AdminDashboardClient({
@@ -586,6 +635,12 @@ function CombinedDashboardView({
             )}
           </div>
           {/* 검토 필요 배지: 선택 여부와 관계없이 항상 오른쪽에 표시 */}
+          <div className="flex items-center gap-2 shrink-0">
+          <ExcelDownloadButton
+            fileName={`계획서목록${selectedTeam ? `_${selectedTeam.teamNumber}팀` : ''}${filter ? `_${currentFilterLabel}` : ''}`}
+            title="현재 목록(팀·상태 필터와 정렬 반영)을 엑셀로 내려받기"
+            getSheets={() => [planSheet('계획서 목록', sortedPlans, teams)]}
+          />
           <span
             className={`font-nexon inline-flex items-center gap-1.5 shrink-0 text-[11px] font-normal rounded-full px-2.5 py-1 border ${
               needsReviewCount > 0
@@ -596,6 +651,7 @@ function CombinedDashboardView({
             <span className={`w-1.5 h-1.5 rounded-full ${needsReviewCount > 0 ? 'bg-red-500 animate-pulse' : 'bg-gray-300'}`} />
             검토 필요 {needsReviewCount}건
           </span>
+          </div>
         </div>
         <div className={`hidden md:grid ${PLAN_GRID} gap-3 px-5 py-2 border-b border-gray-100 bg-gray-50/40 text-[11px] font-semibold text-gray-400`}>
           <span className="flex items-center">
@@ -700,11 +756,49 @@ function BudgetView({ teams, allPlans }: any) {
     return `${Math.round((actual / planned) * 100)}%`
   }
 
+  // 화면 표와 같은 값: 목적별 계획·실제 금액, 합계, 집행률(팀당 예산 대비)
+  const budgetSheets = (): ExcelSheet[] => {
+    const sum = (f: (t: any) => number) => teamData.reduce((s: number, t: any) => s + f(t), 0)
+    return [{
+      name: '팀별 예산 현황',
+      columns: [
+        { header: '팀 번호', width: 9 },
+        { header: '대표자', width: 10 },
+        ...purposes.flatMap(p => [
+          { header: `${PURPOSE_LABELS[p]} 계획`, width: 14, type: 'number' as const },
+          { header: `${PURPOSE_LABELS[p]} 실제`, width: 14, type: 'number' as const },
+        ]),
+        { header: '합계 계획', width: 13, type: 'number' },
+        { header: '합계 실제', width: 13, type: 'number' },
+        { header: '집행률', width: 9, type: 'percent' },
+      ],
+      rows: teamData.map((td: any) => [
+        td.team.teamNumber,
+        td.team.leaderName,
+        ...purposes.flatMap(p => [td.byPurpose[p].planned, td.byPurpose[p].actual]),
+        td.totalPlanned,
+        td.totalActual,
+        td.totalActual / TEAM_BUDGET,
+      ]),
+      totalRow: [
+        '전체 합계',
+        '',
+        ...purposes.flatMap(p => [sum(t => t.byPurpose[p].planned), sum(t => t.byPurpose[p].actual)]),
+        grandPlanned,
+        grandActual,
+        grandTotalBudget > 0 ? grandActual / grandTotalBudget : null,
+      ],
+    }]
+  }
+
   return (
     <div className="card overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <h2 className="text-sm font-semibold text-gray-900">팀별 예산 현황</h2>
-        <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률 (팀당 예산 {TEAM_BUDGET.toLocaleString()}원 기준)</p>
+      <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-gray-900">팀별 예산 현황</h2>
+          <p className="text-xs text-gray-500 mt-0.5">계획 금액 / 실제 사용 금액 (승인 완료 건 기준) / 집행률 (팀당 예산 {TEAM_BUDGET.toLocaleString()}원 기준)</p>
+        </div>
+        <ExcelDownloadButton fileName="팀별예산현황" getSheets={budgetSheets} />
       </div>
       {/* 좌우 스크롤 없이 화면 폭에 맞춰 배치 (table-fixed + 컴팩트 패딩) */}
       <table className="w-full table-fixed text-[11px] tabular-nums">
@@ -823,6 +917,31 @@ function CalendarView({ allPlans, teams, milestones }: any) {
     }
   }
 
+  // 보고 있는 달의 계획서(사용일순)와 주요 일정
+  const inMonth = (d: string | Date) => {
+    const x = new Date(d)
+    return x.getFullYear() === currentDate.getFullYear() && x.getMonth() === currentDate.getMonth()
+  }
+  const calendarSheets = (): ExcelSheet[] => {
+    const monthLabel = format(currentDate, 'yyyy년 MM월')
+    const monthPlans = allPlans
+      .filter((p: any) => inMonth(p.plannedDate))
+      .sort((a: any, b: any) =>
+        new Date(a.plannedDate).getTime() - new Date(b.plannedDate).getTime() ||
+        String(a.plannedTime ?? '').localeCompare(String(b.plannedTime ?? '')))
+    const monthMilestones = milestones
+      .filter((m: any) => inMonth(m.date))
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return [
+      planSheet(`${monthLabel} 계획서`, monthPlans, teams),
+      {
+        name: `${monthLabel} 주요 일정`,
+        columns: [{ header: '날짜', width: 12, type: 'date' }, { header: '일정', width: 40 }],
+        rows: monthMilestones.map((m: any) => [asDate(m.date), m.name]),
+      },
+    ]
+  }
+
   const statusIcon = (status: string) => {
     switch (status) {
       case 'APPROVED': return '✅'
@@ -837,6 +956,12 @@ function CalendarView({ allPlans, teams, milestones }: any) {
     <div className="card p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold tracking-tight text-gray-900 tabular-nums">{format(currentDate, 'yyyy년 MM월')}</h2>
+        <div className="flex items-center gap-2">
+        <ExcelDownloadButton
+          fileName={`캘린더_${format(currentDate, 'yyyy-MM')}`}
+          title="이 달의 계획서와 주요 일정을 엑셀로 내려받기"
+          getSheets={calendarSheets}
+        />
         <div className="inline-flex items-center rounded-lg border border-gray-200 shadow-sm overflow-hidden divide-x divide-gray-200">
           <button onClick={prevMonth} className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors" title="이전 달">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -847,6 +972,7 @@ function CalendarView({ allPlans, teams, milestones }: any) {
           <button onClick={nextMonth} className="px-2.5 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors" title="다음 달">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
+        </div>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">

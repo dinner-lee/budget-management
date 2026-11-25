@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import ExcelDownloadButton from '@/components/ExcelDownloadButton'
+import { asDate } from '@/lib/excel-export'
 
 export default function AdminSettingsClient({ initialMilestones }: { initialMilestones: any[] }) {
   const [milestones, setMilestones] = useState<any[]>(initialMilestones)
@@ -55,8 +57,18 @@ export default function AdminSettingsClient({ initialMilestones }: { initialMile
       </form>
 
       <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-gray-700">등록된 일정 <span className="ml-1 text-xs text-gray-400 font-normal">({milestones.length}건)</span></h2>
+          <ExcelDownloadButton
+            fileName="주요일정"
+            getSheets={() => [{
+              name: '주요 일정',
+              columns: [{ header: '날짜', width: 12, type: 'date' }, { header: '일정', width: 40 }],
+              rows: [...milestones]
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                .map((m) => [asDate(m.date), m.name]),
+            }]}
+          />
         </div>
         <div className="divide-y divide-gray-100">
           {milestones.length === 0 ? (

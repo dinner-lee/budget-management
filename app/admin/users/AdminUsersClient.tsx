@@ -3,9 +3,37 @@
 import { useState } from 'react'
 import UserCreateForm from './UserCreateForm'
 import UserRoleSelect from './UserRoleSelect'
+import ExcelDownloadButton from '@/components/ExcelDownloadButton'
+import { asDate, type ExcelSheet } from '@/lib/excel-export'
 
-export default function AdminUsersClient({ initialUsers, currentUserId }: { initialUsers: any[], currentUserId: string }) {
+export default function AdminUsersClient({ initialUsers, currentUserId, teams = [] }: { initialUsers: any[], currentUserId: string, teams?: any[] }) {
   const [users, setUsers] = useState(initialUsers)
+
+  // 권한 변경 후 router.refresh()로 들어오는 최신 props 기준
+  const userSheets = (): ExcelSheet[] => [{
+    name: '사용자 목록',
+    columns: [
+      { header: '이름', width: 14 },
+      { header: '이메일', width: 30 },
+      { header: '권한', width: 8 },
+      { header: '팀 번호', width: 9 },
+      { header: '팀 대표자', width: 10 },
+      { header: '계획서 수', width: 9, type: 'number' },
+      { header: '등록일', width: 12, type: 'date' },
+    ],
+    rows: initialUsers.map((u) => {
+      const team = teams.find((t) => t.id === u.teamId)
+      return [
+        u.name ?? '',
+        u.email,
+        u.role === 'ADMIN' ? '관리자' : '일반',
+        team?.teamNumber ?? '',
+        team?.leaderName ?? '',
+        u._count?.plans ?? 0,
+        asDate(u.createdAt),
+      ]
+    }),
+  }]
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -15,8 +43,9 @@ export default function AdminUsersClient({ initialUsers, currentUserId }: { init
       </div>
 
       <div className="card">
-        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-gray-700">사용자 목록 <span className="ml-1 text-xs text-gray-400 font-normal">({users.length}명)</span></h2>
+          <ExcelDownloadButton fileName="사용자목록" getSheets={userSheets} />
         </div>
         {users.length === 0 ? (
           <p className="px-5 py-12 text-center text-gray-400 text-sm">사용자가 없습니다.</p>

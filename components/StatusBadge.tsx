@@ -1,4 +1,4 @@
-const PLAN_STATUS_MAP: Record<string, { label: string; className: string }> = {
+export const PLAN_STATUS_MAP: Record<string, { label: string; className: string }> = {
   PENDING_EVIDENCE: { label: '증빙 대기', className: 'bg-amber-50 text-amber-700 ring-amber-600/20' },
   UNDER_REVIEW: { label: '검토 중', className: 'bg-blue-50 text-blue-700 ring-blue-600/20' },
   RESUBMIT_REQUIRED: { label: '재제출 필요', className: 'bg-red-50 text-red-700 ring-red-600/20' },

@@ -178,7 +178,7 @@ export default function AdminAppShell({
           <AdminTeamsClient initialTeams={teamsData.teams} initialUsers={teamsData.users} />
         </div>
         <div style={{ display: activeTab === 'users' ? 'block' : 'none' }}>
-          <AdminUsersClient initialUsers={usersData} currentUserId={session?.user.id || ''} />
+          <AdminUsersClient initialUsers={usersData} currentUserId={session?.user.id || ''} teams={teamsData.teams} />
         </div>
         <div style={{ display: activeTab === 'evidence' ? 'block' : 'none' }}>
           <AdminEvidenceClient initial={evidenceData} />
